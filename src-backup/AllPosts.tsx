@@ -1,9 +1,9 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, useLoaderData, useParams } from "react-router-dom";
-import { UserContext } from "./layout/App";
+import { UserContext } from "./App";
 import { CreatePost } from "./CreatePost";
-import { supaClient } from "./layout/supa-client";
-import { timeAgo } from "./layout/time-ago";
+import { supaClient } from "./supa-client";
+import { timeAgo } from "./time-ago";
 import { UpVote } from "./UpVote";
 
 interface PostData {

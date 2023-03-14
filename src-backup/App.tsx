@@ -3,9 +3,9 @@ import reactLogo from './assets/react.svg';
 import './App.css';
 import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import MessageBoard from './MessageBoard';
-import AllPosts from './AllPosts';
+import { AllPosts } from './AllPosts';
 import PostView from './PostView';
-import Welcome from './Welcome';
+import { Welcome, welcomeLoader } from './Welcome';
 import NavBar from './NavBar';
 import { SupashipUserInfo, useSession } from './use-session';
 
@@ -31,6 +31,7 @@ const router = createBrowserRouter([
       {
         path: "Welcome",
         element: <Welcome />,
+        loader: welcomeLoader,
       },
     ],
   },

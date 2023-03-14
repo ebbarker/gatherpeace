@@ -4,6 +4,10 @@ import { UserContext } from "./App";
 import Dialog from "./Dialog";
 import { supaClient } from "./supa-client";
 
+export const setReturnPath = () => {
+  localStorage.setItem("returnPath", window.location.pathname);
+};
+
 export default function Login() {
   const [showModal, setShowModal] = useState(false);
   const [authMode, setAuthMode] = useState<"sign_in" | "sign_up">("sign_in");
@@ -15,6 +19,7 @@ export default function Login() {
           onClick={() => {
             setShowModal(true);
             setAuthMode("sign_in");
+            setReturnPath();
           }}
           >
             Login
@@ -24,6 +29,7 @@ export default function Login() {
           onClick={() => {
             setShowModal(true);
             setAuthMode("sign_up");
+            setReturnPath();
           }}
           >
             Sign Up

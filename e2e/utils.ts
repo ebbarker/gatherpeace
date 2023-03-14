@@ -39,7 +39,7 @@ export async function signUp(
   const passwordInput = page.locator('input[name="password"]');
   await passwordInput.fill(password);
   await page.keyboard.press("Enter");
-  const welcomeNotice = page.locator("h2", { hasText: "Welcome to Supaship!" });
+  const welcomeNotice = page.locator("h2", { hasText: "Welcome to Gather Peace" });
   await expect(welcomeNotice).toHaveCount(1);
   if (skipUserName) {
     return;
@@ -86,4 +86,26 @@ export async function createPost(page: Page, title: string, contents: string) {
   const post = page.locator("h3", { hasText: title });
   await expect(post).toHaveCount(1);
   return post;
+}
+
+export async function createPost(page: Page, title: string, contents: string) {
+  page.goto("http://localhost:1337/1");
+  const postTitleInput = page.locator(`input[name="title"]`);
+  const postContentsInput = page.locator(`textarea[name="contents"]`);
+  const postSubmitButton = page.locator(`button[type="submit"]`);
+  await postTitleInput.fill(title);
+  await postContentsInput.fill(contents);
+  await postSubmitButton.click();
+  const post = page.locator("h3", { hasText: title });
+  await expect(post).toHaveCount(1);
+  return post;
+}
+
+export async function createComment(page: Page, comment: string) {
+  const commentInput = page.locator(`textarea[name="comment"]`);
+  const commentSubmitButton = page.locator(`button[type="submit"]`);
+  await commentInput.fill(comment);
+  await commentSubmitButton.click();
+  const createdComment = page.locator("p", { hasText: comment });
+  await expect(createdComment).toHaveCount(1);
 }
