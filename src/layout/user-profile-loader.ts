@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { redirect } from "react-router-dom";
-import { UserContext } from "./layout/App";
+import { UserContext } from "./App";
 
 export function userWelcomeLoader() {
   const user = useContext(UserContext);

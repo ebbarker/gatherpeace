@@ -192,84 +192,85 @@ end; $$;
 -- TO public
 -- USING ((auth.uid() = user_id))
 -- WITH CHECK ((auth.uid() = user_id));
+--------
 
-alter table user_profiles enable row level security;
-alter table posts enable row level security;
-alter table post_contents enable row level security;
-alter table post_score enable row level security;
-alter table post_votes enable row level security;
+-- alter table user_profiles enable row level security;
+-- alter table posts enable row level security;
+-- alter table post_contents enable row level security;
+-- alter table post_score enable row level security;
+-- alter table post_votes enable row level security;
 
-CREATE POLICY "all can see" ON "public"."post_contents"
-AS PERMISSIVE FOR SELECT
-TO public
-USING (true);
+-- CREATE POLICY "all can see" ON "public"."post_contents"
+-- AS PERMISSIVE FOR SELECT
+-- TO public
+-- USING (true);
 
-CREATE POLICY "authors can create" ON "public"."post_contents"
-AS PERMISSIVE FOR INSERT
-TO public
-WITH CHECK (auth.uid()=user_id);
+-- CREATE POLICY "authors can create" ON "public"."post_contents"
+-- AS PERMISSIVE FOR INSERT
+-- TO public
+-- WITH CHECK (auth.uid()=user_id);
 
-CREATE POLICY "all can see" ON "public"."post_score"
-AS PERMISSIVE FOR SELECT
-TO public
-USING (true);
+-- CREATE POLICY "all can see" ON "public"."post_score"
+-- AS PERMISSIVE FOR SELECT
+-- TO public
+-- USING (true);
 
-CREATE POLICY "all can see" ON "public"."post_votes"
-AS PERMISSIVE FOR SELECT
-TO public
-USING (true);
+-- CREATE POLICY "all can see" ON "public"."post_votes"
+-- AS PERMISSIVE FOR SELECT
+-- TO public
+-- USING (true);
 
-CREATE POLICY "owners can insert" ON "public"."post_votes"
-AS PERMISSIVE FOR INSERT
-TO public
-WITH CHECK (auth.uid()=user_id);
+-- CREATE POLICY "owners can insert" ON "public"."post_votes"
+-- AS PERMISSIVE FOR INSERT
+-- TO public
+-- WITH CHECK (auth.uid()=user_id);
 
-CREATE POLICY "owners can update" ON "public"."post_votes"
-AS PERMISSIVE FOR UPDATE
-TO public
-USING (auth.uid()=user_id)
-WITH CHECK (auth.uid()=user_id);
+-- CREATE POLICY "owners can update" ON "public"."post_votes"
+-- AS PERMISSIVE FOR UPDATE
+-- TO public
+-- USING (auth.uid()=user_id)
+-- WITH CHECK (auth.uid()=user_id);
 
-CREATE POLICY "all can see" ON "public"."posts"
-AS PERMISSIVE FOR SELECT
-TO public
-USING (true);
+-- CREATE POLICY "all can see" ON "public"."posts"
+-- AS PERMISSIVE FOR SELECT
+-- TO public
+-- USING (true);
 
-CREATE POLICY "owners can insert" ON "public"."posts"
-AS PERMISSIVE FOR INSERT
-TO public
-WITH CHECK (auth.uid()=user_id);
+-- CREATE POLICY "owners can insert" ON "public"."posts"
+-- AS PERMISSIVE FOR INSERT
+-- TO public
+-- WITH CHECK (auth.uid()=user_id);
 
-CREATE POLICY "all can see" ON "public"."user_profiles"
-AS PERMISSIVE FOR SELECT
-TO public
-USING (true);
+-- CREATE POLICY "all can see" ON "public"."user_profiles"
+-- AS PERMISSIVE FOR SELECT
+-- TO public
+-- USING (true);
 
-CREATE POLICY "users can insert" ON "public"."user_profiles"
-AS PERMISSIVE FOR INSERT
-TO public
-WITH CHECK (auth.uid() = user_id);
+-- CREATE POLICY "users can insert" ON "public"."user_profiles"
+-- AS PERMISSIVE FOR INSERT
+-- TO public
+-- WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "owners can update" ON "public"."user_profiles"
-AS PERMISSIVE FOR UPDATE
-TO public
-USING (auth.uid()=user_id)
-WITH CHECK (auth.uid()=user_id);
+-- CREATE POLICY "owners can update" ON "public"."user_profiles"
+-- AS PERMISSIVE FOR UPDATE
+-- TO public
+-- USING (auth.uid()=user_id)
+-- WITH CHECK (auth.uid()=user_id);
 
-CREATE POLICY "owners can see their own" ON "public"."email_list"
-AS PERMISSIVE FOR SELECT
-TO public
-USING (auth.uid()=user_id);
+-- CREATE POLICY "owners can see their own" ON "public"."email_list"
+-- AS PERMISSIVE FOR SELECT
+-- TO public
+-- USING (auth.uid()=user_id);
 
-CREATE POLICY "owners can insert for themselves" ON "public"."email_list"
-AS PERMISSIVE FOR INSERT
-TO public
-WITH CHECK (auth.uid() = user_id);
+-- CREATE POLICY "owners can insert for themselves" ON "public"."email_list"
+-- AS PERMISSIVE FOR INSERT
+-- TO public
+-- WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "owners can update their data" ON "public"."email_list"
-AS PERMISSIVE FOR UPDATE
-TO public
-USING (auth.uid()=user_id)
-WITH CHECK (auth.uid()=user_id);
+-- CREATE POLICY "owners can update their data" ON "public"."email_list"
+-- AS PERMISSIVE FOR UPDATE
+-- TO public
+-- USING (auth.uid()=user_id)
+-- WITH CHECK (auth.uid()=user_id);
 
 

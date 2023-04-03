@@ -5,6 +5,7 @@ import { CreatePost } from "./CreatePost";
 import { supaClient } from "./layout/supa-client";
 import { timeAgo } from "./layout/time-ago";
 import { UpVote } from "./UpVote";
+import { Post } from "./Post.jsx"
 
 interface PostData {
   id: string;
@@ -19,6 +20,7 @@ export function AllPosts() {
   const { pageNumber } = useParams();
   const [bumper, setBumper] = useState(0);
   const [posts, setPosts] = useState<PostData[]>([]);
+  const [voteBumper, setVoteBumper] = useState(0);
   const [myVotes, setMyVotes] = useState<
     Record<string, "up" | "down" | undefined>
   >({});
@@ -31,22 +33,7 @@ export function AllPosts() {
         .select("*")
         .then(({ data }) => {
           setPosts(data as PostData[]);
-          if (session?.user) {
-            supaClient
-              .from("post_votes")
-              .select("*")
-              .eq("user_id", session.user.id)
-              .then(({ data: votesData }) => {
-                if (!votesData) {
-                  return;
-                }
-                const votes = votesData.reduce((acc, vote) => {
-                  acc[vote.post_id] = vote.vote_type;
-                  return acc;
-                }, {} as Record<string, "up" | "down" | undefined>);
-                setMyVotes(votes);
-              });
-          }
+          console.log(data)
         }),
       supaClient
         .from("posts")
@@ -57,6 +44,33 @@ export function AllPosts() {
         }),
     ]);
   }, [session, bumper, pageNumber]);
+
+  useEffect(() => {
+    if (session?.user) {
+      supaClient
+        .from("post_votes")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .then(({ data: votesData }) => {
+          if (!votesData) {
+            return;
+          }
+          const votes = votesData.reduce((acc, vote) => {
+            acc[vote.post_id] = vote.vote_type;
+            return acc;
+          }, {} as Record<string, "up" | "down" | undefined>);
+          setMyVotes(votes);
+          console.log(votes)
+          console.log(posts)
+        });
+    }
+  }, [session, voteBumper])
+
+  // const incrementVote = (commentId, direction, wasNew) => {
+
+  //   setVoteBumper(voteBumper + 1);
+  // }
+
 
   return (
     <>
@@ -69,16 +83,55 @@ export function AllPosts() {
         {posts?.map((post, i) => (
           <Post
             key={post.id}
+            index={i}
             postData={post}
             myVote={myVotes?.[post.id] || undefined}
-            onVoteSuccess={() => {
-              setBumper(bumper + 1);
+            onVoteSuccess={(i, direction) => {
+
+              let id = posts[i].id;
+              let changeValue;
+              let temp = posts;
+              if (!myVotes[id]) {
+                if (direction === "up") temp[i].score = temp[i].score + 1;
+                if (direction === "down") temp[i].score = temp[i].score -1;
+              } else if (myVotes[id] && direction === myVotes[id]) {
+                return;
+              } else {
+                if (myVotes[id] && direction !== myVotes[id]) {
+                  if (direction === "up") temp[i].score = temp[i].score + 2;
+                  if (direction === "down") temp[i].score = temp[i].score -2;
+                }
+              }
+              //setPosts(temp);
+              setVoteBumper(voteBumper + 1);
             }}
           />
         ))}
       </div>
     </>
   );
+}
+
+export async function castVote({
+  postId,
+  userId,
+  voteType,
+  onSuccess = () => {},
+}: {
+  postId: string;
+  userId: string;
+  voteType: "up" | "down";
+  onSuccess?: () => void;
+}) {
+  await supaClient.from("post_votes").upsert(
+    {
+      post_id: postId,
+      user_id: userId,
+      vote_type: voteType,
+    },
+    { onConflict: "post_id,user_id" }
+  );
+  onSuccess();
 }
 
 const selectedStyles = "border-2 border-white rounded p-2 bg-gray-700";
@@ -146,93 +199,38 @@ function Pagination({
   );
 }
 
-function Post({
-  postData,
-  myVote,
-  onVoteSuccess,
-}: {
-  postData: PostData;
-  myVote: "up" | "down" | undefined;
-  onVoteSuccess: () => void;
-}) {
-  const { session } = useContext(UserContext);
-  return (
-    <div className="flex bg-grey1 text-white m-4 border-2 rounded">
-      <div className="flex-none grid grid-cols-1 place-content-center bg-gray-800 p-2 mr-4">
-        <UpVote
-          direction="up"
-          // handle filling later
-          filled={myVote === "up"}
-          enabled={!!session}
-          onClick={async () => {
-            await castVote({
-              postId: postData.id,
-              userId: session?.user.id as string,
-              voteType: "up",
-              onSuccess: () => {
-                onVoteSuccess();
-              },
-            });
-          }}
-        />
-        <p className="text-center" data-e2e="upvote-count">
-          {postData.score}
-        </p>
-        <UpVote
-          direction="down"
-          filled={myVote === "down"}
-          enabled={!!session}
-          onClick={async () => {
-            await castVote({
-              postId: postData.id,
-              userId: session?.user.id as string,
-              voteType: "down",
-              onSuccess: () => {
-                onVoteSuccess();
-              },
-            });
-          }}
-        />
-      </div>
-      <Link to={`/message-board/post/${postData.id}`} className="flex-auto">
-        <p className="mt-4">
-          Posted By {postData.username} {timeAgo((postData as any).created_at)}{" "}
-          ago
-        </p>
-        <h3 className="text-2xl">{postData.title}</h3>
-      </Link>
-    </div>
-  );
-}
 
-export async function castVote({
-  postId,
-  userId,
-  voteType,
-  onSuccess = () => {},
-}: {
-  postId: string;
-  userId: string;
-  voteType: "up" | "down";
-  voteId?: Promise<string | undefined>;
-  onSuccess?: () => void;
-}) {
-  const voteId = await getVoteId(userId, postId);
-  const { data, error } = voteId
-    ? await supaClient.from("post_votes").update({
-        id: voteId,
-        post_id: postId,
-        user_id: userId,
-        vote_type: voteType,
-      })
-    : await supaClient.from("post_votes").insert({
-        post_id: postId,
-        user_id: userId,
-        vote_type: voteType,
-      });
-  // handle error
-  onSuccess();
-}
+
+
+
+// export async function castVote({
+//   postId,
+//   userId,
+//   voteType,
+//   //onSuccess = () => {},
+// }: {
+//   postId: string;
+//   userId: string;
+//   voteType: "up" | "down";
+//   voteId?: Promise<string | undefined>;
+//   //onSuccess?: () => void;
+// }) {
+//   const voteId = await getVoteId(userId, postId);
+//   const { data, error } = voteId
+//     ? await supaClient.from("post_votes").update({
+//         id: voteId,
+//         post_id: postId,
+//         user_id: userId,
+//         vote_type: voteType,
+//       })
+//     : await supaClient.from("post_votes").insert({
+//         post_id: postId,
+//         user_id: userId,
+//         vote_type: voteType,
+//       });
+//   // handle error
+//   //onSuccess();
+// }
 
 export async function getVoteId(
   userId: string,

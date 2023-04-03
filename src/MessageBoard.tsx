@@ -10,9 +10,10 @@ export default function MessageBoard() {
   const userProfile = useContext(UserContext);
   return (
     <div className="flex flex-col place-content-center w-full">
-      <Link to="/message-board/1">
+      <a href="/message-board/1"><h2  className="text-5xl text-center mb-1">Message Board</h2></a>
+      {/* <Link to="/message-board/1">
         <h2 className="text-5xl text-center mb-1">Message Board</h2>
-      </Link>
+      </Link> */}
       {userProfile.session ? (
         <></>
       ) : (

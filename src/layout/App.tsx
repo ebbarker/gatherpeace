@@ -5,7 +5,7 @@ import "./App.css";
 import Home from "./Home";
 import MessageBoard from "../MessageBoard";
 import NavBar from "./NavBar";
-import { PostView } from "../Post";
+import { PostView } from "../PostView";
 import PrivacyPolicy from "../PrivacyPolicy";
 import { SupashipUserInfo, useSession } from "./use-session";
 import { Welcome, welcomeLoader } from "./Welcome";

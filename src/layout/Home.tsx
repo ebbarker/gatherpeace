@@ -1,5 +1,5 @@
 import { EmailListSignup } from "./EmailListSignup";
-import { PostView } from "../Post";
+import { PostView } from "../PostView";
 import { AllPosts } from "../AllPosts"
 
 export default function Home() {
@@ -10,7 +10,7 @@ export default function Home() {
       </h1>
       {/* <p className="text-center font-sans drop-shadow border-gray-800 border-2 rounded-lg bg-gray-600">
         We're still launching - be on the lookout for cool stuff soon!
-      </p> */}
+      </p>
       {/* <EmailListSignup /> */}
          <>
      <AllPosts />

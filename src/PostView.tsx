@@ -33,9 +33,15 @@ export type DepthFirstComment = Omit<Comment, "comments"> & { depth: number };
 
 interface PostDetailData {
   post: Post | null;
-  comments: DepthFirstComment[];
-  myVotes?: Record<string, "up" | "down" | undefined>;
+  comments: DepthFirstComment[] | null;
+  myVotes?: Record<string, "up" | "down" | undefined | null >;
 }
+// interface newPostDetailData {
+//   post: Post | null;
+//   comments: DepthFirstComment[];
+//   myVotes?: Record<string, "up" | "down" | undefined>;
+// }
+
 
 const START_ASKING_DEPTH = 3;
 
@@ -117,9 +123,9 @@ export function PostView({ postId }: { postId?: string | undefined }) {
                 postId: postDetailData.post.id,
                 userId: userContext.session?.user.id as string,
                 voteType: "up",
-                onSuccess: () => {
-                  setBumper(bumper + 1);
-                },
+                // onSuccess: () => {
+                //   setBumper(bumper + 1);
+                // },
               });
             }}
           />
@@ -142,9 +148,9 @@ export function PostView({ postId }: { postId?: string | undefined }) {
                 postId: postDetailData.post.id,
                 userId: userContext.session?.user.id as string,
                 voteType: "down",
-                onSuccess: () => {
-                  setBumper(bumper + 1);
-                },
+                // onSuccess: () => {
+                //   setBumper(bumper + 1);
+                // },
               });
             }}
           />

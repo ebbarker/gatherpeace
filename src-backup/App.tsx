@@ -1,5 +1,5 @@
 import { createContext, useState } from 'react';
-import reactLogo from './assets/react.svg';
+//import reactLogo from './assets/react.svg';
 import './App.css';
 import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import MessageBoard from './MessageBoard';
@@ -8,6 +8,7 @@ import PostView from './PostView';
 import { Welcome, welcomeLoader } from './Welcome';
 import NavBar from './NavBar';
 import { SupashipUserInfo, useSession } from './use-session';
+import React from 'react';
 
 const router = createBrowserRouter([
   {

@@ -25,3 +25,4 @@ begin
   insert into post_contents (post_id, title, content, user_id) values (new_id, '', $2, $1);
   return new_id;
 end; $$;
+
