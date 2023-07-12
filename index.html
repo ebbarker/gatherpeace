@@ -2,15 +2,27 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image" href="/twitterpeace.jpg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- <link href="/src/output.css" rel="stylesheet" /> -->
     <link href="/src/output.css" rel="stylesheet" />
     <link href="/dist/new.css" rel="stylesheet" />
+    <link href="/output.css" rel="stylesheet" />
     <title>Gather Peace</title>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/layout/main.tsx"></script>
+    <p id="demo"></p>
+    <script>
+      <script>
+    let arr = ['a', 'b', 'c']
+    let demo = document.getElementById("demo")
+      for (let i = 0; i < arr.length; i++ ) {
+        demo.innerHTML += `<div>${arr[i]}</div>`;
+      }
+      </script>
+      </script>
+    <script type="module" src="/src/layout/main.tsx"> </script>
+
   </body>
 </html>

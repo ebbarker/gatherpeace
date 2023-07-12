@@ -89,7 +89,6 @@ export function AllPosts() {
             onVoteSuccess={(i, direction) => {
 
               let id = posts[i].id;
-              let changeValue;
               let temp = posts;
               if (!myVotes[id]) {
                 if (direction === "up") temp[i].score = temp[i].score + 1;
