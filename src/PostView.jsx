@@ -5,37 +5,37 @@ import { UserContext } from "./layout/App";
 import { supaClient } from "./layout/supa-client";
 import { timeAgo } from "./layout/time-ago";
 import { UpVote } from "./UpVote";
-import { SupashipUserInfo } from "./layout/use-session";
+//import { SupashipUserInfo } from "./layout/use-session";
 
-export interface Post {
-  id: string;
-  author_name: string;
-  title: string;
-  content: string;
-  score: number;
-  created_at: string;
-  path: string;
-  comments: Comment[];
-}
+// export interface Post {
+//   id: string;
+//   author_name: string;
+//   title: string;
+//   content: string;
+//   score: number;
+//   created_at: string;
+//   path: string;
+//   comments: Comment[];
+// }
 
-export interface Comment {
-  id: string;
-  author_name: string;
-  content: string;
-  score: number;
-  created_at: string;
-  path: string;
-  depth: number;
-  comments: Comment[];
-}
+// export interface Comment {
+//   id: string;
+//   author_name: string;
+//   content: string;
+//   score: number;
+//   created_at: string;
+//   path: string;
+//   depth: number;
+//   comments: Comment[];
+// }
 
-export type DepthFirstComment = Omit<Comment, "comments"> & { depth: number };
+// export type DepthFirstComment = Omit<Comment, "comments"> & { depth: number };
 
-interface PostDetailData {
-  post: Post | null;
-  comments: DepthFirstComment[] | null;
-  myVotes?: Record<string, "up" | "down" | undefined | null >;
-}
+// interface PostDetailData {
+//   post: Post | null;
+//   comments: DepthFirstComment[] | null;
+//   myVotes?: Record<string, "up" | "down" | undefined | null >;
+// }
 // interface newPostDetailData {
 //   post: Post | null;
 //   comments: DepthFirstComment[];
@@ -45,13 +45,8 @@ interface PostDetailData {
 
 const START_ASKING_DEPTH = 3;
 
-async function postDetailLoader({
-  params: { postId },
-  userContext,
-}: {
-  params: { postId: string };
-  userContext: SupashipUserInfo;
-}) {
+async function postDetailLoader({ params, userContext }) {
+  const { postId } = params;
   const { data, error } = await supaClient
     .rpc("get_single_post_with_comments", { post_id: postId })
     .select("*");
@@ -61,7 +56,7 @@ async function postDetailLoader({
   const postMap = data.reduce((acc, post) => {
     acc[post.id] = post;
     return acc;
-  }, {} as Record<string, Post>);
+  }, {});
   const post = postMap[postId];
   const comments = data.filter((x) => x.id !== postId);
   if (!userContext.session?.user) {
@@ -77,14 +72,14 @@ async function postDetailLoader({
   const votes = votesData.reduce((acc, vote) => {
     acc[vote.post_id] = vote.vote_type;
     return acc;
-  }, {} as Record<string, "up" | "down" | undefined>);
+  }, {});
   return { post, comments, myVotes: votes };
 }
 
-export function PostView({ postId }: { postId?: string | undefined }) {
+export function PostView({ postId }) {
   const userContext = useContext(UserContext);
-  const params = useParams() as { postId: string };
-  const [postDetailData, setPostDetailData] = useState<PostDetailData>({
+  const params = useParams();
+  const [postDetailData, setPostDetailData] = useState({
     post: null,
     comments: [],
   });
@@ -121,7 +116,7 @@ export function PostView({ postId }: { postId?: string | undefined }) {
               }
               await castVote({
                 postId: postDetailData.post.id,
-                userId: userContext.session?.user.id as string,
+                userId: userContext.session?.user.id,
                 voteType: "up",
                 // onSuccess: () => {
                 //   setBumper(bumper + 1);
@@ -146,7 +141,7 @@ export function PostView({ postId }: { postId?: string | undefined }) {
               }
               await castVote({
                 postId: postDetailData.post.id,
-                userId: userContext.session?.user.id as string,
+                userId: userContext.session?.user.id,
                 voteType: "down",
                 // onSuccess: () => {
                 //   setBumper(bumper + 1);
@@ -199,16 +194,12 @@ function CommentView({
   comment,
   myVotes,
   onVoteSuccess,
-}: {
-  comment: Comment;
-  myVotes: Record<string, "up" | "down" | undefined> | undefined;
-  onVoteSuccess: () => void;
 }) {
   const [commenting, setCommenting] = useState(false);
   const [goDeeper, setGoDeeper] = useState(false);
   const { session } = useContext(UserContext);
 
-  const shouldShowChildren = (): boolean => {
+  const shouldShowChildren = () => {
     const depth = getDepth(comment.path);
     return depth < START_ASKING_DEPTH
       ? true
@@ -230,7 +221,7 @@ function CommentView({
               onClick={async () => {
                 await castVote({
                   postId: comment.id,
-                  userId: session?.user.id as string,
+                  userId: session?.user.id,
                   voteType: "up",
                   onSuccess: () => {
                     onVoteSuccess();
@@ -248,7 +239,7 @@ function CommentView({
               onClick={async () => {
                 await castVote({
                   postId: comment.id,
-                  userId: session?.user.id as string,
+                  userId: session?.user.id,
                   voteType: "down",
                   onSuccess: () => {
                     onVoteSuccess();
@@ -323,14 +314,10 @@ function CreateComment({
   parent,
   onCancel,
   onSuccess,
-}: {
-  parent: DepthFirstComment | Post;
-  onCancel?: () => void;
-  onSuccess: () => void;
 }) {
   const user = useContext(UserContext);
   const [comment, setComment] = useState("");
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = useRef(null);
   return (
     <>
       <form
@@ -351,7 +338,7 @@ function CreateComment({
                 onSuccess();
                 textareaRef.current?.value != null &&
                   (textareaRef.current.value = "");
-                const commentId = data as unknown as string;
+                const commentId = data;
                 let intervalId = setInterval(() => {
                   const comment = document.querySelector(
                     `div[data-e2e="comment-${commentId}"]`
@@ -398,7 +385,7 @@ function CreateComment({
   );
 }
 
-function unsortedCommentsToNested(comments: DepthFirstComment[]): Comment[] {
+function unsortedCommentsToNested(comments) {
   const commentMap = comments.reduce((acc, comment) => {
     acc[comment.id] = {
       ...comment,
@@ -406,8 +393,8 @@ function unsortedCommentsToNested(comments: DepthFirstComment[]): Comment[] {
       depth: getDepth(comment.path),
     };
     return acc;
-  }, {} as Record<string, Comment & { depth: number }>);
-  const result: Comment[] = [];
+  }, {});
+  const result = [];
   const sortedByDepthThenCreationTime = [...Object.values(commentMap)].sort(
     (a, b) =>
       a.depth > b.depth
@@ -427,7 +414,7 @@ function unsortedCommentsToNested(comments: DepthFirstComment[]): Comment[] {
   return result;
 }
 
-function getParent(map: Record<string, Comment>, path: string): Comment {
+function getParent(map, path) {
   const parentId = path.replace("root.", "").split(".").slice(-1)[0];
   const parent = map[convertToUuid(parentId)];
   if (!parent) {
@@ -436,14 +423,32 @@ function getParent(map: Record<string, Comment>, path: string): Comment {
   return parent;
 }
 
-function convertToUuid(path: string): string {
+function convertToUuid(path) {
   return path.replaceAll("_", "-");
 }
 
-function getDepth(path: string): number {
+function getDepth(path) {
   const rootless = path.replace(".", "");
   return rootless.split(".").filter((x) => !!x).length;
 }
+
+// function getParent(map: Record<string, Comment>, path: string): Comment {
+//   const parentId = path.replace("root.", "").split(".").slice(-1)[0];
+//   const parent = map[convertToUuid(parentId)];
+//   if (!parent) {
+//     throw new Error(`Parent not found at ${parentId}`);
+//   }
+//   return parent;
+// }
+
+// function convertToUuid(path: string): string {
+//   return path.replaceAll("_", "-");
+// }
+
+// function getDepth(path: string): number {
+//   const rootless = path.replace(".", "");
+//   return rootless.split(".").filter((x) => !!x).length;
+// }
 
 // type DepthFirstComment = Omit<Comment, "comments"> & { depth: number };
 

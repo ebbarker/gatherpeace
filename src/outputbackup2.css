@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto');
 
-body{
+/* body{
 	font-family: 'Roboto', sans-serif;
 }
 * {
@@ -9,7 +9,7 @@ body{
 }
 i {
 	margin-right: 10px;
-}
+} */
 /*----------bootstrap-navbar-css------------*/
 /* .navbar-logo{
 	padding: 15px;
@@ -203,6 +203,27 @@ i {
   text-decoration: none;
 }
 */
+.header-container {
+  display: flex; /* This makes the children of the container sit side-by-side */
+  align-items: stretch; /* This makes the children of the container match heights */
+}
+
+.logo-container {
+	/* height: 100%;
+	width: auto; */
+
+	display: flex; /* This centers the image vertically */
+  align-items: center; /* This centers the image vertically */
+}
+
+.logo-container img {
+	height: 100%; /* makes the image take up the full height of its container */
+
+}
+
+.navbar {
+  flex-grow: 1; /* This makes the navbar take up all remaining space in the container */
+}
 
 .navbar-title {
   font-size: 20px;
@@ -212,17 +233,17 @@ i {
 }
 
 .navbar-home {
-  flex-grow: 1;
-  display: flex;
+  /* flex-grow: 1; */
+  /* display: flex; */
   align-items: center;
-  margin-right: 10px;
-  margin-left: 0;
+  /* margin-right: 10px;
+  margin-left: 0; */
 }
 
 .navbar-home img {
-  width: 20px;
-  height: 20px;
-  margin-right: 5px;
+  width: 100%;
+  height: 100%;
+  /* margin-right: 5px; */
 }
 
 nav {
@@ -231,7 +252,8 @@ nav {
   top: 50%;
   /* left: 50%;
   margin: -23px 0 0 -240px; */
-	background: rgba(72, 207, 173, 0.9)
+	background: rgba(72, 207, 173, 0.9);
+	float: right;
 }
 
 nav ul {
@@ -277,11 +299,160 @@ nav a {
 .navbar-home img {
   width: 20px;
   height: 20px;
-  margin-right: 5px;
+  /* margin-right: 5px; */
 }
 
 .sub-menu {
 position: relative;
 	right: 0;
 
+}
+
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: rgba(72, 207, 173, 0.9); /* Same color as navbar */
+  list-style: none;
+  padding: 0; /* No padding around the dropdown */
+  margin: 0; /* No margin around the dropdown */
+  display: block;
+  border: none; /* Remove border if any */
+}
+
+.sub-menu:hover .dropdown-menu {
+  display: block;
+	background: rgba(72, 207, 173, 0.9);
+	opacity: 100;
+}
+
+.dropdown-menu li {
+  display: block;
+  width: 100%;
+	height: 100%;
+  margin: 0;
+  text-align: left;
+  /* line-height: 1.5; Adjust as needed for vertical space around the text */
+	background: rgba(72, 207, 173, 0.9);
+}
+
+.dropdown-menu li a {
+  display: block;
+  background: rgba(72, 207, 173, 0.9);
+  padding: 10px 15px;
+  color: #fff;
+  text-decoration: none;
+}
+
+.dropdown-menu li a:hover {
+  background: #000; /* Black on hover */
+}
+
+.header-container {
+  display: flex;
+  align-items: stretch;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.logo-container img {
+  height: 100%;
+}
+
+.navbar {
+  flex-grow: 1;
+}
+
+.navbar-title {
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+  flex-grow: 2;
+}
+
+.navbar-home {
+  align-items: center;
+}
+
+nav {
+  width: 100%;
+  background: rgba(72, 207, 173, 0.9);
+}
+
+nav ul {
+  background: @mainColor;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+nav li {
+  position: relative;
+  display: inline-block;
+  margin-right: -4px;
+  text-align: center;
+}
+
+nav li:last-child {
+  margin: 0;
+}
+
+nav a {
+  display: block;
+  background: @mainColor;
+  padding: 15px 20px;
+  color: #fff;
+  font-size: 14px;
+  text-decoration: none;
+  transition: 0.2s linear;
+}
+
+.sub-menu {
+  position: relative;
+  right: 0;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: rgba(72, 207, 173, 0.9);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: block;
+  border: none;
+}
+
+.sub-menu:hover .dropdown-menu {
+  display: block;
+  background: rgba(72, 207, 173, 0.9);
+  opacity: 100;
+}
+
+.dropdown-menu li {
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  text-align: left;
+  background: rgba(72, 207, 173, 0.9);
+}
+
+.dropdown-menu li a {
+  display: block;
+  background: rgba(72, 207, 173, 0.9);
+  padding: 10px 15px;
+  color: #fff;
+  text-decoration: none;
+}
+
+.dropdown-menu li a:hover {
+  background: #000;
 }

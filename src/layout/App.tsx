@@ -9,6 +9,7 @@ import { PostView } from "../PostView";
 import PrivacyPolicy from "../PrivacyPolicy";
 import { SupashipUserInfo, useSession } from "./use-session";
 import { Welcome, welcomeLoader } from "./Welcome";
+import Amarin from "./Amarin"
 
 export const router = createBrowserRouter([
   {
@@ -34,6 +35,10 @@ export const router = createBrowserRouter([
         path: "welcome",
         element: <Welcome />,
         loader: welcomeLoader,
+      },
+      {
+        path: "amarin",
+        element: <Amarin/>,
       },
       { path: "privacy-policy", element: <PrivacyPolicy /> },
     ],

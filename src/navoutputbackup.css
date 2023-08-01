@@ -1,0 +1,158 @@
+.header-container {
+  display: flex;
+  align-items: stretch;
+  height: 50%;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  height: 50%;
+}
+
+.logo-container img {
+  height: 100px;
+}
+
+.navbar {
+  flex-grow: 1;
+}
+
+.navbar-title {
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+  flex-grow: 2;
+}
+
+.navbar-home {
+  align-items: center;
+}
+
+nav {
+  width: 100%;
+  background: rgba(72, 207, 173, 0.9);
+}
+
+nav ul {
+  background: @mainColor;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+nav li {
+  position: relative;
+  display: inline-block;
+  margin-right: -4px;
+  text-align: center;
+}
+
+nav li:last-child {
+  margin: 0;
+}
+
+nav a {
+  display: block;
+  background: @mainColor;
+  padding: 15px 20px;
+  color: #fff;
+  font-size: 14px;
+  text-decoration: none;
+  transition: 0.2s linear;
+}
+
+.sub-menu {
+  position: relative;
+  right: 0;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: rgba(72, 207, 173, 0.9);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: block;
+  border: none;
+}
+
+.sub-menu:hover .dropdown-menu {
+  display: block;
+  background: rgba(72, 207, 173, 0.9);
+  opacity: 100;
+}
+
+.dropdown-menu li {
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  text-align: left;
+  background: rgba(72, 207, 173, 0.9);
+}
+
+.dropdown-menu li a {
+  display: block;
+  background: rgba(72, 207, 173, 0.9);
+  /* padding: 10px 15px; */
+  color: #fff;
+  text-decoration: none;
+}
+
+.dropdown-menu li a:hover {
+  background: #000;
+}
+
+
+@media (max-width: 768px) {
+  .navbar-menu-right
+}
+
+
+
+
+/* New hamburger menu - hide it by default */
+.hamburger-menu {
+  display: none;
+  font-size: 30px;
+  cursor: pointer;
+  color: #fff;
+}
+
+
+
+/* Styles to apply when the viewport is 768px or less */
+@media (max-width: 768px) {
+  .header-container {
+    justify-content: space-between;
+    height: 60px;
+  }
+  .logo, .logo-container {
+    max-height: 2em;
+  }
+
+   .navbar-menu-right {
+    display: none; /* Hide the logo and navigation on small screens */
+  }
+
+  .hamburger-menu {
+    display: block; /* Show hamburger menu on small screens */
+  }
+}
+
+.mobile-menu {
+
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}

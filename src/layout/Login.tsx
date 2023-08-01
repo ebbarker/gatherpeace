@@ -24,27 +24,29 @@ export default function Login() {
   return (
     <>
       <div className="flex m-4 place-items-center">
-        <button
-          className="md:inline-block px-4 py-2 text-xl font-display text-black hover:text-white bg-white hover:bg-purple-600 drop-shadow-[6px_6px_0_black] hover:drop-shadow-[0_0_7px_rgba(168,85,247,0.5)] transition-all duration-300"
+        <li className="nav-item" id="login"
           onClick={() => {
             setAuthMode("sign_in");
             setShowModal(true);
             setReturnPath();
           }}
         >
-          login
-        </button>{" "}
+          <a className="nav-link" href="#">
+            Login
+          </a>
+        </li>{" "}
         <span className="p-2"> or </span>{" "}
-        <button
-          className="md:inline-block px-4 py-2 text-xl font-display text-black hover:text-white bg-white hover:bg-purple-600 drop-shadow-[6px_6px_0_black] hover:drop-shadow-[0_0_7px_rgba(168,85,247,0.5)] transition-all duration-300"
+        <li className="nav-item" id="sign-up"
           onClick={() => {
             setAuthMode("sign_up");
             setShowModal(true);
             setReturnPath();
           }}
         >
-          sign up
-        </button>
+          <a className="nav-link" href="#">
+            Sign up
+          </a>
+        </li>
       </div>
       <Dialog
         open={showModal}
@@ -60,8 +62,7 @@ export default function Login() {
                   container: "grid grid-cols-1 place-content-center",
                   label: "text-white text-xl font-display",
                   button: "text-black text-xl font-display",
-                  input:
-                    "text-2xl font-display font-normal rounded border-2 text-green-400 border-green-400 text-center drop-shadow-[0_0_9px_rgba(34,197,94,0.9)] bg-white",
+                  input: "text-2xl font-display font-normal rounded border-2 text-green-400 border-green-400 text-center drop-shadow-[0_0_9px_rgba(34,197,94,0.9)] bg-white",
                 },
               }}
               view={authMode}

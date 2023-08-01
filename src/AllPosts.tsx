@@ -33,7 +33,7 @@ export function AllPosts() {
         .select("*")
         .then(({ data }) => {
           setPosts(data as PostData[]);
-          console.log(data)
+
         }),
       supaClient
         .from("posts")
@@ -60,8 +60,7 @@ export function AllPosts() {
             return acc;
           }, {} as Record<string, "up" | "down" | undefined>);
           setMyVotes(votes);
-          console.log(votes)
-          console.log(posts)
+
         });
     }
   }, [session, voteBumper])

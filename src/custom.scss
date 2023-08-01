@@ -1,0 +1,31 @@
+
+@import "../node_modules/bootstrap/scss/bootstrap";
+
+
+
+
+// $background-color: #48CFAD;
+
+// $theme-colors: (
+//   "primary": #48CFAD,
+//   "danger": #ff4136
+// );
+
+
+.dropdown-menu {
+  background-color: #48CFAD;
+}
+
+.dropdown-item {
+  background-color: #48CFAD;
+}
+
+.navbar,
+.navbar a,
+.navbar a.navbar-brand,
+.navbar a.nav-link {
+  color: #000000 !important;
+}
+
+// Import Bootstrap and its default variables
+
