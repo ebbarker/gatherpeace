@@ -24,7 +24,23 @@
 .navbar a,
 .navbar a.navbar-brand,
 .navbar a.nav-link {
-  color: #000000 !important;
+  color: #000000;
+}
+
+.signup-btn {
+  display: inline-block;
+  border: 2px solid #000000;
+  border-radius: 5px;
+  background-color: #000000 !important;
+  color: #48CFAD !important;
+  padding: 10px 20px;
+  text-decoration: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
+
+  &:hover {
+    background-color: #000000;
+    color: #ffffff;
+  }
 }
 
 // Import Bootstrap and its default variables

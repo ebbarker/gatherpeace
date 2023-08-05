@@ -43,7 +43,7 @@ export default function Login() {
             setReturnPath();
           }}
         >
-          <a className="nav-link" href="#">
+          <a className="nav-link signup-btn" href="#">
             Sign up
           </a>
         </li>
