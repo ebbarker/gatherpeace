@@ -133,68 +133,66 @@ export default function NavBar() {
 
   return (
     <>
-    <div class="header-container">
-<nav class="navbar navbar-expand-lg">
+      <div class="header-container">
+      <nav class="navbar navbar-expand-lg">
 
 
-<a class="navbar-brand" href="#"><div class="logo-container">
-<Link className="nav-logo-link" to="/">
-      <div class="navbar-home">
-        <img
-          id="logo"
-          class="nav-logo"
-          src={twitterPeace}
-          alt="logo"
-        />
-      </div>
-      </Link>
-</div></a>
-<a class="navbar-brand mr-auto" href="#">Gather Peace</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-  ☰
-  </button>
+        <a class="navbar-brand" href="#">
+          <div class="logo-container">
 
-  <div class="collapse navbar-collapse my-2 my-lg-0" id="navbarSupportedContent">
+              <div class="navbar-home">
+              <Link className="nav-logo-link" to="/">
+                <img
+                  id="logo"
+                  class="nav-logo"
+                  src={twitterPeace}
+                  alt="logo"
+                />
+                </Link>
+              </div>
 
-    <ul class="navbar-menu-right navbar-nav ml-auto">
-      <li class="nav-item active nav-item-custom">
-        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#">Link</a>
-      </li>
+          </div>
+        </a>
 
-      <li>
-      {session?.user ?
-        <li class="nav-item dropdown">
 
-          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          {session?.user ? profile?.username || "Welcome" : null}
-          </a>
-          <ul class="dropdown-menu dropdown-menu-right">
-            <a class="dropdown-item" href="#" onClick={() => supaClient.auth.signOut()}>
-                  Logout
+      <a class="navbar-brand mr-auto" href="#"><Link className="nav-logo-link" to="/">Gather Peace</Link></a>
+
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        ☰
+        </button>
+
+        <div class="collapse navbar-collapse my-2 my-lg-0" id="navbarSupportedContent">
+
+          <ul class="navbar-menu-right navbar-nav ml-auto">
+            <li class="nav-item active nav-item-custom">
+              <a class="nav-link" href="#"><Link className="nav-home-link" to="/">Home </Link><span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Link</a>
+            </li>
+
+            <li>
+            {session?.user ?
+              <li class="nav-item dropdown">
+
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                {session?.user ? profile?.username || "Welcome" : null}
                 </a>
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item" href="#">Something else here</a>
+                <ul class="dropdown-menu dropdown-menu-right">
+                  <a class="dropdown-item" href="#" onClick={() => supaClient.auth.signOut()}>
+                        Logout
+                      </a>
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item" href="#">Something else here</a>
+                </ul>
+
+                </li>
+              : <Login />}
+            </li>
           </ul>
-
-          </li>
-        : <Login />}
-      </li>
-
-
-
-    </ul>
-  </div>
-
-
-
-
-
-
-</nav>
-</div>
-</>
+        </div>
+        </nav>
+      </div>
+    </>
   );
 };

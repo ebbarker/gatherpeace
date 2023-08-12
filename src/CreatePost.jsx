@@ -3,17 +3,29 @@ import { useNavigate } from "react-router-dom";
 import { router, UserContext } from "./layout/App";
 import { supaClient } from "./layout/supa-client";
 
-export interface CreatePostProps {
-  newPostCreated?: () => void;
-}
+// export interface CreatePostProps {
+//   newPostCreated?: () => void;
+// }
 
-export function CreatePost({ newPostCreated = () => {} }: CreatePostProps) {
+export function CreatePost({ newPostCreated = () => {}, posts, setPosts }) {
   const user = useContext(UserContext);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const navigate = useNavigate();
+
+  function appendPost(userId, title, content, newId) {
+    let newPost = {
+      id: newId,
+      title,
+      score: 0,
+      username: user.profile.username,
+      user_id: userId,
+    }
+    setPosts([newPost, ...posts])
+  }
   return (
     <>
+    <div></div>
       <form
         className="rounded border-2 p-4 ml-4 flex flex-col justify-start gap-4 mb-8"
         data-e2e="create-post-form"
@@ -29,8 +41,9 @@ export function CreatePost({ newPostCreated = () => {} }: CreatePostProps) {
               if (error) {
                 console.log(error);
               } else {
-                const newId: string = data as any;
-                navigate(`/message-board`);
+                console.log(JSON.stringify(data))
+                const newId = data;
+                appendPost(user.session?.user.id, title, content, newId);
               }
             });
         }}

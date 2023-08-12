@@ -43,38 +43,9 @@ import { UpVote } from "./UpVote";
 // }
 
 
-const START_ASKING_DEPTH = 3;
 
-async function postDetailLoader({ params, userContext }) {
-  const { postId } = params;
-  const { data, error } = await supaClient
-    .rpc("get_single_post_with_comments", { post_id: postId })
-    .select("*");
-  if (error || !data || data.length === 0) {
-    throw new Error("Post not found");
-  }
-  const postMap = data.reduce((acc, post) => {
-    acc[post.id] = post;
-    return acc;
-  }, {});
-  const post = postMap[postId];
-  const comments = data.filter((x) => x.id !== postId);
-  if (!userContext.session?.user) {
-    return { post, comments };
-  }
-  const { data: votesData } = await supaClient
-    .from("post_votes")
-    .select("*")
-    .eq("user_id", userContext.session?.user.id);
-  if (!votesData) {
-    return;
-  }
-  const votes = votesData.reduce((acc, vote) => {
-    acc[vote.post_id] = vote.vote_type;
-    return acc;
-  }, {});
-  return { post, comments, myVotes: votes };
-}
+
+
 
 export function PostView({ postId }) {
   const userContext = useContext(UserContext);
@@ -83,7 +54,87 @@ export function PostView({ postId }) {
     post: null,
     comments: [],
   });
+
+  function getDepth(path) {
+    const rootless = path.slice(5);
+    return rootless.split(".").filter((x) => !!x).length;
+  }
+
   const [bumper, setBumper] = useState(0);
+
+  function convertToUuid(path) {
+    return path.replaceAll("_", "-");
+  }
+
+  function getParent(map, path) {
+    const parentId = path.replace("root.", "").split(".").slice(-1)[0];
+    const parent = map[convertToUuid(parentId)];
+    if (!parent) {
+      throw new Error(`Parent not found at ${parentId}`);
+    }
+    return parent;
+  }
+
+  function unsortedCommentsToNested(comments) {
+    const commentMap = comments.reduce((acc, comment) => {
+      acc[comment.id] = {
+        ...comment,
+        comments: [],
+        depth: getDepth(comment.path),
+      };
+      return acc;
+    }, {});
+    const result = [];
+    const sortedByDepthThenCreationTime = [...Object.values(commentMap)].sort(
+      (a, b) =>
+        a.depth > b.depth
+          ? 1
+          : a.depth < b.depth
+          ? -1
+          : new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    );
+    for (const post of sortedByDepthThenCreationTime) {
+      if (post.depth === 1) {
+        result.push(post);
+      } else {
+        const parentNode = getParent(commentMap, post.path);
+        parentNode.comments.push(post);
+      }
+    }
+    return result;
+  }
+
+  async function postDetailLoader({ params, userContext }) {
+    const { postId } = params;
+    const { data, error } = await supaClient
+      .rpc("get_single_post_with_comments", { post_id: postId })
+      .select("*");
+    if (error || !data || data.length === 0) {
+      throw new Error("Post not found");
+    }
+    const postMap = data.reduce((acc, post) => {
+      acc[post.id] = post;
+      return acc;
+    }, {});
+    const post = postMap[postId];
+    const comments = data.filter((x) => x.id !== postId);
+    if (!userContext.session?.user) {
+      return { post, comments };
+    }
+    const { data: votesData } = await supaClient
+      .from("post_votes")
+      .select("*")
+      .eq("user_id", userContext.session?.user.id);
+    if (!votesData) {
+      return;
+    }
+    const votes = votesData.reduce((acc, vote) => {
+      acc[vote.post_id] = vote.vote_type;
+      return acc;
+    }, {});
+    return { post, comments, myVotes: votes };
+  }
+
   useEffect(() => {
     postDetailLoader({
       params: postId ? { postId } : params,
@@ -94,10 +145,12 @@ export function PostView({ postId }) {
       }
     });
   }, [userContext, params, bumper]);
+
   const nestedComments = useMemo(
     () => unsortedCommentsToNested(postDetailData.comments),
     [postDetailData]
   );
+
   return (
     <div className="flex flex-col place-content-center">
       <div className="flex text-white ml-4 my-4 border-l-2 rounded grow">
@@ -118,9 +171,9 @@ export function PostView({ postId }) {
                 postId: postDetailData.post.id,
                 userId: userContext.session?.user.id,
                 voteType: "up",
-                // onSuccess: () => {
-                //   setBumper(bumper + 1);
-                // },
+                onSuccess: () => {
+                  setBumper(bumper + 1);
+                },
               });
             }}
           />
@@ -143,9 +196,9 @@ export function PostView({ postId }) {
                 postId: postDetailData.post.id,
                 userId: userContext.session?.user.id,
                 voteType: "down",
-                // onSuccess: () => {
-                //   setBumper(bumper + 1);
-                // },
+                onSuccess: () => {
+                  setBumper(bumper + 1);
+                },
               });
             }}
           />
@@ -172,6 +225,7 @@ export function PostView({ postId }) {
               onSuccess={() => {
                 setBumper(bumper + 1);
               }}
+              getDepth={getDepth}
             />
           )}
           {nestedComments.map((comment) => (
@@ -182,22 +236,27 @@ export function PostView({ postId }) {
               onVoteSuccess={() => {
                 setBumper(bumper + 1);
               }}
+              getDepth={getDepth}
             />
           ))}
         </div>
       </div>
     </div>
   );
-}
+};
 
 function CommentView({
   comment,
   myVotes,
   onVoteSuccess,
+  getDepth,
 }) {
   const [commenting, setCommenting] = useState(false);
   const [goDeeper, setGoDeeper] = useState(false);
   const { session } = useContext(UserContext);
+  const [deleting, setDeleting] = useState(false);
+
+  const START_ASKING_DEPTH = 3;
 
   const shouldShowChildren = () => {
     const depth = getDepth(comment.path);
@@ -268,6 +327,7 @@ function CommentView({
                   onVoteSuccess();
                   setCommenting(false);
                 }}
+                getDepth={getDepth}
               />
             )}
             {!commenting && (
@@ -280,6 +340,23 @@ function CommentView({
                 </button>
               </div>
             )}
+            {!deleting && (
+              <div className="ml-4">
+                <button
+                  onClick={() => setDeleting(!deleting)}
+                  disabled={!session}
+                >
+                  {deleting ? null : "Delete Comment"}
+                </button>
+              </div>
+            )}
+            {deleting && (
+                <div>
+                Are you sure you want to delete this comment?
+                <button onClick={deleteComment(comment)}>Delete</button>
+                <button onClick={() => setDeleting(!deleting)}>Cancel</button>
+              </div>
+            )}
             {/* <p>{comment.id}</p> */}
             {shouldShowChildren() ? (
               comment.comments.map((childComment) => (
@@ -288,6 +365,7 @@ function CommentView({
                   comment={childComment}
                   myVotes={myVotes}
                   onVoteSuccess={() => onVoteSuccess()}
+                  getDepth={getDepth}
                 />
               ))
             ) : comment.comments.length ? (
@@ -314,6 +392,7 @@ function CreateComment({
   parent,
   onCancel,
   onSuccess,
+  getDepth,
 }) {
   const user = useContext(UserContext);
   const [comment, setComment] = useState("");
@@ -325,11 +404,19 @@ function CreateComment({
         data-e2e="create-comment-form"
         onSubmit={(event) => {
           event.preventDefault();
+          // let parsed = JSON.stringify(parent)
+          // console.log('parent:' + parsed);
+          // console.log(getDepth(parent.path))
+          let actualPath = `${parent.path}.${parent.id.replaceAll("-", "_")}`;
+          let parentDepth = getDepth(parent.path);
+          if (parentDepth >= 2) {
+            actualPath = parent.path;
+          }
           supaClient
             .rpc("create_new_comment", {
               user_id: user.session?.user.id,
               content: comment,
-              path: `${parent.path}.${parent.id.replaceAll("-", "_")}`,
+              path: actualPath,
             })
             .then(({ data, error }) => {
               if (error) {
@@ -384,84 +471,18 @@ function CreateComment({
     </>
   );
 }
+//"root.b713d030_f8df_47cf_98cc_eb1366eb3637.331a8032_54d1_4e0c_96bc_03db626ad141"
 
-function unsortedCommentsToNested(comments) {
-  const commentMap = comments.reduce((acc, comment) => {
-    acc[comment.id] = {
-      ...comment,
-      comments: [],
-      depth: getDepth(comment.path),
-    };
-    return acc;
-  }, {});
-  const result = [];
-  const sortedByDepthThenCreationTime = [...Object.values(commentMap)].sort(
-    (a, b) =>
-      a.depth > b.depth
-        ? 1
-        : a.depth < b.depth
-        ? -1
-        : new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-  );
-  for (const post of sortedByDepthThenCreationTime) {
-    if (post.depth === 1) {
-      result.push(post);
-    } else {
-      const parentNode = getParent(commentMap, post.path);
-      parentNode.comments.push(post);
-    }
-  }
-  return result;
-}
+//55961645-c09f-4656-ad50-4245542f876e, 5ee02020-33ed-4b54-a662-98abd539360d
+//331a8032_54d1_4e0c_96bc_03db626ad141
 
-function getParent(map, path) {
-  const parentId = path.replace("root.", "").split(".").slice(-1)[0];
-  const parent = map[convertToUuid(parentId)];
-  if (!parent) {
-    throw new Error(`Parent not found at ${parentId}`);
-  }
-  return parent;
-}
 
-function convertToUuid(path) {
-  return path.replaceAll("_", "-");
-}
 
-function getDepth(path) {
-  const rootless = path.replace(".", "");
-  return rootless.split(".").filter((x) => !!x).length;
-}
 
-// function getParent(map: Record<string, Comment>, path: string): Comment {
-//   const parentId = path.replace("root.", "").split(".").slice(-1)[0];
-//   const parent = map[convertToUuid(parentId)];
-//   if (!parent) {
-//     throw new Error(`Parent not found at ${parentId}`);
-//   }
-//   return parent;
-// }
 
-// function convertToUuid(path: string): string {
-//   return path.replaceAll("_", "-");
-// }
 
-// function getDepth(path: string): number {
-//   const rootless = path.replace(".", "");
-//   return rootless.split(".").filter((x) => !!x).length;
-// }
 
-// type DepthFirstComment = Omit<Comment, "comments"> & { depth: number };
 
-// function depthFirstSearch(
-//   comments: Comment[],
-//   currentDepth = 0
-// ): DepthFirstComment[] {
-//   const result: DepthFirstComment[] = [];
-//   for (const comment of comments) {
-//     const temp: any = { ...comment };
-//     delete temp.comments;
-//     const depthFirstComment: DepthFirstComment = { ...comment, depth: currentDepth };
-//     result.push(depthFirstComment);
-//     res
-//   }
-// }
+
+
+

@@ -60,7 +60,7 @@ update post_score
         return new;
 end;$update_post_score$;
 
-create trigger update_post_score 
+create trigger update_post_score
     after insert or update
     on post_votes
     for each row execute procedure update_post_score();
@@ -89,21 +89,41 @@ begin
     offset (page_number - 1) * 10;
 end;$$;
 
-create function create_new_post("userId" uuid, "title" text, "content" text)
-returns boolean
-language plpgsql
-as $$
-begin
-  with
-    "inserted_post" as (
-      insert into "posts" ("user_id", "path")
-      values ($1, 'root')
-      returning "id"
-    )
-  insert into "post_contents" ("post_id", "title", "content", "user_id")
-  values ((select "id" from "inserted_post"), $2, $3, $1);
-  return true;
-end; $$;
+-- create function create_new_post("userId" uuid, "title" text, "content" text)
+-- returns boolean
+-- language plpgsql
+-- as $$
+-- begin
+--   with
+--     "inserted_post" as (
+--       insert into "posts" ("user_id", "path")
+--       values ($1, 'root')
+--       returning "id"
+--     )
+--   insert into "post_contents" ("post_id", "title", "content", "user_id")
+--   values ((select "id" from "inserted_post"), $2, $3, $1);
+--   return true;
+-- end; $$;
+
+CREATE OR REPLACE FUNCTION create_new_post("userId" uuid, "title" text, "content" text)
+RETURNS uuid
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    new_post_id UUID;
+BEGIN
+  WITH "inserted_post" AS (
+    INSERT INTO "posts" ("user_id", "path")
+    VALUES ("userId", 'root')
+    RETURNING "id"
+  )
+  SELECT "id" INTO new_post_id FROM "inserted_post";
+
+  INSERT INTO "post_contents" ("post_id", "title", "content", "user_id")
+  VALUES (new_post_id, "title", "content", "userId");
+
+  RETURN new_post_id;
+END; $$;
 
 create function initialize_post_score()
 returns trigger
@@ -117,7 +137,7 @@ begin
     return new;
 end;$initialize_post_score$;
 
-create trigger initialize_post_score 
+create trigger initialize_post_score
     after insert
     on posts
     for each row execute procedure initialize_post_score();
@@ -136,7 +156,7 @@ language plpgsql
 as $$
 begin
     return query
-    select 
+    select
       posts.id,
       user_profiles.username,
       posts.created_at,

@@ -6,7 +6,7 @@ import { supaClient } from "./layout/supa-client";
 import { timeAgo } from "./layout/time-ago";
 import { UpVote } from "./UpVote";
 import { Post } from "./Post.jsx"
-
+import { PostView } from "./PostView"
 interface PostData {
   id: string;
   title: string;
@@ -73,37 +73,38 @@ export function AllPosts() {
 
   return (
     <>
-      {session && <CreatePost />}
+      {session && <CreatePost posts={posts} setPosts={setPosts}/>}
       <Pagination
         totalPages={totalPages}
         currentPage={pageNumber ? +pageNumber : 0}
       />
       <div className="grid grid-cols-1 width-xl">
         {posts?.map((post, i) => (
-          <Post
-            key={post.id}
-            index={i}
-            postData={post}
-            myVote={myVotes?.[post.id] || undefined}
-            onVoteSuccess={(i, direction) => {
+          // <Post
+          //   key={post.id}
+          //   index={i}
+          //   postData={post}
+          //   myVote={myVotes?.[post.id] || undefined}
+          //   onVoteSuccess={(i, direction) => {
 
-              let id = posts[i].id;
-              let temp = posts;
-              if (!myVotes[id]) {
-                if (direction === "up") temp[i].score = temp[i].score + 1;
-                if (direction === "down") temp[i].score = temp[i].score -1;
-              } else if (myVotes[id] && direction === myVotes[id]) {
-                return;
-              } else {
-                if (myVotes[id] && direction !== myVotes[id]) {
-                  if (direction === "up") temp[i].score = temp[i].score + 2;
-                  if (direction === "down") temp[i].score = temp[i].score -2;
-                }
-              }
-              //setPosts(temp);
-              setVoteBumper(voteBumper + 1);
-            }}
-          />
+          //     let id = posts[i].id;
+          //     let temp = posts;
+          //     if (!myVotes[id]) {
+          //       if (direction === "up") temp[i].score = temp[i].score + 1;
+          //       if (direction === "down") temp[i].score = temp[i].score -1;
+          //     } else if (myVotes[id] && direction === myVotes[id]) {
+          //       return;
+          //     } else {
+          //       if (myVotes[id] && direction !== myVotes[id]) {
+          //         if (direction === "up") temp[i].score = temp[i].score + 2;
+          //         if (direction === "down") temp[i].score = temp[i].score -2;
+          //       }
+          //     }
+          //     //setPosts(temp);
+          //     setVoteBumper(voteBumper + 1);
+          //   }}
+          // />
+          <PostView postId={post.id} key={i}/>
         ))}
       </div>
     </>
@@ -142,7 +143,9 @@ function Pagination({
   currentPage: number;
   totalPages: number;
 }) {
+  if (!currentPage) currentPage = 1;
   const middleButtons = [currentPage];
+
   for (let i = currentPage - 1; i > 0 && i > currentPage - 5; i--) {
     middleButtons.unshift(i);
   }

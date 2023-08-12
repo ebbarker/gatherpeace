@@ -24,7 +24,7 @@ export default function Login() {
   return (
     <>
       <div className="flex m-4 place-items-center">
-        <li className="nav-item" id="login"
+        <div className="nav-item" id="login"
           onClick={() => {
             setAuthMode("sign_in");
             setShowModal(true);
@@ -34,9 +34,9 @@ export default function Login() {
           <a className="nav-link" href="#">
             Login
           </a>
-        </li>{" "}
+        </div>{" "}
         <span className="p-2"> or </span>{" "}
-        <li className="nav-item" id="sign-up"
+        <div className="nav-item" id="sign-up"
           onClick={() => {
             setAuthMode("sign_up");
             setShowModal(true);
@@ -46,7 +46,7 @@ export default function Login() {
           <a className="nav-link signup-btn" href="#">
             Sign up
           </a>
-        </li>
+        </div>
       </div>
       <Dialog
         open={showModal}
