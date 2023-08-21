@@ -10,8 +10,8 @@ export default function MessageBoard() {
   const userProfile = useContext(UserContext);
   return (
     <div className="flex flex-col place-content-center w-full">
-      <a href="/message-board/1"><h2  className="text-5xl text-center mb-1">Message Board</h2></a>
-      {/* <Link to="/message-board/1">
+      <a href="/peace-wall/1"><h2  className="text-5xl text-center mb-1">Peace Wall</h2></a>
+      {/* <Link to="/peace-wall/1">
         <h2 className="text-5xl text-center mb-1">Message Board</h2>
       </Link> */}
       {userProfile.session ? (
@@ -19,9 +19,9 @@ export default function MessageBoard() {
       ) : (
         <h2
           className="text-center m-6 flex justify-center place-items-center"
-          data-e2e="message-board-login"
+          data-e2e="peace-wall-login"
         >
-          Yo Dawg. you gotta <Login /> to join in the discussion.
+          Please <Login /> to join in the discussion.
         </h2>
       )}
       <Outlet />

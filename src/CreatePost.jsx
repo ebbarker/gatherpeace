@@ -18,7 +18,7 @@ export function CreatePost({ newPostCreated = () => {}, posts, setPosts }) {
       id: newId,
       title,
       score: 0,
-      username: user.profile.username,
+      username: user?.profile?.username,
       user_id: userId,
     }
     setPosts([newPost, ...posts])
@@ -33,7 +33,7 @@ export function CreatePost({ newPostCreated = () => {}, posts, setPosts }) {
           event.preventDefault();
           supaClient
             .rpc("create_new_post", {
-              userId: user.session?.user.id,
+              userId: user?.session?.user?.id,
               title,
               content,
             })

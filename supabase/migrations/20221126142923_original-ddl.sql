@@ -43,27 +43,71 @@ create table email_list (
     CONSTRAINT proper_email CHECK (email ~* '^[A-Za-z0-9._+%-]+@[A-Za-z0-9.-]+[.][A-Za-z]+$')
 );
 
-create function update_post_score()
-returns trigger
-language plpgsql
-security definer
-set search_path = public
-as $update_post_score$
-begin
-update post_score
-        set score = (
-            select sum(case when vote_type = 'up' then 1 else -1 end)
-            from post_votes
-            where post_id = new.post_id
-        )
-        where post_id = new.post_id;
-        return new;
-end;$update_post_score$;
+-- create function update_post_score()
+-- returns trigger
+-- language plpgsql
+-- security definer
+-- set search_path = publicupd
+-- as $update_post_score$
+-- begin
+-- update post_score
+--         set score = (
+--             select sum(case when vote_type = 'up' then 1 else -1 end)
+--             from post_votes
+--             where post_id = new.post_id
+--         )
+--         where post_id = new.post_id;
+--         return new;
+-- end;$update_post_score$;
+
+CREATE OR REPLACE FUNCTION update_post_score()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF TG_OP = 'DELETE' THEN
+        UPDATE post_score
+        SET score = COALESCE((
+            SELECT SUM(CASE WHEN vote_type = 'up' THEN 1 ELSE -1 END)
+            FROM post_votes
+            WHERE post_id = OLD.post_id
+        ), 0)
+        WHERE post_id = OLD.post_id;
+    ELSE
+        UPDATE post_score
+        SET score = COALESCE((
+            SELECT SUM(CASE WHEN vote_type = 'up' THEN 1 ELSE -1 END)
+            FROM post_votes
+            WHERE post_id = NEW.post_id
+        ), 0)
+        WHERE post_id = NEW.post_id;
+    END IF;
+
+    RETURN NULL;
+END;
+$$;
+
+
 
 create trigger update_post_score
-    after insert or update
+    after insert or update or delete
     on post_votes
     for each row execute procedure update_post_score();
+
+
+CREATE OR REPLACE FUNCTION delete_post_vote(p_user_id uuid, p_post_id uuid)
+RETURNS int
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    rows_deleted INT;
+BEGIN
+    DELETE FROM post_votes
+    WHERE user_id = p_user_id AND post_id = p_post_id
+    RETURNING 1 INTO rows_deleted;
+    RETURN rows_deleted;
+END;
+$$;
 
 create function get_posts(page_number int)
 returns table (
@@ -190,6 +234,8 @@ begin
   return true;
 end; $$;
 
+
+
 -- CREATE POLICY "can see all" ON "public"."user_profiles"
 -- AS PERMISSIVE FOR SELECT
 -- TO public
@@ -213,83 +259,83 @@ end; $$;
 -- USING ((auth.uid() = user_id))
 -- WITH CHECK ((auth.uid() = user_id));
 
-alter table user_profiles enable row level security;
-alter table posts enable row level security;
-alter table post_contents enable row level security;
-alter table post_score enable row level security;
-alter table post_votes enable row level security;
+-- alter table user_profiles enable row level security;
+-- alter table posts enable row level security;
+-- alter table post_contents enable row level security;
+-- alter table post_score enable row level security;
+-- alter table post_votes enable row level security;
 
-CREATE POLICY "all can see" ON "public"."post_contents"
-AS PERMISSIVE FOR SELECT
-TO public
-USING (true);
+-- CREATE POLICY "all can see" ON "public"."post_contents"
+-- AS PERMISSIVE FOR SELECT
+-- TO public
+-- USING (true);
 
-CREATE POLICY "authors can create" ON "public"."post_contents"
-AS PERMISSIVE FOR INSERT
-TO public
-WITH CHECK (auth.uid()=user_id);
+-- CREATE POLICY "authors can create" ON "public"."post_contents"
+-- AS PERMISSIVE FOR INSERT
+-- TO public
+-- WITH CHECK (auth.uid()=user_id);
 
-CREATE POLICY "all can see" ON "public"."post_score"
-AS PERMISSIVE FOR SELECT
-TO public
-USING (true);
+-- CREATE POLICY "all can see" ON "public"."post_score"
+-- AS PERMISSIVE FOR SELECT
+-- TO public
+-- USING (true);
 
-CREATE POLICY "all can see" ON "public"."post_votes"
-AS PERMISSIVE FOR SELECT
-TO public
-USING (true);
+-- CREATE POLICY "all can see" ON "public"."post_votes"
+-- AS PERMISSIVE FOR SELECT
+-- TO public
+-- USING (true);
 
-CREATE POLICY "owners can insert" ON "public"."post_votes"
-AS PERMISSIVE FOR INSERT
-TO public
-WITH CHECK (auth.uid()=user_id);
+-- CREATE POLICY "owners can insert" ON "public"."post_votes"
+-- AS PERMISSIVE FOR INSERT
+-- TO public
+-- WITH CHECK (auth.uid()=user_id);
 
-CREATE POLICY "owners can update" ON "public"."post_votes"
-AS PERMISSIVE FOR UPDATE
-TO public
-USING (auth.uid()=user_id)
-WITH CHECK (auth.uid()=user_id);
+-- CREATE POLICY "owners can update" ON "public"."post_votes"
+-- AS PERMISSIVE FOR UPDATE
+-- TO public
+-- USING (auth.uid()=user_id)
+-- WITH CHECK (auth.uid()=user_id);
 
-CREATE POLICY "all can see" ON "public"."posts"
-AS PERMISSIVE FOR SELECT
-TO public
-USING (true);
+-- CREATE POLICY "all can see" ON "public"."posts"
+-- AS PERMISSIVE FOR SELECT
+-- TO public
+-- USING (true);
 
-CREATE POLICY "owners can insert" ON "public"."posts"
-AS PERMISSIVE FOR INSERT
-TO public
-WITH CHECK (auth.uid()=user_id);
+-- CREATE POLICY "owners can insert" ON "public"."posts"
+-- AS PERMISSIVE FOR INSERT
+-- TO public
+-- WITH CHECK (auth.uid()=user_id);
 
-CREATE POLICY "all can see" ON "public"."user_profiles"
-AS PERMISSIVE FOR SELECT
-TO public
-USING (true);
+-- CREATE POLICY "all can see" ON "public"."user_profiles"
+-- AS PERMISSIVE FOR SELECT
+-- TO public
+-- USING (true);
 
-CREATE POLICY "users can insert" ON "public"."user_profiles"
-AS PERMISSIVE FOR INSERT
-TO public
-WITH CHECK (auth.uid() = user_id);
+-- CREATE POLICY "users can insert" ON "public"."user_profiles"
+-- AS PERMISSIVE FOR INSERT
+-- TO public
+-- WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "owners can update" ON "public"."user_profiles"
-AS PERMISSIVE FOR UPDATE
-TO public
-USING (auth.uid()=user_id)
-WITH CHECK (auth.uid()=user_id);
+-- CREATE POLICY "owners can update" ON "public"."user_profiles"
+-- AS PERMISSIVE FOR UPDATE
+-- TO public
+-- USING (auth.uid()=user_id)
+-- WITH CHECK (auth.uid()=user_id);
 
-CREATE POLICY "owners can see their own" ON "public"."email_list"
-AS PERMISSIVE FOR SELECT
-TO public
-USING (auth.uid()=user_id);
+-- CREATE POLICY "owners can see their own" ON "public"."email_list"
+-- AS PERMISSIVE FOR SELECT
+-- TO public
+-- USING (auth.uid()=user_id);
 
-CREATE POLICY "owners can insert for themselves" ON "public"."email_list"
-AS PERMISSIVE FOR INSERT
-TO public
-WITH CHECK (auth.uid() = user_id);
+-- CREATE POLICY "owners can insert for themselves" ON "public"."email_list"
+-- AS PERMISSIVE FOR INSERT
+-- TO public
+-- WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "owners can update their data" ON "public"."email_list"
-AS PERMISSIVE FOR UPDATE
-TO public
-USING (auth.uid()=user_id)
-WITH CHECK (auth.uid()=user_id);
+-- CREATE POLICY "owners can update their data" ON "public"."email_list"
+-- AS PERMISSIVE FOR UPDATE
+-- TO public
+-- USING (auth.uid()=user_id)
+-- WITH CHECK (auth.uid()=user_id);
 
 

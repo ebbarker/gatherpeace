@@ -78,33 +78,33 @@ export function AllPosts() {
         totalPages={totalPages}
         currentPage={pageNumber ? +pageNumber : 0}
       />
-      <div className="grid grid-cols-1 width-xl">
+      <div id="primary-page" className="grid grid-cols-1 width-xl">
         {posts?.map((post, i) => (
-          // <Post
-          //   key={post.id}
-          //   index={i}
-          //   postData={post}
-          //   myVote={myVotes?.[post.id] || undefined}
-          //   onVoteSuccess={(i, direction) => {
+          <Post
+            key={post.id}
+            index={i}
+            postData={post}
+            myVote={myVotes?.[post.id] || undefined}
+            onVoteSuccess={(i, direction) => {
 
-          //     let id = posts[i].id;
-          //     let temp = posts;
-          //     if (!myVotes[id]) {
-          //       if (direction === "up") temp[i].score = temp[i].score + 1;
-          //       if (direction === "down") temp[i].score = temp[i].score -1;
-          //     } else if (myVotes[id] && direction === myVotes[id]) {
-          //       return;
-          //     } else {
-          //       if (myVotes[id] && direction !== myVotes[id]) {
-          //         if (direction === "up") temp[i].score = temp[i].score + 2;
-          //         if (direction === "down") temp[i].score = temp[i].score -2;
-          //       }
-          //     }
-          //     //setPosts(temp);
-          //     setVoteBumper(voteBumper + 1);
-          //   }}
-          // />
-          <PostView postId={post.id} key={i}/>
+              let id = posts[i].id;
+              let temp = posts;
+              if (!myVotes[id]) {
+                if (direction === "up") temp[i].score = temp[i].score + 1;
+                if (direction === "down") temp[i].score = temp[i].score -1;
+              } else if (myVotes[id] && direction === myVotes[id]) {
+                return;
+              } else {
+                if (myVotes[id] && direction !== myVotes[id]) {
+                  if (direction === "up") temp[i].score = temp[i].score + 2;
+                  if (direction === "down") temp[i].score = temp[i].score -2;
+                }
+              }
+              //setPosts(temp);
+              setVoteBumper(voteBumper + 1);
+            }}
+          />
+          // <PostView postId={post.id} key={i}/>
         ))}
       </div>
     </>
@@ -119,18 +119,36 @@ export async function castVote({
 }: {
   postId: string;
   userId: string;
-  voteType: "up" | "down";
+  voteType: "up" | "down" | "delete";
   onSuccess?: () => void;
 }) {
-  await supaClient.from("post_votes").upsert(
-    {
-      post_id: postId,
-      user_id: userId,
-      vote_type: voteType,
-    },
-    { onConflict: "post_id,user_id" }
-  );
-  onSuccess();
+  console.log('vote type, ' + voteType)
+  if (voteType === "up") {
+    await supaClient.from("post_votes").upsert(
+      {
+        post_id: postId,
+        user_id: userId,
+        vote_type: voteType,
+      },
+      { onConflict: "post_id,user_id" }
+    );
+    onSuccess();
+  } else if (voteType === "delete") {
+   const res = await supaClient
+        .rpc("delete_post_vote", { p_user_id: userId, p_post_id: postId })
+        .then(res => console.log(res))
+
+
+    // const postId = '5faf347d-36f0-4672-a2a4-fd18f2ec682b'
+    // const res = await supaClient
+    //     .from("post_votes")
+    //     .delete()
+    //     .eq('id', postId)
+
+        //console.log(res);
+        onSuccess();
+  }
+
 }
 
 const selectedStyles = "border-2 border-white rounded p-2 bg-gray-700";
@@ -158,7 +176,7 @@ function Pagination({
         <Link
           data-e2e={`page-1`}
           className={notSelectedStyles}
-          to={`/message-board/1`}
+          to={`/peace-wall/1`}
           key={1}
         >
           1
@@ -174,7 +192,7 @@ function Pagination({
           className={
             currentPage === pageNumber ? selectedStyles : notSelectedStyles
           }
-          to={`/message-board/${pageNumber}`}
+          to={`/peace-wall/${pageNumber}`}
         >
           {pageNumber}
         </Link>
@@ -188,7 +206,7 @@ function Pagination({
         <Link
           data-e2e={`page-${totalPages}`}
           className={notSelectedStyles}
-          to={`/message-board/${totalPages}`}
+          to={`/peace-wall/${totalPages}`}
           key={totalPages}
         >
           {totalPages}

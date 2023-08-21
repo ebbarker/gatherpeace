@@ -76,7 +76,7 @@ import { Auth, ThemeSupa } from "@supabase/auth-ui-react";
 //     <Link to="/">Home</Link>
 //   </li>
 //   <li>
-//     <Link to="/message-board/1">Peace Wall</Link>
+//     <Link to="/peace-wall/1">Peace Wall</Link>
 //   </li>
 //   <li>
 //     <Link to="/">Wishing Well</Link>
@@ -93,7 +93,7 @@ import { Auth, ThemeSupa } from "@supabase/auth-ui-react";
 
 //   <ul class="navbar-menu-right">
 //     <li class="sub-menu">
-//     <Nav.Link as={Link} to="/message-board/1">
+//     <Nav.Link as={Link} to="/peace-wall/1">
 //       <a href="#">
 //         Peace Wall
 //         <i class="fa fa-angle-down"></i>
@@ -168,7 +168,7 @@ export default function NavBar() {
               <a class="nav-link" href="#"><Link className="nav-home-link" to="/">Home </Link><span class="sr-only">(current)</span></a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">Link</a>
+              <a class="nav-link" href="#"><Link className="nav-home-link" to="/peace-wall/1">Peace Wall</Link></a>
             </li>
 
             <li>
@@ -176,7 +176,7 @@ export default function NavBar() {
               <li class="nav-item dropdown">
 
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                {session?.user ? profile?.username || "Welcome" : null}
+                {profile?.username || "Welcome"}
                 </a>
                 <ul class="dropdown-menu dropdown-menu-right">
                   <a class="dropdown-item" href="#" onClick={() => supaClient.auth.signOut()}>

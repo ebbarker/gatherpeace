@@ -8,6 +8,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@sentry/browser": "^7.64.0",
+    "@sentry/react": "^7.63.0",
+    "@sentry/tracing": "^7.64.0",
     "@supabase/auth-ui-react": "^0.2.6",
     "@supabase/supabase-js": "^2.12.1",
     "@supabase/ui": "^0.36.5",
@@ -17,12 +20,14 @@
     "react": "^18.2.0",
     "react-bootstrap": "^2.7.2",
     "react-dom": "^18.2.0",
+    "react-icons": "^4.10.1",
     "react-router-dom": "^6.4.3",
     "supabase": "^1.46.0",
     "tsc": "^2.0.4"
   },
   "devDependencies": {
     "@playwright/test": "^1.27.1",
+    "@sentry/vite-plugin": "^2.6.2",
     "@tailwindcss/typography": "^0.5.7",
     "@types/react": "^18.0.22",
     "@types/react-dom": "^18.0.7",

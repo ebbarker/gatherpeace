@@ -5,6 +5,7 @@ import { UserContext } from "./layout/App";
 import { supaClient } from "./layout/supa-client";
 import { timeAgo } from "./layout/time-ago";
 import { UpVote } from "./UpVote";
+import CommentDetails from "./CommentDetails";
 //import { SupashipUserInfo } from "./layout/use-session";
 
 // export interface Post {
@@ -151,74 +152,93 @@ export function PostView({ postId }) {
     [postDetailData]
   );
 
-  return (
-    <div className="flex flex-col place-content-center">
-      <div className="flex text-white ml-4 my-4 border-l-2 rounded grow">
-        <div className="flex flex-col bg-gray-800 p-2 h-full rounded">
-          <UpVote
-            direction="up"
-            filled={
-              postDetailData.myVotes &&
-              postDetailData.post &&
-              postDetailData.myVotes[postDetailData.post.id] === "up"
-            }
-            enabled={!!userContext.session}
-            onClick={async () => {
-              if (!postDetailData.post) {
-                return;
-              }
-              await castVote({
-                postId: postDetailData.post.id,
-                userId: userContext.session?.user.id,
-                voteType: "up",
-                onSuccess: () => {
-                  setBumper(bumper + 1);
-                },
-              });
-            }}
-          />
-          <p className="text-center" data-e2e="upvote-count">
-            {postDetailData.post?.score}
-          </p>
-          <UpVote
-            direction="down"
-            filled={
-              postDetailData.myVotes &&
-              postDetailData.post &&
-              postDetailData.myVotes[postDetailData.post.id] === "down"
-            }
-            enabled={!!userContext.session}
-            onClick={async () => {
-              if (!postDetailData.post) {
-                return;
-              }
-              await castVote({
-                postId: postDetailData.post.id,
-                userId: userContext.session?.user.id,
-                voteType: "down",
-                onSuccess: () => {
-                  setBumper(bumper + 1);
-                },
-              });
-            }}
-          />
-        </div>
+  function onVoteSuccess () {
+    setBumper(bumper + 1);
+  }
 
-        <div className="grid m-2 w-full">
-          <p>
-            Posted By {postDetailData.post?.author_name}{" "}
-            {postDetailData.post &&
-              `${timeAgo(postDetailData.post?.created_at)} ago`}
-          </p>
-          <h3 className="text-2xl">{postDetailData.post?.title}</h3>
-          <div
-            className="font-sans bg-gray-600 rounded p-4 m-4"
-            data-e2e="post-content"
-          >
-            {postDetailData.post?.content.split("\n").map((paragraph) => (
-              <p className="font-sans p-2">{paragraph}</p>
-            ))}
+  return (
+    <>
+      <div className="tweetContainer flex flex-col">
+      <div class="tweet flex flex-col place-content-center border grow">
+        {/* <div class="tweet flex flex-col place-content-center border grow">
+          <div class="head flex justify-between items-start">
+            <div class="head-left flex flex-col">
+              <div class="flex items-center">
+                <div class="image"></div>
+                <div class="name">
+                  <div class="username">
+                    {postDetailData.post?.author_name}
+                  </div>
+                  <div class="handle">@{postDetailData.post?.author_name}</div>
+                  <div class="tweet-content-container">
+                    {postDetailData.post?.title.split("\n").map((paragraph) => (
+                      <p className="text-left">{paragraph}</p>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="head-right">
+              <div class="date">
+                {postDetailData.post &&
+                `${timeAgo(postDetailData.post?.created_at)} ago`}
+              </div>
+            </div>
           </div>
+          <div class="controls flex items-center border border-dark">
+            <div class="btn">
+              <i class="fa-regular fa-comment"></i>
+              <span>100k</span>
+            </div>
+            <div class="btn">
+              <i class="fa-solid fa-retweet"></i>
+              <span>10k</span>
+            </div>
+            <div class="btn">
+              <input type="checkbox" name="" id="like" />
+              <label for="like"></label>
+              <span>300</span>
+            </div>
+            <span>
+              {postDetailData.post?.score}
+              <UpVote
+                direction="up"
+                filled={
+                  postDetailData.myVotes &&
+                  postDetailData.post &&
+                  postDetailData.myVotes[postDetailData.post.id] === "up"
+                }
+                enabled={!!userContext.session}
+                onClick={async () => {
+                  if (!postDetailData.post) {
+                    return;
+                  }
+                  await castVote({
+                    postId: postDetailData.post.id,
+                    userId: userContext.session?.user.id,
+                    voteType: "up",
+                    onSuccess: () => {
+                      setBumper(bumper + 1);
+                    },
+                  });
+                }}
+              />
+            </span>
+            <div class="btn">
+              <i class="fa-solid fa-arrow-up-from-bracket"></i>
+            </div>
+          </div>
+        </div> */}
+
+            <CommentDetails
+              key={postDetailData?.post?.id}
+              comment={postDetailData?.post}
+              myVotes={postDetailData?.myVotes}
+              onVoteSuccess={onVoteSuccess}
+              getDepth={getDepth}
+            />
+            </div>
+        <div className="create-comments-container">
           {userContext.session && postDetailData.post && (
             <CreateComment
               parent={postDetailData.post}
@@ -228,165 +248,150 @@ export function PostView({ postId }) {
               getDepth={getDepth}
             />
           )}
+        </div>
+        <div className="commentsContainer flex flex-col m-2 w-full grow">
           {nestedComments.map((comment) => (
             <CommentView
               key={comment.id}
               comment={comment}
               myVotes={postDetailData.myVotes}
-              onVoteSuccess={() => {
-                setBumper(bumper + 1);
-              }}
+              onVoteSuccess={onVoteSuccess}
               getDepth={getDepth}
             />
           ))}
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
 function CommentView({
+  key,
   comment,
   myVotes,
   onVoteSuccess,
   getDepth,
 }) {
   const [commenting, setCommenting] = useState(false);
-  const [goDeeper, setGoDeeper] = useState(false);
+  const [showReplies, setShowReplies] = useState(false);
   const { session } = useContext(UserContext);
-  const [deleting, setDeleting] = useState(false);
 
-  const START_ASKING_DEPTH = 3;
-
-  const shouldShowChildren = () => {
-    const depth = getDepth(comment.path);
-    return depth < START_ASKING_DEPTH
-      ? true
-      : !!comment.comments.length && goDeeper;
-  };
 
   return (
-    <>
-      <div
-        className="flex bg-grey1 text-white my-4 ml-4 border-l-2 rounded"
-        data-e2e={`comment-${comment.id}`}
-      >
-        <div className="flex w-full grow">
-          <div className="flex flex-col grow-0 bg-gray-800 p-2 h-full rounded">
-            <UpVote
-              direction="up"
-              filled={myVotes?.[comment.id] === "up"}
-              enabled={!!session}
-              onClick={async () => {
-                await castVote({
-                  postId: comment.id,
-                  userId: session?.user.id,
-                  voteType: "up",
-                  onSuccess: () => {
-                    onVoteSuccess();
-                  },
-                });
-              }}
-            />
-            <p className="text-center" data-e2e="upvote-count">
-              {comment.score}
-            </p>
-            <UpVote
-              direction="down"
-              filled={myVotes?.[comment.id] === "down"}
-              enabled={!!session}
-              onClick={async () => {
-                await castVote({
-                  postId: comment.id,
-                  userId: session?.user.id,
-                  voteType: "down",
-                  onSuccess: () => {
-                    onVoteSuccess();
-                  },
-                });
-              }}
-            />
-          </div>
-          <div className="grid grid-cols-1 ml-2 my-2 w-full">
-            <p>
-              {comment.author_name} - {timeAgo(comment.created_at)} ago
-            </p>
-            <div
-              className="bg-gray-600 rounded p-4 m-4"
-              data-e2e="comment-content"
-            >
-              {comment.content.split("\n").map((paragraph) => (
-                <p className="font-sans p-2">{paragraph}</p>
-              ))}
+
+    <div className="comment tweet flex flex-col my-4 ml-4 border-l-2 rounded">
+            {/* <div className="head flex justify-between items-start">
+                <div className="head-left flex flex-col">
+                    <div className="flex items-center">
+                        <div className="image"></div>
+                        <div className="name">
+                            <div className="username">
+                                {comment.author_name}
+                            </div>
+                            <div className="handle">@{comment.author_name}</div>
+                            <div className="content-container">
+                                {comment.content.split("\n").map((paragraph) => (
+                                    <p className="text-dark text-left">{paragraph}</p>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div className="head-right">
+                    <div className="date">
+                        {timeAgo(comment.created_at)} ago
+                    </div>
+                </div>
             </div>
+
+            <div className="controls flex items-center border border-dark">
+
+                <div className="btn">
+                    <i className="fa-regular fa-comment"></i>
+                    <span>Reply</span>
+                </div>
+                <div className="btn">
+                    <i className="fa-solid fa-retweet"></i>
+                    <span>Share</span>
+                </div>
+                <span>
+                    {comment.score}
+                    <UpVote
+                        direction="up"
+                        filled={myVotes?.[comment.id] === "up"}
+                        enabled={!!session}
+                        onClick={async () => {
+                            //... (existing logic)
+                        }}
+                    />
+                </span>
+            </div> */}
+
+            <CommentDetails
+              key={comment.id}
+              comment={comment}
+              myVotes={myVotes}
+              onVoteSuccess={onVoteSuccess}
+              getDepth={getDepth}
+            />
+
             {commenting && (
-              <CreateComment
-                parent={comment}
-                onCancel={() => setCommenting(false)}
-                onSuccess={() => {
-                  onVoteSuccess();
-                  setCommenting(false);
-                }}
-                getDepth={getDepth}
-              />
+                <CreateComment
+                    parent={comment}
+                    onCancel={() => setCommenting(false)}
+                    onSuccess={() => {
+                        onVoteSuccess();
+                        setCommenting(false);
+                    }}
+                    getDepth={getDepth}
+                />
             )}
             {!commenting && (
-              <div className="ml-4">
-                <button
-                  onClick={() => setCommenting(!commenting)}
-                  disabled={!session}
-                >
-                  {commenting ? "Cancel" : "Reply"}
-                </button>
-              </div>
+                <div className="ml-4">
+                    <button
+                        onClick={() => setCommenting(!commenting)}
+                        disabled={!session}
+                    >
+                        {commenting ? "Cancel" : "Reply"}
+                    </button>
+                </div>
             )}
-            {!deleting && (
-              <div className="ml-4">
-                <button
-                  onClick={() => setDeleting(!deleting)}
-                  disabled={!session}
-                >
-                  {deleting ? null : "Delete Comment"}
-                </button>
+            {/* Recursive nested comments */}
+            {!!comment.comments.length && (
+                <div className="ml-4">
+                    <button
+                        onClick={() => setShowReplies(!showReplies)}
+                        disabled={!session}
+                    >
+                        {showReplies ? "Hide Replies" :
+                        (comment.comments.length === 1) ? `Show 1 Reply` : `Show ${comment.comments.length} Replies`}
+                    </button>
+                </div>
+            )
+            }
+            {showReplies && (
+
+              <div className="replyContainer">
+                {comment.comments.map((comment) => (
+                  <CommentView
+                    key={comment.id}
+                    comment={comment}
+                    myVotes={myVotes}
+                    onVoteSuccess={onVoteSuccess}
+                    getDepth={getDepth}
+                  />
+                ))}
               </div>
+
             )}
-            {deleting && (
-                <div>
-                Are you sure you want to delete this comment?
-                <button onClick={deleteComment(comment)}>Delete</button>
-                <button onClick={() => setDeleting(!deleting)}>Cancel</button>
-              </div>
-            )}
-            {/* <p>{comment.id}</p> */}
-            {shouldShowChildren() ? (
-              comment.comments.map((childComment) => (
-                <CommentView
-                  key={childComment.id}
-                  comment={childComment}
-                  myVotes={myVotes}
-                  onVoteSuccess={() => onVoteSuccess()}
-                  getDepth={getDepth}
-                />
-              ))
-            ) : comment.comments.length ? (
-              <div className="ml-4 border-2 border-white rounded bg-gray-600 p-2 m-2 w-64">
-                <p>There are more comments nested deeper.</p>
-                <button
-                  className="bg-gray-400 rounded font-display text-lg p-2"
-                  onClick={() => setGoDeeper(true)}
-                >
-                  Go Deeper
-                </button>
-              </div>
-            ) : (
-              <></>
-            )}
-          </div>
+
         </div>
-      </div>
-    </>
   );
 }
+
+
+
+
 
 function CreateComment({
   parent,
@@ -404,9 +409,6 @@ function CreateComment({
         data-e2e="create-comment-form"
         onSubmit={(event) => {
           event.preventDefault();
-          // let parsed = JSON.stringify(parent)
-          // console.log('parent:' + parsed);
-          // console.log(getDepth(parent.path))
           let actualPath = `${parent.path}.${parent.id.replaceAll("-", "_")}`;
           let parentDepth = getDepth(parent.path);
           if (parentDepth >= 2) {
@@ -439,8 +441,8 @@ function CreateComment({
             });
         }}
       >
-        <h3>Add a New Comment</h3>
-        <textarea
+        <h4>Add a New Comment</h4>
+        <textarea autoFocus
           ref={textareaRef}
           name="comment"
           placeholder="Your comment here"
@@ -452,7 +454,8 @@ function CreateComment({
         <div className="flex gap-2">
           <button
             type="submit"
-            className="bg-green-400 rounded font-display text-lg p-2"
+            id="new-comment-submit"
+            className="bg-green-400 border rounded font-display text-lg p-2"
             disabled={!comment}
           >
             Submit
@@ -471,18 +474,6 @@ function CreateComment({
     </>
   );
 }
-//"root.b713d030_f8df_47cf_98cc_eb1366eb3637.331a8032_54d1_4e0c_96bc_03db626ad141"
-
-//55961645-c09f-4656-ad50-4245542f876e, 5ee02020-33ed-4b54-a662-98abd539360d
-//331a8032_54d1_4e0c_96bc_03db626ad141
-
-
-
-
-
-
-
-
 
 
 

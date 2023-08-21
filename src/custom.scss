@@ -1,15 +1,58 @@
 
 @import "../node_modules/bootstrap/scss/bootstrap";
 
+// #root {
+//   background-color: black;
+// }
 
+.logo-container {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
 
+.logo-container img {
+  height: 100px;
+}
 
-// $background-color: #48CFAD;
+.navbar {
+  background: rgba(72, 207, 173, 0.9);
+  display: flex;
+  align-items: center;  /* This will vertically align all elements in navbar */
+}
 
-// $theme-colors: (
-//   "primary": #48CFAD,
-//   "danger": #ff4136
-// );
+.navbar-toggler.collapsed {
+  color: black;
+}
+
+.collapse.navbar-collapse {
+  position: relative;
+  right: 0;
+}
+
+/* Make sure all elements in navbar menu are also centered */
+.navbar-menu-right {
+  display: flex;
+  align-items: center;
+  color: black;
+}
+
+/* Target login and signup specifically */
+#login, #sign-up {
+  display: flex;
+  align-items: center;
+}
+
+.nav-item-custom {
+  margin-right: 15px;
+}
+
+$background-color: #48CFAD;
+
+$theme-colors: (
+  "primary": #48CFAD,
+  "danger": #ff4136
+);
 
 
 .dropdown-menu {
@@ -43,5 +86,382 @@
   }
 }
 
-// Import Bootstrap and its default variables
 
+  .tweet {
+
+
+    background: var(--back);
+    color: #48CFAD ;
+    padding: 20px;
+    margin: 1em;
+    box-shadow: 0 9px 0 rgba(0, 0, 0, 0.2);
+    border-color: #48CFAD !important;
+
+  }
+
+  .tweet-content-container {
+    color:rgba(72, 207, 173, 0.9)
+  }
+//   .head {
+//     width: 100%;
+//     height: fit-content;
+//     display: flex;
+//     align-items: flex-start;
+//   }
+//   .image {
+//     width: 60px;
+//     height: 60px;
+//     border-radius: 50%;
+//     background: var(--image);
+//     margin-right: 10px;
+//   }
+//   .name {
+//     width: fit-content;
+//     display: flex;
+//     align-items: flex-start;
+//     justify-content: center;
+//     flex-direction: column;
+//   }
+//   .username {
+//     font-size: 22px;
+//     font-family: poppins;
+//     font-weight: 500;
+//     display: flex;
+//     align-items: center;
+//     justify-content: center;
+//     line-height: 26px;
+//   }
+//   .username span {
+//     font-size: 20px;
+//     margin-left: 5px;
+//     color: rgb(6, 166, 250);
+//   }
+//   .handle,
+//   .date {
+//     font-family: poppins;
+//     font-size: 13px;
+//     color: var(--teritiary);
+//     font-weight: 500;
+//   }
+//   .content {
+//     font-size: 13px;
+//     color: var(--secondary);
+//     font-family: poppins;
+//     flex-grow: 1;
+//     display: flex;
+//     align-items: center;
+//     justify-content: center;
+//   }
+//   .content span {
+//     color: rgb(6, 166, 250);
+//   }
+//   .date {
+//     font-size: 11px;
+//   }
+//   .controls {
+//     width: 100%;
+//     display: flex;
+//     align-items: center;
+//     justify-content: space-evenly;
+//     color: var(--teritiary);
+//   }
+//   .controls .btn {
+//     display: flex;
+//     align-items: center;
+//   }
+//   .btn i {
+//     margin-right: 5px;
+//     font-size: 16px;
+//   }
+
+//   .btn span {
+//     font-family: poppins;
+//     font-size: 14px;
+//     font-weight: 500;
+//   }
+
+
+
+// .post-modal {
+//   background-color: #171717;
+// }
+
+// .tweet {
+//   border-color: #48CFAD !important;
+// }
+
+// .tweetContainer {
+//   padding: 0 20px; /* 20px horizontal padding, adjust as needed */
+//   display: flex;
+//   flex-direction: column;
+
+//   gap: 20px; /* Adds space between child elements, adjust as needed */
+//   height: auto;
+//   grid-row: 1;
+
+// }
+
+// .commentsContainer {
+//   display: flex;
+//   flex-direction: column;
+//   gap: 1rem;
+//   margin-top: 2rem;
+//   align-items: stretch;
+// }
+
+// // Styles for nested comments
+// .comment {
+//   margin-left: 1rem;
+//   margin-top: 0.5rem; // Add some margin at the top for separation
+// }
+// // // Import Bootstrap and its default variables
+
+.replyContainer {
+  padding: 0 20px; /* 20px horizontal padding, adjust as needed */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+
+///////////////
+///
+///
+///
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.4;
+}
+
+.container {
+  max-width: 1200px;
+  width: calc(100vw - 4rem);
+  margin: 2rem auto;
+}
+
+button {
+  font-size: inherit;
+  font-family: inherit;
+}
+
+.error-msg {
+  color: hsl(0, 100%, 67%);
+}
+
+.comments-title {
+  margin-bottom: .5rem;
+}
+
+.comment-form-row {
+  display: flex;
+  gap: .5rem;
+}
+
+.message-input {
+  flex-grow: 1;
+  resize: none;
+  height: 70px;
+  border-radius: .5em;
+  padding: .5em;
+  font-size: inherit;
+  font-family: inherit;
+  border: 2px solid hsl(235, 50%, 74%);
+  line-height: 1.4;
+}
+
+.message-input:focus {
+  border-color: hsl(235, 100%, 67%);
+  outline: none;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.mt-1 {
+  margin-top: .25rem;
+}
+
+.comment-stack {
+  margin: .5rem 0;
+}
+
+.comment-stack:last-child {
+  margin-bottom: 0;
+}
+
+.nested-comments {
+  padding-left: .5rem;
+  flex-grow: 1;
+}
+
+.nested-comments-stack {
+  display: flex;
+}
+
+.collapse-line {
+  border: none;
+  background: none;
+  padding: 0;
+  width: 15px;
+  margin-top: .5rem;
+  position: relative;
+  cursor: pointer;
+  outline: none;
+  transform: translateX(-50%);
+}
+
+.collapse-line:hover::before,
+.collapse-line:focus-visible::before {
+  background-color: hsl(235, 100%, 60%);
+}
+
+.collapse-line::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background-color: hsl(235, 50%, 74%);
+  transition: background-color 100ms ease-in-out;
+}
+
+.hide {
+  display: none;
+}
+
+.btn {
+  --hue: 235;
+  --color: hsl(var(--hue), 100%, 67%);
+  padding: .5em 1em;
+  background: var(--color);
+  border: none;
+  color: white;
+  border-radius: .5em;
+  font-size: .75em;
+  cursor: pointer;
+}
+
+.btn:hover,
+.btn:focus-visible {
+  --color: hsl(var(--hue), 100%, 74%);
+}
+
+.btn.icon-btn {
+  background: none;
+  color: var(--color);
+  padding: .25em;
+  display: flex;
+  align-items: center;
+}
+
+.mr-1 {
+  margin-right: .25em;
+}
+
+.icon-btn:hover,
+.icon-btn:focus-visible {
+  --color: hsl(var(--hue), 100%, 74%);
+}
+
+.icon-btn-active,
+.icon-btn.danger {
+  --hue: 0;
+}
+
+.icon-btn-active {
+  position: relative;
+}
+
+.icon-btn-active::before {
+  content: "\00D7";
+  position: absolute;
+  font-size: .75em;
+  width: 1em;
+  height: 1em;
+  color: white;
+  background-color: var(--color);
+  border-radius: 50%;
+  bottom: .1em;
+  right: .1em;
+}
+
+#new-comment-submit {
+  color:#48CFAD;
+  border-color: #48CFAD !important;
+}
+
+.comment {
+  padding: .5rem;
+  border: 1px solid;
+  border-radius: .5rem;
+}
+
+.comment .header {
+  color: hsl(235, 50%, 67%);
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: .25rem;
+  font-size: .75em;
+}
+
+.comment .header .name {
+  font-weight: bold;
+}
+
+.comment .message {
+  white-space: pre-wrap;
+  margin-left: .5rem;
+  margin-right: .5rem;
+}
+
+.comment .footer {
+  display: flex;
+  gap: .5rem;
+  margin-top: .5rem;
+}
+
+.ml-3 {
+  margin-left: 1.5rem;
+}
+
+.btn[disabled] {
+  --color: hsl(var(--hue), 20%, 74%);
+}
+
+
+
+
+.collapse-line {
+  border: none;
+  background: #ff4136 !important;
+  padding: 0;
+  width: 15px;
+  margin-top: .5rem;
+  position: relative;
+  cursor: pointer;
+  outline: none;
+  transform: translateX(-50%);
+}
+
+.collapse-line:hover::before,
+.collapse-line:focus-visible::before {
+  background-color: hsl(235, 100%, 60%) !important;
+}
+
+.collapse-line::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background-color: hsl(235, 100%, 29%);
+  transition: background-color 100ms ease-in-out;
+}

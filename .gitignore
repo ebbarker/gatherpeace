@@ -25,3 +25,9 @@ dist-ssr
 /test-results/
 /playwright-report/
 /playwright/.cache/
+
+# Sentry Auth Token
+.env.sentry-build-plugin
+
+# Sentry Auth Token
+.env.sentry-build-plugin

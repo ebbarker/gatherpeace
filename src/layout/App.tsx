@@ -1,5 +1,12 @@
+import React from "react";
 import { createContext } from "react";
-import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, Outlet, RouterProvider, Routes,
+  Route,
+  BrowserRouter,
+  useLocation,
+  useNavigationType,
+  createRoutesFromChildren,
+  matchRoutes, } from "react-router-dom";
 import { AllPosts } from "../AllPosts";
 import "./App.css";
 import Home from "./Home";
@@ -9,16 +16,39 @@ import { PostView } from "../PostView";
 import PrivacyPolicy from "../PrivacyPolicy";
 import { SupashipUserInfo, useSession } from "./use-session";
 import { Welcome, welcomeLoader } from "./Welcome";
-import Amarin from "./Amarin"
+import * as Sentry from "@sentry/react"
 
-export const router = createBrowserRouter([
+Sentry.init({
+  dsn: "https://5a282404b548c3304777f4db6615b992@o4505705490350080.ingest.sentry.io/4505705494478848",
+  integrations: [
+    new Sentry.BrowserTracing({
+      routingInstrumentation: Sentry.reactRouterV6Instrumentation(
+        React.useEffect,
+        useLocation,
+        useNavigationType,
+        createRoutesFromChildren,
+        matchRoutes
+      ),
+    }),
+  ],
+  tracesSampleRate: 1.0,
+});
+
+const sentryCreateBrowserRouter =
+  Sentry.wrapCreateBrowserRouter(createBrowserRouter);
+
+// const router = sentryCreateBrowserRouter([
+//   // ...
+// ]);
+
+export const router = sentryCreateBrowserRouter([
   {
     path: "/",
     element: <Layout />,
     children: [
       { path: "", element: <Home /> },
       {
-        path: "message-board",
+        path: "peace-wall",
         element: <MessageBoard />,
         children: [
           {
@@ -35,10 +65,6 @@ export const router = createBrowserRouter([
         path: "welcome",
         element: <Welcome />,
         loader: welcomeLoader,
-      },
-      {
-        path: "amarin",
-        element: <Amarin/>,
       },
       { path: "privacy-policy", element: <PrivacyPolicy /> },
     ],

@@ -9,6 +9,7 @@ export async function welcomeLoader() {
     data: { user },
   } = await supaClient.auth.getUser();
   if (!user) {
+    console.log('line 12')
     return redirect("/");
   }
   const { data } = await supaClient
@@ -17,8 +18,10 @@ export async function welcomeLoader() {
     .eq("user_id", user?.id)
     .single();
   if (data?.username) {
+    console.log(data?.username)
     return redirect("/");
   }
+  return null
 }
 
 export function Welcome() {
@@ -36,7 +39,7 @@ export function Welcome() {
       contents={
         <>
           <h2 className="text-green-400 drop-shadow-[0_0_9px_rgba(34,197,94,0.9)] m-4 text-center text-3xl">
-            Welcome to Supaship!!
+            Welcome to Gather Peace
           </h2>
           <p className="text-center">
             Let's get started by creating a username:
@@ -59,7 +62,10 @@ export function Welcome() {
                   } else {
                     const target = localStorage.getItem("returnPath") || "/";
                     localStorage.removeItem("returnPath");
-                    navigate(target);
+                    console.log('redirecting line 65')
+                    setTimeout(() => {
+                      navigate(target)
+                    }, 200);
                   }
                 });
             }}
