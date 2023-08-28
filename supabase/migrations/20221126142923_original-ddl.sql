@@ -114,7 +114,7 @@ returns table (
     id uuid,
     user_id uuid,
     created_at timestamp with time zone,
-    title text,
+    content text,
     score int,
     username text
 )
@@ -122,7 +122,7 @@ language plpgsql
 as $$
 begin
     return query
-    select posts.id, posts.user_id, posts.created_at, post_contents.title, post_score.score, user_profiles.username
+    select posts.id, posts.user_id, posts.created_at, post_contents.content, post_score.score, user_profiles.username
     from posts
     join post_contents on posts.id = post_contents.post_id
     join post_score on posts.id = post_score.post_id
@@ -189,7 +189,7 @@ create trigger initialize_post_score
 create function get_single_post_with_comments(post_id uuid)
 returns table (
     id uuid,
-    author_name text,
+    username text,
     created_at timestamp with time zone,
     title text,
     content text,

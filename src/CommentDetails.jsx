@@ -11,12 +11,14 @@ export default function CommentDetails ({
   comment,
   myVotes,
   onVoteSuccess,
-  getDepth,
+  index,
+  onSinglePageVoteSuccess
 }) {
   const userContext = useContext(UserContext);
   const { session } = useContext(UserContext);
 
     return (
+
       <>
           <div class="head flex justify-between items-start" key={key}>
             <div class="head-left flex flex-col">
@@ -24,12 +26,12 @@ export default function CommentDetails ({
                 <div class="image"></div>
                 <div class="name">
                   <div class="username">
-                    {comment?.author_name}
+                    {comment?.username_name}
                     {/* <span class="material-icons-round">verified</span> */}
                   </div>
-                  <div class="handle">@{comment?.author_name}</div>
+                  <div class="handle">@{comment?.username}</div>
                   <div class="tweet-content-container">
-                    {comment?.content.split("\n").map((paragraph) => (
+                    {comment?.content?.split("\n").map((paragraph) => (
                       <p className="text-left">{paragraph}</p>
                     ))}
                   </div>
@@ -71,13 +73,16 @@ export default function CommentDetails ({
                   if (!comment) {
                     return;
                   }
+                  console.log(myVotes);
+                  let voteType = myVotes[comment?.id] === "up" ? "delete" : "up";
+
                   await castVote({
                     postId: comment?.id,
                     userId: userContext.session?.user?.id,
-                    voteType: myVotes[comment?.id] === "up" ? "delete" : "up",
+                    voteType: voteType,
                     onSuccess: () => {
-                      console.log('success voting')
-                      onVoteSuccess();
+                      onVoteSuccess(comment?.id, voteType);
+                      onSinglePageVoteSuccess();
                     },
                   });
                 }}

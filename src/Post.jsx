@@ -6,6 +6,8 @@ import { supaClient } from "./layout/supa-client";
 import { timeAgo } from "./layout/time-ago";
 import { UpVote } from "./UpVote";
 import { PostView } from "./PostView"
+import CommentDetails from "./CommentDetails"
+import { castVote } from "./AllPosts";
 // import ReactModal from 'react-modal';
 // import ReactDOM from 'react-dom';
 // import Modal from 'react-bootstrap/Modal'
@@ -13,9 +15,11 @@ import { Modal } from "react-bootstrap"
 
 export function Post({
   index,
+  key,
   postData,
-  myVote,
+  myVotes,
   onVoteSuccess,
+  posts,
 }) {
   const { session } = useContext(UserContext);
   const [isModalOpen, setModalOpen] = useState(false);
@@ -28,7 +32,19 @@ export function Post({
   return (
     <div className="flex bg-grey1 text-white m-4 border-2 rounded">
       <div className="flex-none grid grid-cols-1 place-content-center bg-gray-800 p-2 mr-4">
-        <UpVote
+        {
+          (!!postData?.id) &&
+          <CommentDetails
+            key={postData?.id}
+            comment={postData}
+            myVotes={myVotes}
+            onVoteSuccess={onVoteSuccess}
+            index={index}
+          />
+        }
+
+        </div>
+        {/* <UpVote
           direction="up"
           // handle filling later
           filled={myVote === "up"}
@@ -70,7 +86,8 @@ export function Post({
           ago
         </p>
         <h3 className="text-2xl">{postData.title}</h3>
-      </Link>
+
+      </Link> */}
       {/* <button
         onClick={() => {
           console.log('clicked')
@@ -93,7 +110,11 @@ export function Post({
       <MyVerticallyCenteredModal
         show={modalShow}
         onHide={() => setModalShow(false)}
-        postId={postData.id}
+        postId={postData?.id}
+        myVotes={myVotes}
+        onVoteSuccess={onVoteSuccess}
+        posts={posts}
+
       />
     </>
 
@@ -111,29 +132,34 @@ function MyVerticallyCenteredModal(props) {
       style={{ background: 'black' }}
     >
       <div className="post-modal">
-        <PostView postId={props.postId}/>
+        <PostView
+          postId={props.postId}
+          onVoteSuccess={props.onVoteSuccess}
+          myVotes={props.myVotes}
+          posts={props.posts}
+        />
       </div>
 
     </Modal>
   );
 }
 
- async function castVote({
-  postId,
-  userId,
-  voteType,
-  onSuccess = () => {},
-}) {
-  await supaClient.from("post_votes").upsert(
-    {
-      post_id: postId,
-      user_id: userId,
-      vote_type: voteType,
-    },
-    { onConflict: "post_id,user_id" }
-  );
-  onSuccess();
-}
+//  async function castVote({
+//   postId,
+//   userId,
+//   voteType,
+//   onSuccess = () => {},
+// }) {
+//   await supaClient.from("post_votes").upsert(
+//     {
+//       post_id: postId,
+//       user_id: userId,
+//       vote_type: voteType,
+//     },
+//     { onConflict: "post_id,user_id" }
+//   );
+//   onSuccess();
+// }
 
 // function Modal({ isOpen, onClose, postId }) {
 //   if (!isOpen) return null;

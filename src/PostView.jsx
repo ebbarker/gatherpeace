@@ -10,7 +10,7 @@ import CommentDetails from "./CommentDetails";
 
 // export interface Post {
 //   id: string;
-//   author_name: string;
+//   username_name: string;
 //   title: string;
 //   content: string;
 //   score: number;
@@ -21,7 +21,7 @@ import CommentDetails from "./CommentDetails";
 
 // export interface Comment {
 //   id: string;
-//   author_name: string;
+//   username_name: string;
 //   content: string;
 //   score: number;
 //   created_at: string;
@@ -48,9 +48,11 @@ import CommentDetails from "./CommentDetails";
 
 
 
-export function PostView({ postId }) {
+export function PostView({ postId,  myVotes = null, onVoteSuccess = () => { setBumper(bumper + 1)}, posts}) {
   const userContext = useContext(UserContext);
   const params = useParams();
+  // const [voteBumper, setVoteBumper] = useState(0);
+  const [bumper, setBumper] = useState(0);
   const [postDetailData, setPostDetailData] = useState({
     post: null,
     comments: [],
@@ -61,7 +63,7 @@ export function PostView({ postId }) {
     return rootless.split(".").filter((x) => !!x).length;
   }
 
-  const [bumper, setBumper] = useState(0);
+
 
   function convertToUuid(path) {
     return path.replaceAll("_", "-");
@@ -122,17 +124,26 @@ export function PostView({ postId }) {
     if (!userContext.session?.user) {
       return { post, comments };
     }
-    const { data: votesData } = await supaClient
+    let votes;
+    if (!myVotes) {
+      const { data: votesData } = await supaClient
       .from("post_votes")
       .select("*")
       .eq("user_id", userContext.session?.user.id);
     if (!votesData) {
       return;
     }
-    const votes = votesData.reduce((acc, vote) => {
+    votes = votesData.reduce((acc, vote) => {
       acc[vote.post_id] = vote.vote_type;
       return acc;
     }, {});
+
+    } else {
+      votes = myVotes;
+    }
+    console.log('votes: ' + votes);
+    console.log('myVotes: ' + myVotes);
+
     return { post, comments, myVotes: votes };
   }
 
@@ -152,7 +163,7 @@ export function PostView({ postId }) {
     [postDetailData]
   );
 
-  function onVoteSuccess () {
+  function onSinglePageVoteSuccess () {
     setBumper(bumper + 1);
   }
 
@@ -160,75 +171,6 @@ export function PostView({ postId }) {
     <>
       <div className="tweetContainer flex flex-col">
       <div class="tweet flex flex-col place-content-center border grow">
-        {/* <div class="tweet flex flex-col place-content-center border grow">
-          <div class="head flex justify-between items-start">
-            <div class="head-left flex flex-col">
-              <div class="flex items-center">
-                <div class="image"></div>
-                <div class="name">
-                  <div class="username">
-                    {postDetailData.post?.author_name}
-                  </div>
-                  <div class="handle">@{postDetailData.post?.author_name}</div>
-                  <div class="tweet-content-container">
-                    {postDetailData.post?.title.split("\n").map((paragraph) => (
-                      <p className="text-left">{paragraph}</p>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="head-right">
-              <div class="date">
-                {postDetailData.post &&
-                `${timeAgo(postDetailData.post?.created_at)} ago`}
-              </div>
-            </div>
-          </div>
-          <div class="controls flex items-center border border-dark">
-            <div class="btn">
-              <i class="fa-regular fa-comment"></i>
-              <span>100k</span>
-            </div>
-            <div class="btn">
-              <i class="fa-solid fa-retweet"></i>
-              <span>10k</span>
-            </div>
-            <div class="btn">
-              <input type="checkbox" name="" id="like" />
-              <label for="like"></label>
-              <span>300</span>
-            </div>
-            <span>
-              {postDetailData.post?.score}
-              <UpVote
-                direction="up"
-                filled={
-                  postDetailData.myVotes &&
-                  postDetailData.post &&
-                  postDetailData.myVotes[postDetailData.post.id] === "up"
-                }
-                enabled={!!userContext.session}
-                onClick={async () => {
-                  if (!postDetailData.post) {
-                    return;
-                  }
-                  await castVote({
-                    postId: postDetailData.post.id,
-                    userId: userContext.session?.user.id,
-                    voteType: "up",
-                    onSuccess: () => {
-                      setBumper(bumper + 1);
-                    },
-                  });
-                }}
-              />
-            </span>
-            <div class="btn">
-              <i class="fa-solid fa-arrow-up-from-bracket"></i>
-            </div>
-          </div>
-        </div> */}
 
             <CommentDetails
               key={postDetailData?.post?.id}
@@ -236,8 +178,10 @@ export function PostView({ postId }) {
               myVotes={postDetailData?.myVotes}
               onVoteSuccess={onVoteSuccess}
               getDepth={getDepth}
+              onSinglePageVoteSuccess={onSinglePageVoteSuccess}
+
             />
-            </div>
+          </div>
         <div className="create-comments-container">
           {userContext.session && postDetailData.post && (
             <CreateComment
@@ -286,9 +230,9 @@ function CommentView({
                         <div className="image"></div>
                         <div className="name">
                             <div className="username">
-                                {comment.author_name}
+                                {comment.username_name}
                             </div>
-                            <div className="handle">@{comment.author_name}</div>
+                            <div className="handle">@{comment.username_name}</div>
                             <div className="content-container">
                                 {comment.content.split("\n").map((paragraph) => (
                                     <p className="text-dark text-left">{paragraph}</p>

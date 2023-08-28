@@ -7,23 +7,15 @@ import { timeAgo } from "./layout/time-ago";
 import { UpVote } from "./UpVote";
 import { Post } from "./Post.jsx"
 import { PostView } from "./PostView"
-interface PostData {
-  id: string;
-  title: string;
-  score: number;
-  username: string;
-  user_id: string;
-}
+
 
 export function AllPosts() {
   const { session } = useContext(UserContext);
   const { pageNumber } = useParams();
   const [bumper, setBumper] = useState(0);
-  const [posts, setPosts] = useState<PostData[]>([]);
+  const [posts, setPosts] = useState([]);
   const [voteBumper, setVoteBumper] = useState(0);
-  const [myVotes, setMyVotes] = useState<
-    Record<string, "up" | "down" | undefined>
-  >({});
+  const [myVotes, setMyVotes] = useState({});
   const [totalPages, setTotalPages] = useState(0);
   useEffect(() => {
     const queryPageNumber = pageNumber ? +pageNumber : 1;
@@ -32,7 +24,7 @@ export function AllPosts() {
         .rpc("get_posts", { page_number: queryPageNumber })
         .select("*")
         .then(({ data }) => {
-          setPosts(data as PostData[]);
+          setPosts(data);
 
         }),
       supaClient
@@ -58,7 +50,7 @@ export function AllPosts() {
           const votes = votesData.reduce((acc, vote) => {
             acc[vote.post_id] = vote.vote_type;
             return acc;
-          }, {} as Record<string, "up" | "down" | undefined>);
+          }, {});
           setMyVotes(votes);
 
         });
@@ -81,27 +73,73 @@ export function AllPosts() {
       <div id="primary-page" className="grid grid-cols-1 width-xl">
         {posts?.map((post, i) => (
           <Post
-            key={post.id}
+            key={post?.id}
+            posts={posts}
             index={i}
             postData={post}
-            myVote={myVotes?.[post.id] || undefined}
-            onVoteSuccess={(i, direction) => {
+            myVotes={myVotes || undefined}
+            onVoteSuccess={(id, direction) => {
+              console.log('id: ' + id)
 
-              let id = posts[i].id;
-              let temp = posts;
-              if (!myVotes[id]) {
-                if (direction === "up") temp[i].score = temp[i].score + 1;
-                if (direction === "down") temp[i].score = temp[i].score -1;
-              } else if (myVotes[id] && direction === myVotes[id]) {
-                return;
-              } else {
-                if (myVotes[id] && direction !== myVotes[id]) {
-                  if (direction === "up") temp[i].score = temp[i].score + 2;
-                  if (direction === "down") temp[i].score = temp[i].score -2;
-                }
-              }
-              //setPosts(temp);
-              setVoteBumper(voteBumper + 1);
+              console.log('direction: ' + direction);
+
+              // let id = post[i]?.id;
+              // let temp = posts;
+              // console.log(id);
+
+              if (myVotes[id] && direction === myVotes[id]) null;
+              if (!myVotes[id] && direction === 'delete') null;
+
+              else {
+                setPosts(oldPosts => {
+                  return oldPosts.map((current) => {
+
+                  if (current.id == id) {
+                    if (direction === 'delete') {
+                      return {
+                        ...current,
+                        score: current.score - 1
+                      }
+                    }
+                    if (direction === 'up') {
+                      return {
+                        ...current,
+                        score: current.score + 1
+                      }
+                    }
+                  } else {
+                    return current;
+                  }
+
+                })});
+                  setMyVotes(myVotes => {
+                    if (direction === 'delete') {
+                      delete myVotes[id];
+                    }
+                    if (direction === 'up') {
+                      myVotes[id] = 'up';
+                    }
+                    return myVotes;
+                  })
+              };
+
+
+
+              //   if (!myVotes[id]) {
+              //   if (direction === "up") temp[i].score = temp[i].score + 1;
+              //   if (direction === "down") temp[i].score = temp[i].score -1;
+              //   if (direction === "delete") temp[i].score = temp[i].score -1;
+
+              // } else {
+              //   if (myVotes[id] && direction !== myVotes[id]) {
+              //     if (direction === "up") temp[i].score = temp[i].score + 2;
+              //     if (direction === "down") temp[i].score = temp[i].score -2;
+              //     if (direction === "delete") temp[i].score = temp[i].score -1;
+              //   }
+              // }
+              // setPosts(temp);
+              // setVoteBumper(voteBumper => voteBumper + 1);
+              // setBumper(bumper => bumper + 1);
             }}
           />
           // <PostView postId={post.id} key={i}/>
@@ -116,11 +154,6 @@ export async function castVote({
   userId,
   voteType,
   onSuccess = () => {},
-}: {
-  postId: string;
-  userId: string;
-  voteType: "up" | "down" | "delete";
-  onSuccess?: () => void;
 }) {
   console.log('vote type, ' + voteType)
   if (voteType === "up") {
@@ -157,9 +190,6 @@ const notSelectedStyles = "rounded p-2 bg-gray-700";
 function Pagination({
   totalPages,
   currentPage,
-}: {
-  currentPage: number;
-  totalPages: number;
 }) {
   if (!currentPage) currentPage = 1;
   const middleButtons = [currentPage];
@@ -252,9 +282,9 @@ function Pagination({
 // }
 
 export async function getVoteId(
-  userId: string,
-  postId: string
-): Promise<string | undefined> {
+  userId,
+  postId
+){
   const { data, error } = await supaClient
     .from("post_votes")
     .select("id")
