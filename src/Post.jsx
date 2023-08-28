@@ -136,7 +136,7 @@ function MyVerticallyCenteredModal(props) {
           postId={props.postId}
           onVoteSuccess={props.onVoteSuccess}
           myVotes={props.myVotes}
-          posts={props.posts}
+      
         />
       </div>
 

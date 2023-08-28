@@ -50,6 +50,7 @@ import CommentDetails from "./CommentDetails";
 
 export function PostView({ postId,  myVotes = null, onVoteSuccess = () => { setBumper(bumper + 1)}, posts}) {
   const userContext = useContext(UserContext);
+  const usedMyVotes = false;
   const params = useParams();
   // const [voteBumper, setVoteBumper] = useState(0);
   const [bumper, setBumper] = useState(0);
@@ -125,7 +126,8 @@ export function PostView({ postId,  myVotes = null, onVoteSuccess = () => { setB
       return { post, comments };
     }
     let votes;
-    if (!myVotes) {
+    if (!myVotes || !usedMyVotes) {
+
       const { data: votesData } = await supaClient
       .from("post_votes")
       .select("*")
@@ -140,6 +142,7 @@ export function PostView({ postId,  myVotes = null, onVoteSuccess = () => { setB
 
     } else {
       votes = myVotes;
+      usedMyVotes = true;
     }
     console.log('votes: ' + votes);
     console.log('myVotes: ' + myVotes);
@@ -199,7 +202,7 @@ export function PostView({ postId,  myVotes = null, onVoteSuccess = () => { setB
               key={comment.id}
               comment={comment}
               myVotes={postDetailData.myVotes}
-              onVoteSuccess={onVoteSuccess}
+              onVoteSuccess={onSinglePageVoteSuccess}
               getDepth={getDepth}
             />
           ))}
