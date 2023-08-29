@@ -78,6 +78,7 @@ export function AllPosts() {
             index={i}
             postData={post}
             myVotes={myVotes || undefined}
+            parentIsTimeline={true}
             onVoteSuccess={(id, direction) => {
               console.log('id: ' + id)
 

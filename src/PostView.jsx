@@ -48,9 +48,9 @@ import CommentDetails from "./CommentDetails";
 
 
 
-export function PostView({ postId,  myVotes = null, onVoteSuccess = () => { setBumper(bumper + 1)}, posts}) {
+export function PostView({ postId,  myVotes = null, onVoteSuccess = () => { setBumper(bumper + 1)}, parentIsTimeline}) {
   const userContext = useContext(UserContext);
-  const usedMyVotes = false;
+
   const params = useParams();
   // const [voteBumper, setVoteBumper] = useState(0);
   const [bumper, setBumper] = useState(0);
@@ -125,8 +125,7 @@ export function PostView({ postId,  myVotes = null, onVoteSuccess = () => { setB
     if (!userContext.session?.user) {
       return { post, comments };
     }
-    let votes;
-    if (!myVotes || !usedMyVotes) {
+
 
       const { data: votesData } = await supaClient
       .from("post_votes")
@@ -135,15 +134,12 @@ export function PostView({ postId,  myVotes = null, onVoteSuccess = () => { setB
     if (!votesData) {
       return;
     }
-    votes = votesData.reduce((acc, vote) => {
+    const votes = votesData.reduce((acc, vote) => {
       acc[vote.post_id] = vote.vote_type;
       return acc;
     }, {});
 
-    } else {
-      votes = myVotes;
-      usedMyVotes = true;
-    }
+
     console.log('votes: ' + votes);
     console.log('myVotes: ' + myVotes);
 
@@ -167,6 +163,7 @@ export function PostView({ postId,  myVotes = null, onVoteSuccess = () => { setB
   );
 
   function onSinglePageVoteSuccess () {
+    console.log('single page vote success')
     setBumper(bumper + 1);
   }
 
@@ -182,6 +179,7 @@ export function PostView({ postId,  myVotes = null, onVoteSuccess = () => { setB
               onVoteSuccess={onVoteSuccess}
               getDepth={getDepth}
               onSinglePageVoteSuccess={onSinglePageVoteSuccess}
+              parentIsTimeline={parentIsTimeline}
 
             />
           </div>
@@ -202,7 +200,7 @@ export function PostView({ postId,  myVotes = null, onVoteSuccess = () => { setB
               key={comment.id}
               comment={comment}
               myVotes={postDetailData.myVotes}
-              onVoteSuccess={onSinglePageVoteSuccess}
+              onSinglePageVoteSuccess={onSinglePageVoteSuccess}
               getDepth={getDepth}
             />
           ))}
@@ -216,7 +214,7 @@ function CommentView({
   key,
   comment,
   myVotes,
-  onVoteSuccess,
+  onSinglePageVoteSuccess,
   getDepth,
 }) {
   const [commenting, setCommenting] = useState(false);
@@ -278,7 +276,7 @@ function CommentView({
               key={comment.id}
               comment={comment}
               myVotes={myVotes}
-              onVoteSuccess={onVoteSuccess}
+              onSinglePageVoteSuccess={onSinglePageVoteSuccess}
               getDepth={getDepth}
             />
 
@@ -287,7 +285,7 @@ function CommentView({
                     parent={comment}
                     onCancel={() => setCommenting(false)}
                     onSuccess={() => {
-                        onVoteSuccess();
+                        setBumper(bumper + 1);
                         setCommenting(false);
                     }}
                     getDepth={getDepth}
@@ -324,7 +322,7 @@ function CommentView({
                     key={comment.id}
                     comment={comment}
                     myVotes={myVotes}
-                    onVoteSuccess={onVoteSuccess}
+                    onSinglePageVoteSuccess={onSinglePageVoteSuccess}
                     getDepth={getDepth}
                   />
                 ))}

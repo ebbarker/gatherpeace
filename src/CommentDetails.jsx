@@ -1,10 +1,11 @@
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { useLoaderData, useParams } from "react-router-dom";
+import { Link, useLoaderData, useParams } from "react-router-dom";
 import { castVote } from "./AllPosts";
 import { UserContext } from "./layout/App";
 import { supaClient } from "./layout/supa-client";
 import { timeAgo } from "./layout/time-ago";
 import { UpVote } from "./UpVote";
+
 
 export default function CommentDetails ({
   key,
@@ -12,10 +13,12 @@ export default function CommentDetails ({
   myVotes,
   onVoteSuccess,
   index,
-  onSinglePageVoteSuccess
+  onSinglePageVoteSuccess,
+  parentIsTimeline
 }) {
   const userContext = useContext(UserContext);
   const { session } = useContext(UserContext);
+  const parentIsTimelined = parentIsTimeline;
 
     return (
 
@@ -30,11 +33,13 @@ export default function CommentDetails ({
                     {/* <span class="material-icons-round">verified</span> */}
                   </div>
                   <div class="handle">@{comment?.username}</div>
+                  <Link to={`/peace-wall/post/${comment?.id}`} className="flex-auto">
                   <div class="tweet-content-container">
                     {comment?.content?.split("\n").map((paragraph) => (
                       <p className="text-left">{paragraph}</p>
                     ))}
                   </div>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -81,7 +86,11 @@ export default function CommentDetails ({
                     userId: userContext.session?.user?.id,
                     voteType: voteType,
                     onSuccess: () => {
-                      onVoteSuccess(comment?.id, voteType);
+                      console.log('parent ' + parentIsTimelined)
+                      if (parentIsTimeline) {
+                        onVoteSuccess(comment?.id, voteType);
+                      }
+
                       onSinglePageVoteSuccess();
                     },
                   });

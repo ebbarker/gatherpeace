@@ -20,6 +20,7 @@ export function Post({
   myVotes,
   onVoteSuccess,
   posts,
+  parentIsTimeline
 }) {
   const { session } = useContext(UserContext);
   const [isModalOpen, setModalOpen] = useState(false);
@@ -32,16 +33,16 @@ export function Post({
   return (
     <div className="flex bg-grey1 text-white m-4 border-2 rounded">
       <div className="flex-none grid grid-cols-1 place-content-center bg-gray-800 p-2 mr-4">
-        {
-          (!!postData?.id) &&
+
           <CommentDetails
             key={postData?.id}
             comment={postData}
             myVotes={myVotes}
             onVoteSuccess={onVoteSuccess}
             index={index}
+            parentIsTimeline={parentIsTimeline}
           />
-        }
+
 
         </div>
         {/* <UpVote
@@ -114,6 +115,7 @@ export function Post({
         myVotes={myVotes}
         onVoteSuccess={onVoteSuccess}
         posts={posts}
+        parentIsTimeline={parentIsTimeline}
 
       />
     </>
@@ -136,7 +138,8 @@ function MyVerticallyCenteredModal(props) {
           postId={props.postId}
           onVoteSuccess={props.onVoteSuccess}
           myVotes={props.myVotes}
-      
+          parentIsTimeline={props.parentIsTimeline}
+
         />
       </div>
 
