@@ -52,9 +52,10 @@ export function AllPosts() {
             return acc;
           }, {});
           setMyVotes(votes);
-
+          console.log('my votes + ' + JSON.stringify(myVotes))
         });
     }
+
   }, [session, voteBumper])
 
   // const incrementVote = (commentId, direction, wasNew) => {
@@ -120,9 +121,11 @@ export function AllPosts() {
                     if (direction === 'up') {
                       myVotes[id] = 'up';
                     }
+
                     return myVotes;
                   })
               };
+              console.log('my votes + ' + JSON.stringify(myVotes))
 
 
 

@@ -285,7 +285,7 @@ function CommentView({
                     parent={comment}
                     onCancel={() => setCommenting(false)}
                     onSuccess={() => {
-                        setBumper(bumper + 1);
+                        onSuccess();
                         setCommenting(false);
                     }}
                     getDepth={getDepth}
@@ -370,6 +370,7 @@ function CreateComment({
                 console.log(error);
               } else {
                 onSuccess();
+                
                 textareaRef.current?.value != null &&
                   (textareaRef.current.value = "");
                 const commentId = data;

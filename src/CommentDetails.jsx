@@ -11,14 +11,14 @@ export default function CommentDetails ({
   key,
   comment,
   myVotes,
-  onVoteSuccess,
+  onVoteSuccess = ()=>{},
   index,
-  onSinglePageVoteSuccess,
-  parentIsTimeline
+  onSinglePageVoteSuccess = ()=>{},
+
 }) {
   const userContext = useContext(UserContext);
   const { session } = useContext(UserContext);
-  const parentIsTimelined = parentIsTimeline;
+
 
     return (
 
@@ -86,10 +86,10 @@ export default function CommentDetails ({
                     userId: userContext.session?.user?.id,
                     voteType: voteType,
                     onSuccess: () => {
-                      console.log('parent ' + parentIsTimelined)
-                      if (parentIsTimeline) {
+
+
                         onVoteSuccess(comment?.id, voteType);
-                      }
+                      
 
                       onSinglePageVoteSuccess();
                     },
