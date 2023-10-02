@@ -8,47 +8,8 @@ import { UpVote } from "./UpVote";
 import CommentDetails from "./CommentDetails";
 //import { SupashipUserInfo } from "./layout/use-session";
 
-// export interface Post {
-//   id: string;
-//   username_name: string;
-//   title: string;
-//   content: string;
-//   score: number;
-//   created_at: string;
-//   path: string;
-//   comments: Comment[];
-// }
 
-// export interface Comment {
-//   id: string;
-//   username_name: string;
-//   content: string;
-//   score: number;
-//   created_at: string;
-//   path: string;
-//   depth: number;
-//   comments: Comment[];
-// }
-
-// export type DepthFirstComment = Omit<Comment, "comments"> & { depth: number };
-
-// interface PostDetailData {
-//   post: Post | null;
-//   comments: DepthFirstComment[] | null;
-//   myVotes?: Record<string, "up" | "down" | undefined | null >;
-// }
-// interface newPostDetailData {
-//   post: Post | null;
-//   comments: DepthFirstComment[];
-//   myVotes?: Record<string, "up" | "down" | undefined>;
-// }
-
-
-
-
-
-
-export function PostView({ postId,  myVotes = null, onVoteSuccess = () => { setBumper(bumper + 1)}, parentIsTimeline}) {
+export function PostView({ postData = null, postId,  myVotes = null, onVoteSuccess = () => { setBumper(bumper + 1)}, parentIsTimeline}) {
   const userContext = useContext(UserContext);
 
   const params = useParams();
@@ -58,6 +19,7 @@ export function PostView({ postId,  myVotes = null, onVoteSuccess = () => { setB
     post: null,
     comments: [],
   });
+  const [pageError, setPageError] = useState(null)
 
   function getDepth(path) {
     const rootless = path.slice(5);
@@ -110,12 +72,43 @@ export function PostView({ postId,  myVotes = null, onVoteSuccess = () => { setB
 
   async function postDetailLoader({ params, userContext }) {
     const { postId } = params;
-    const { data, error } = await supaClient
-      .rpc("get_single_post_with_comments", { post_id: postId })
-      .select("*");
-    if (error || !data || data.length === 0) {
-      throw new Error("Post not found");
+  let data, error;
+    if (!postData) {
+      console.log('getting post and comments together');
+       ({ data, error } = await supaClient
+        .rpc("get_single_post_with_comments", { post_id: postId })
+        .select("*"));
+      if (error ) {
+        setPageError(error);
+        throw new Error(JSON.stringify(error));
+      }
+      if (!data || data.length === 0) {
+        setPageError({message: 'post not found'});
+        throw new Error('post not found');
+      }
+    } else {
+      console.log('using postId to get comments');
+      ({ data, error } = await supaClient
+      .rpc("get_comments_by_post_id", { post_id: postData.id })
+      .select("*"));
+    if (error ) {
+      setPageError(error);
+      throw new Error(JSON.stringify(error));
     }
+    // if (!data || data.length === 0) {
+    //   setPageError({message: 'post not found'});
+    //   throw new Error('post not found');
+    // }
+    postData.path = 'root';
+    if (!data) {
+      data = [postData];
+    } else {
+      data.push(postData);
+    }
+
+
+    }
+
     const postMap = data.reduce((acc, post) => {
       acc[post.id] = post;
       return acc;
@@ -140,8 +133,8 @@ export function PostView({ postId,  myVotes = null, onVoteSuccess = () => { setB
     }, {});
 
 
-    console.log('votes: ' + votes);
-    console.log('myVotes: ' + myVotes);
+    console.log('votes: ' + JSON.stringify(votes));
+    console.log('myVotes: ' + JSON.stringify(myVotes));
 
     return { post, comments, myVotes: votes };
   }
@@ -171,7 +164,14 @@ export function PostView({ postId,  myVotes = null, onVoteSuccess = () => { setB
     <>
       <div className="tweetContainer flex flex-col">
       <div class="tweet flex flex-col place-content-center border grow">
-
+        {pageError !== null &&
+          <>
+            <h4>Error</h4>
+            <div>{pageError.details}</div>
+            <div>{pageError.hint}</div>
+            <div>{pageError.message}</div>
+          </>
+        }
             <CommentDetails
               key={postDetailData?.post?.id}
               comment={postDetailData?.post}
@@ -370,7 +370,7 @@ function CreateComment({
                 console.log(error);
               } else {
                 onSuccess();
-                
+
                 textareaRef.current?.value != null &&
                   (textareaRef.current.value = "");
                 const commentId = data;

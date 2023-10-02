@@ -16,7 +16,7 @@ export function CreatePost({ newPostCreated = () => {}, posts, setPosts }) {
   function appendPost(userId, title, content, newId) {
     let newPost = {
       id: newId,
-      title,
+      content,
       score: 0,
       username: user?.profile?.username,
       user_id: userId,

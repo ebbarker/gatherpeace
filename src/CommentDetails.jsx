@@ -5,6 +5,7 @@ import { UserContext } from "./layout/App";
 import { supaClient } from "./layout/supa-client";
 import { timeAgo } from "./layout/time-ago";
 import { UpVote } from "./UpVote";
+import { VoteContext } from "./contexts/VoteContext";
 
 
 export default function CommentDetails ({
@@ -18,91 +19,89 @@ export default function CommentDetails ({
 }) {
   const userContext = useContext(UserContext);
   const { session } = useContext(UserContext);
+  const { myContextVotes, setMyContextVotes } = useContext(VoteContext);
 
-
-    return (
-
-      <>
-          <div class="head flex justify-between items-start" key={key}>
-            <div class="head-left flex flex-col">
-              <div class="flex items-center">
-                <div class="image"></div>
-                <div class="name">
-                  <div class="username">
-                    {comment?.username_name}
-                    {/* <span class="material-icons-round">verified</span> */}
-                  </div>
-                  <div class="handle">@{comment?.username}</div>
-                  <Link to={`/peace-wall/post/${comment?.id}`} className="flex-auto">
-                  <div class="tweet-content-container">
-                    {comment?.content?.split("\n").map((paragraph) => (
-                      <p className="text-left">{paragraph}</p>
-                    ))}
-                  </div>
-                  </Link>
+  return (
+    <>
+      <div className="head flex justify-between items-start" key={key}>
+        <div className="head-left flex flex-col">
+          <div className="flex items-center">
+            <div className="image"></div>
+            <div className="name">
+              <div className="username">
+                {comment?.author_name}
+              </div>
+              <div className="handle">@{comment?.username}</div>
+              <Link to={`/peace-wall/post/${comment?.id}`} className="flex-auto">
+                <div className="tweet-content-container">
+                  {comment?.content?.split("\n").map((paragraph) => (
+                    <p className="text-left">{paragraph}</p>
+                  ))}
+                  <div className="comment-id">{comment?.id}</div>
                 </div>
-              </div>
-            </div>
-            <div class="head-right">
-              <div class="date">
-                {comment &&
-                `${timeAgo(comment?.created_at)} ago`}
-              </div>
+              </Link>
             </div>
           </div>
-          <div class="controls flex items-center border border-dark">
-            <div class="btn">
-              <i class="fa-regular fa-comment"></i>
-              <span>100k</span>
-            </div>
-            <div class="btn">
-              <i class="fa-solid fa-retweet"></i>
-              <span>10k</span>
-            </div>
-            <div class="btn">
-              <input type="checkbox" name="" id="like" />
-              <label for="like"></label>
-              <span>300</span>
-            </div>
-            <span>
-              {comment?.score}
-              <UpVote
-                direction="up"
-                filled={
-                  myVotes &&
-                  comment &&
-                  myVotes[comment?.id] === "up"
+        </div>
+        <div className="head-right">
+          <div className="date">
+            {comment && `${timeAgo(comment?.created_at)} ago`}
+          </div>
+        </div>
+      </div>
+      <div className="controls flex items-center border border-dark">
+        <div className="btn">
+          <i className="fa-regular fa-comment"></i>
+          <span>100k</span>
+        </div>
+        <div className="btn">
+          <i className="fa-solid fa-retweet"></i>
+          <span>10k</span>
+        </div>
+        <div className="btn">
+          <input type="checkbox" name="" id="like" />
+          <label htmlFor="like"></label>
+          <span>300</span>
+        </div>
+        <span>
+          {comment?.score}
+          <UpVote
+            direction="up"
+            filled={myContextVotes[comment?.id] === "up"}
+            enabled={!!userContext.session}
+            onClick={async () => {
+              if (!comment) {
+                return;
+              }
+              let voteType = myVotes[comment?.id] === "up" ? "delete" : "up";
+
+              setMyContextVotes((myContextVotes) => {
+                if (voteType === 'delete') {
+                  delete myContextVotes[comment.id];
                 }
-                enabled={!!userContext.session}
-                onClick={async () => {
-                  if (!comment) {
-                    return;
-                  }
-                  console.log(myVotes);
-                  let voteType = myVotes[comment?.id] === "up" ? "delete" : "up";
+                if (voteType === 'up') {
+                  myContextVotes[comment.id] = 'up';
+                }
 
-                  await castVote({
-                    postId: comment?.id,
-                    userId: userContext.session?.user?.id,
-                    voteType: voteType,
-                    onSuccess: () => {
+                return myContextVotes;
+              });
 
-
-                        onVoteSuccess(comment?.id, voteType);
-                      
-
-                      onSinglePageVoteSuccess();
-                    },
-                  });
-                }}
-              />
-            </span>
-            <div class="btn">
-              <i class="fa-solid fa-arrow-up-from-bracket"></i>
-            </div>
-          </div>
-        </>
-    );
-
-
+              await castVote({
+                postId: comment?.id,
+                userId: userContext.session?.user?.id,
+                voteType: voteType,
+                onSuccess: () => {
+                  onVoteSuccess(comment?.id, voteType);
+                  onSinglePageVoteSuccess();
+                },
+              });
+            }}
+          />
+        </span>
+        <div className="btn">
+          <i className="fa-solid fa-arrow-up-from-bracket"></i>
+        </div>
+      </div>
+    </>
+  );
 }

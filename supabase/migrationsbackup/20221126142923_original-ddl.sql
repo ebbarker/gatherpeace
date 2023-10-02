@@ -32,17 +32,7 @@ create table post_votes (
     post_id uuid references posts (id) not null,
     user_id uuid references auth.users (id) not null,
     vote_type text not null,
-    is_comment BOOLEAN DEFAULT FALSE,
     unique (post_id, user_id)
-);
-
-create table comments (
-    id uuid primary key default uuid_generate_v4() not null,
-    user_id uuid references auth.users (id) not null,
-    created_at timestamp with time zone default now() not null,
-    path ltree not null,
-    score int default 0 not null,
-    content text not null
 );
 
 create table email_list (
@@ -54,47 +44,44 @@ create table email_list (
     CONSTRAINT proper_email CHECK (email ~* '^[A-Za-z0-9._+%-]+@[A-Za-z0-9.-]+[.][A-Za-z]+$')
 );
 
+-- create function update_post_score()
+-- returns trigger
+-- language plpgsql
+-- security definer
+-- set search_path = publicupd
+-- as $update_post_score$
+-- begin
+-- update post_score
+--         set score = (
+--             select sum(case when vote_type = 'up' then 1 else -1 end)
+--             from post_votes
+--             where post_id = new.post_id
+--         )
+--         where post_id = new.post_id;
+--         return new;
+-- end;$update_post_score$;
+
 CREATE OR REPLACE FUNCTION update_post_score()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    IF NEW.is_comment IS NOT NULL AND NEW.is_comment THEN
-        IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
-            UPDATE comments
-            SET score = COALESCE((
-                SELECT SUM(CASE WHEN vote_type = 'up' THEN 1 ELSE -1 END)
-                FROM post_votes
-                WHERE post_id = NEW.post_id AND is_comment = TRUE
-            ), 0)
-            WHERE id = NEW.post_id;
-        ELSIF TG_OP = 'DELETE' THEN
-            UPDATE comments
-            SET score = COALESCE((
-                SELECT SUM(CASE WHEN vote_type = 'up' THEN 1 ELSE -1 END)
-                FROM post_votes
-                WHERE post_id = OLD.post_id AND is_comment = TRUE
-            ), 0)
-            WHERE id = OLD.post_id;
-        END IF;
+    IF TG_OP = 'DELETE' THEN
+        UPDATE posts
+        SET score = COALESCE((
+            SELECT SUM(CASE WHEN vote_type = 'up' THEN 1 ELSE -1 END)
+            FROM post_votes
+            WHERE post_id = OLD.post_id
+        ), 0)
+        WHERE post_id = OLD.post_id;
     ELSE
-        IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
-            UPDATE posts
-            SET score = COALESCE((
-                SELECT SUM(CASE WHEN vote_type = 'up' THEN 1 ELSE -1 END)
-                FROM post_votes
-                WHERE post_id = NEW.post_id AND is_comment = FALSE
-            ), 0)
-            WHERE id = NEW.post_id;
-        ELSIF TG_OP = 'DELETE' THEN
-            UPDATE posts
-            SET score = COALESCE((
-                SELECT SUM(CASE WHEN vote_type = 'up' THEN 1 ELSE -1 END)
-                FROM post_votes
-                WHERE post_id = OLD.post_id AND is_comment = FALSE
-            ), 0)
-            WHERE id = OLD.post_id;
-        END IF;
+        UPDATE posts
+        SET score = COALESCE((
+            SELECT SUM(CASE WHEN vote_type = 'up' THEN 1 ELSE -1 END)
+            FROM post_votes
+            WHERE post_id = NEW.post_id
+        ), 0)
+        WHERE post_id = NEW.post_id;
     END IF;
 
     RETURN NULL;
@@ -123,7 +110,29 @@ BEGIN
 END;
 $$;
 
-
+-- create function get_posts(page_number int)
+-- returns table (
+--     id uuid,
+--     user_id uuid,
+--     created_at timestamp with time zone,
+--     content text,
+--     score int,
+--     username text
+-- )
+-- language plpgsql
+-- as $$
+-- begin
+--     return query
+--     select posts.id, posts.user_id, posts.created_at, post_contents.content, post_score.score, user_profiles.username
+--     from posts
+--     join post_contents on posts.id = post_contents.post_id
+--     join post_score on posts.id = post_score.post_id
+--     join user_profiles on posts.user_id = user_profiles.user_id
+--     where posts.path ~ 'root'
+--     order by post_score.score desc, posts.created_at desc
+--     limit 10
+--     offset (page_number - 1) * 10;
+-- end;$$;
 
 CREATE OR REPLACE FUNCTION get_posts(page_number INT)
 RETURNS TABLE (
@@ -150,7 +159,21 @@ BEGIN
 END;
 $$;
 
-
+-- create function create_new_post("userId" uuid, "title" text, "content" text)
+-- returns boolean
+-- language plpgsql
+-- as $$
+-- begin
+--   with
+--     "inserted_post" as (
+--       insert into "posts" ("user_id", "path")
+--       values ($1, 'root')
+--       returning "id"
+--     )
+--   insert into "post_contents" ("post_id", "title", "content", "user_id")
+--   values ((select "id" from "inserted_post"), $2, $3, $1);
+--   return true;
+-- end; $$;
 
 CREATE OR REPLACE FUNCTION create_new_post("userId" uuid, "title" text, "content" text)
 RETURNS uuid
@@ -172,9 +195,56 @@ BEGIN
   RETURN new_post_id;
 END; $$;
 
+-- create function initialize_post_score()
+-- returns trigger
+-- language plpgsql
+-- security definer
+-- set search_path = public
+-- as $initialize_post_score$
+-- begin
+--     insert into post_score (post_id, score)
+--     values (new.id, 0);
+--     return new;
+-- end;$initialize_post_score$;
 
+-- create trigger initialize_post_score
+--     after insert
+--     on posts
+--     for each row execute procedure initialize_post_score();
 
-create or replace function get_single_post_with_comments_old(post_id uuid)
+-- create function get_single_post_with_comments(post_id uuid)
+-- returns table (
+--     id uuid,
+--     username text,
+--     created_at timestamp with time zone,
+--     title text,
+--     content text,
+--     score int,
+--     path ltree
+-- )
+-- language plpgsql
+-- as $$
+-- begin
+--     return query
+--     select
+--       posts.id,
+--       user_profiles.username,
+--       posts.created_at,
+--       post_contents.title,
+--       post_contents.content,
+--       post_score.score,
+--       posts.path
+--     from posts
+--     join post_contents on posts.id = post_contents.post_id
+--     join post_score on posts.id = post_score.post_id
+--     join user_profiles on posts.user_id = user_profiles.user_id
+--     where
+--       posts.path <@ text2ltree(concat('root.', replace(concat($1, ''), '-', '_')))
+--     or
+--       posts.id = $1;
+-- end;$$;
+
+create or replace function get_single_post_with_comments(post_id uuid)
 returns table (
     id uuid,
     author_name text,
@@ -205,85 +275,22 @@ begin
       posts.id = $1;
 end;$$;
 
-CREATE OR REPLACE FUNCTION get_single_post_with_comments(post_id uuid)
-RETURNS TABLE (
-    id uuid,
-    author_name text,
-    created_at timestamp with time zone,
-    title text,
-    content text,
-    score int,
-    path ltree
-)
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    RETURN QUERY
-    SELECT
-      p.id,
-      up.username as author_name,
-      p.created_at,
-      pc.title,
-      pc.content,
-      p.score,
-      p.path
-    FROM posts p
-    JOIN post_contents pc ON p.id = pc.post_id
-    JOIN user_profiles up ON p.user_id = up.user_id
-    WHERE
-      p.id = get_single_post_with_comments.post_id
-    UNION ALL
-    SELECT
-      c.id,
-      up.username as author_name,
-      c.created_at,
-      NULL as title,
-      c.content,
-      c.score,
-      c.path
-    FROM comments c
-    JOIN user_profiles up ON c.user_id = up.user_id
-    WHERE
-      c.path <@ text2ltree(concat('root.', replace(concat(get_single_post_with_comments.post_id::text, ''), '-', '_')));
-END;
-$$;
-
-
-create or replace function create_new_comment(user_id uuid, content text, path ltree)
+create function create_new_comment(user_id uuid, content text, path ltree)
 returns boolean
 language plpgsql
 as $$
 begin
-  insert into comments (user_id, path, content)
-  values ($1, $3, $2);
+  with
+    inserted_post as (
+      insert into posts (user_id, path)
+      values ($1, $3)
+      returning id
+    )
+  insert into post_contents (post_id, title, content, user_id)
+  values ((select id from inserted_post), '', $2, $1);
   return true;
 end; $$;
 
-CREATE OR REPLACE FUNCTION get_comments_by_post_id(post_id uuid)
-RETURNS TABLE (
-    id uuid,
-    author_name text,
-    created_at timestamp with time zone,
-    content text,
-    score int,
-    path ltree
-)
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    RETURN QUERY
-    SELECT
-        c.id,
-        up.username AS author_name,
-        c.created_at,
-        c.content,
-        c.score,
-        c.path
-    FROM comments c
-    JOIN user_profiles up ON c.user_id = up.user_id
-    WHERE c.path <@ text2ltree(concat('root.', replace(post_id::text, '-', '_')));
-END;
-$$;
 
 
 -- CREATE POLICY "can see all" ON "public"."user_profiles"

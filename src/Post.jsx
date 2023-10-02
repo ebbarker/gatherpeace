@@ -45,63 +45,6 @@ export function Post({
 
 
         </div>
-        {/* <UpVote
-          direction="up"
-          // handle filling later
-          filled={myVote === "up"}
-          enabled={!!session}
-          onClick={async () => {
-            await castVote({
-              postId: postData.id,
-              userId: session?.user.id,
-              voteType: "up",
-              onSuccess: () => {
-
-                onVoteSuccess(index, "up");
-              },
-            });
-          }}
-        />
-        <p className="text-center" data-e2e="upvote-count">
-          {postData.score}
-        </p>
-        <UpVote
-          direction="down"
-          filled={myVote === "down"}
-          enabled={!!session}
-          onClick={async () => {
-            await castVote({
-              postId: postData.id,
-              userId: session?.user.id,
-              voteType: "down",
-              onSuccess: () => {
-                onVoteSuccess(index, "down");
-              },
-            });
-          }}
-        />
-      </div>
-      <Link to={`/peace-wall/post/${postData.id}`} className="flex-auto">
-        <p className="mt-4">
-          Posted By {postData.username} {timeAgo((postData).created_at)}{" "}
-          ago
-        </p>
-        <h3 className="text-2xl">{postData.title}</h3>
-
-      </Link> */}
-      {/* <button
-        onClick={() => {
-          console.log('clicked')
-          setModalOpen(true);
-        }}
-      >
-        Comment
-      </button>
-      {isModalOpen &&
-        <div  className="modol" isOpen={isModalOpen} onClose={() => setModalOpen(false)} onRequestClose={handleRequestClose}>
-          <PostView postId={postData.id}/>
-        </div>
-      } */}
 
     <>
       <button variant="primary" onClick={() => setModalShow(true)}>
@@ -116,6 +59,7 @@ export function Post({
         onVoteSuccess={onVoteSuccess}
         posts={posts}
         parentIsTimeline={parentIsTimeline}
+        postData={postData}
 
       />
     </>
@@ -139,6 +83,7 @@ function MyVerticallyCenteredModal(props) {
           onVoteSuccess={props.onVoteSuccess}
           myVotes={props.myVotes}
           parentIsTimeline={props.parentIsTimeline}
+          postData={props.postData}
 
         />
       </div>
