@@ -18,9 +18,14 @@ export function timeAgo(date: string): string {
   if (interval > 1) {
     return interval + " hours";
   }
+
   interval = Math.floor(seconds / 60);
   if (interval > 1) {
     return interval + " minutes";
   }
+  if (Math.floor(seconds) < 3) {
+    return " 1 second"
+  }
   return Math.floor(seconds) + " seconds";
+
 }

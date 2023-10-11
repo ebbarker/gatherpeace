@@ -13,13 +13,14 @@ export function CreatePost({ newPostCreated = () => {}, posts, setPosts }) {
   const [content, setContent] = useState("");
   const navigate = useNavigate();
 
-  function appendPost(userId, title, content, newId) {
+  function appendPost(userId, title, content, newId, created_at) {
     let newPost = {
       id: newId,
       content,
       score: 0,
       username: user?.profile?.username,
       user_id: userId,
+      created_at
     }
     setPosts([newPost, ...posts])
   }
@@ -42,8 +43,8 @@ export function CreatePost({ newPostCreated = () => {}, posts, setPosts }) {
                 console.log(error);
               } else {
                 console.log(JSON.stringify(data))
-                const newId = data;
-                appendPost(user.session?.user.id, title, content, newId);
+
+                appendPost(user.session?.user.id, title, content, data[0].new_post_id, data[0].creation_time);
               }
             });
         }}

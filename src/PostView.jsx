@@ -9,10 +9,11 @@ import CommentDetails from "./CommentDetails";
 //import { SupashipUserInfo } from "./layout/use-session";
 
 
-export function PostView({ postData = null, postId,  myVotes = null, onVoteSuccess = () => { setBumper(bumper + 1)}, parentIsTimeline}) {
+export function PostView({ postData = null,  myVotes = null, onVoteSuccess = null}) {
   const userContext = useContext(UserContext);
 
   const params = useParams();
+  const postId = postData ? postData.id : params.postId;
   // const [voteBumper, setVoteBumper] = useState(0);
   const [bumper, setBumper] = useState(0);
   const [postDetailData, setPostDetailData] = useState({
@@ -43,40 +44,74 @@ export function PostView({ postData = null, postId,  myVotes = null, onVoteSucce
 
   function unsortedCommentsToNested(comments) {
     const commentMap = comments.reduce((acc, comment) => {
-      acc[comment.id] = {
-        ...comment,
-        comments: [],
-        depth: getDepth(comment.path),
-      };
-      return acc;
+        acc[comment.id] = {
+            ...comment,
+            comments: [],
+            depth: getDepth(comment.path),
+        };
+        return acc;
     }, {});
+
     const result = [];
-    const sortedByDepthThenCreationTime = [...Object.values(commentMap)].sort(
-      (a, b) =>
-        a.depth > b.depth
-          ? 1
-          : a.depth < b.depth
-          ? -1
-          : new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-    );
+
+    const sortedByDepthThenCreationTime = [...Object.values(commentMap)].sort((a, b) => {
+        if (a.depth !== b.depth) {
+            return a.depth - b.depth; // Sort by depth first
+        }
+
+        // For depth 1, sort by score; if score is the same, sort by creation time
+        if (a.depth === 1) {
+            if (a.score !== b.score) {
+                return b.score - a.score;
+            } else {
+                return new Date(a.created_at) - new Date(b.created_at);
+            }
+        }
+
+        // For depth 2, sort by creation time
+        if (a.depth === 2) {
+            return new Date(a.created_at) - new Date(b.created_at);
+        }
+
+        return 0; // If neither depth 1 nor 2, don't change order
+    });
+
+    console.log('sorted comments: ' + JSON.stringify(sortedByDepthThenCreationTime.length));
+
     for (const post of sortedByDepthThenCreationTime) {
-      if (post.depth === 1) {
-        result.push(post);
-      } else {
-        const parentNode = getParent(commentMap, post.path);
-        parentNode.comments.push(post);
-      }
+        if (post.depth === 1) {
+            result.push(post);
+        } else {
+            const parentNode = getParent(commentMap, post.path);
+            parentNode.comments.push(post);
+        }
     }
+
     return result;
   }
 
   async function postDetailLoader({ params, userContext }) {
-    const { postId } = params;
-  let data, error;
-    if (!postData) {
-      console.log('getting post and comments together');
-       ({ data, error } = await supaClient
-        .rpc("get_single_post_with_comments", { post_id: postId })
+
+
+    let data, error;
+      if (!postData) {
+        console.log('getting post and comments together');
+          ({ data, error } = await supaClient
+          .rpc("get_single_post_with_comments", { post_id: postId })
+          .select("*"));
+        if (error ) {
+          setPageError(error);
+          throw new Error(JSON.stringify(error));
+        }
+        if (!data || data.length === 0) {
+          setPageError({message: 'post not found'});
+          throw new Error('post not found');
+        }
+
+      } else {
+    //     console.log('using postId to get comments');
+          ({ data, error } = await supaClient
+        .rpc("get_comments_by_post_id", { post_id: postId })
         .select("*"));
       if (error ) {
         setPageError(error);
@@ -86,28 +121,19 @@ export function PostView({ postData = null, postId,  myVotes = null, onVoteSucce
         setPageError({message: 'post not found'});
         throw new Error('post not found');
       }
-    } else {
-      console.log('using postId to get comments');
-      ({ data, error } = await supaClient
-      .rpc("get_comments_by_post_id", { post_id: postData.id })
-      .select("*"));
-    if (error ) {
-      setPageError(error);
-      throw new Error(JSON.stringify(error));
-    }
-    // if (!data || data.length === 0) {
-    //   setPageError({message: 'post not found'});
-    //   throw new Error('post not found');
-    // }
-    postData.path = 'root';
-    if (!data) {
-      data = [postData];
-    } else {
-      data.push(postData);
-    }
+
+      postData.path = 'root';
+      if (!data) {
+        data = [postData];
+      } else {
+        data.push(postData);
+      }
+
+  }
 
 
-    }
+
+
 
     const postMap = data.reduce((acc, post) => {
       acc[post.id] = post;
@@ -115,56 +141,71 @@ export function PostView({ postData = null, postId,  myVotes = null, onVoteSucce
     }, {});
     const post = postMap[postId];
     const comments = data.filter((x) => x.id !== postId);
-    if (!userContext.session?.user) {
-      return { post, comments };
-    }
 
-
-      const { data: votesData } = await supaClient
-      .from("post_votes")
-      .select("*")
-      .eq("user_id", userContext.session?.user.id);
-    if (!votesData) {
-      return;
-    }
-    const votes = votesData.reduce((acc, vote) => {
-      acc[vote.post_id] = vote.vote_type;
-      return acc;
-    }, {});
-
-
-    console.log('votes: ' + JSON.stringify(votes));
-    console.log('myVotes: ' + JSON.stringify(myVotes));
-
-    return { post, comments, myVotes: votes };
+    return { post, comments };
   }
 
   useEffect(() => {
+
     postDetailLoader({
       params: postId ? { postId } : params,
       userContext,
     }).then((newPostDetailData) => {
       if (newPostDetailData) {
-        setPostDetailData(newPostDetailData);
+        let sortedDetails = {...newPostDetailData};
+        sortedDetails.comments = unsortedCommentsToNested(newPostDetailData.comments);
+        setPostDetailData(sortedDetails);
       }
     });
   }, [userContext, params, bumper]);
 
-  const nestedComments = useMemo(
-    () => unsortedCommentsToNested(postDetailData.comments),
-    [postDetailData]
-  );
+  // const nestedComments = useMemo(
+  //   () => unsortedCommentsToNested(postDetailData.comments),
+  //   [postDetailData]
+  // );
 
-  function onSinglePageVoteSuccess () {
-    console.log('single page vote success')
-    setBumper(bumper + 1);
+  function onCommentVoteSuccess (id, direction)  {
+    if (id === postId) {
+      let newData = {...postDetailData};
+      direction == 'delete' ? newData.post.score-- : newData.post.score++;
+      setPostDetailData(newData);
+    }
+
+    function recursiveCommentMapper (current) {
+
+      if (current.id == id) {
+        if (direction === 'delete') {
+          return {
+            ...current,
+            score: current.score - 1
+          }
+        }
+        if (direction === 'up') {
+          return {
+            ...current,
+            score: current.score + 1
+          }
+        }
+      } else if (current.comments.length > 0) {
+        let newChildComments = current.comments.map(recursiveCommentMapper);
+        current.comments = newChildComments;
+      }
+        return current;
+
+    }
+
+        let commentsArr = postDetailData.comments.map(recursiveCommentMapper);
+        let newPostDetailData = {...postDetailData};
+        newPostDetailData.comments = commentsArr;
+        setPostDetailData(newPostDetailData);
+
   }
 
   return (
     <>
       <div className="tweetContainer flex flex-col">
       <div class="tweet flex flex-col place-content-center border grow">
-        {pageError !== null &&
+        {pageError &&
           <>
             <h4>Error</h4>
             <div>{pageError.details}</div>
@@ -174,34 +215,33 @@ export function PostView({ postData = null, postId,  myVotes = null, onVoteSucce
         }
             <CommentDetails
               key={postDetailData?.post?.id}
-              comment={postDetailData?.post}
-              myVotes={postDetailData?.myVotes}
-              onVoteSuccess={onVoteSuccess}
+              comment={postData ? postData : postDetailData.post}
+              onVoteSuccess={onVoteSuccess ? onVoteSuccess : onCommentVoteSuccess}
               getDepth={getDepth}
-              onSinglePageVoteSuccess={onSinglePageVoteSuccess}
-              parentIsTimeline={parentIsTimeline}
-
             />
           </div>
         <div className="create-comments-container">
-          {userContext.session && postDetailData.post && (
+          {userContext.session  && (
             <CreateComment
-              parent={postDetailData.post}
-              onSuccess={() => {
-                setBumper(bumper + 1);
+              parent={postData ? postData : postDetailData.post}
+              onSuccess={(newComment) => {
+                let newPostDetailData = {...postDetailData};
+                newPostDetailData.comments.push(newComment);
+                setPostDetailData(newPostDetailData);
               }}
               getDepth={getDepth}
             />
           )}
         </div>
         <div className="commentsContainer flex flex-col m-2 w-full grow">
-          {nestedComments.map((comment) => (
+          {postDetailData.comments.map((comment) => (
             <CommentView
               key={comment.id}
               comment={comment}
-              myVotes={postDetailData.myVotes}
-              onSinglePageVoteSuccess={onSinglePageVoteSuccess}
+              onVoteSuccess={onCommentVoteSuccess}
               getDepth={getDepth}
+              postDetailData={postDetailData}
+              setPostDetailData={setPostDetailData}
             />
           ))}
         </div>
@@ -214,8 +254,10 @@ function CommentView({
   key,
   comment,
   myVotes,
-  onSinglePageVoteSuccess,
   getDepth,
+  onVoteSuccess,
+  setPostDetailData,
+  postDetailData
 }) {
   const [commenting, setCommenting] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
@@ -225,58 +267,13 @@ function CommentView({
   return (
 
     <div className="comment tweet flex flex-col my-4 ml-4 border-l-2 rounded">
-            {/* <div className="head flex justify-between items-start">
-                <div className="head-left flex flex-col">
-                    <div className="flex items-center">
-                        <div className="image"></div>
-                        <div className="name">
-                            <div className="username">
-                                {comment.username_name}
-                            </div>
-                            <div className="handle">@{comment.username_name}</div>
-                            <div className="content-container">
-                                {comment.content.split("\n").map((paragraph) => (
-                                    <p className="text-dark text-left">{paragraph}</p>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div className="head-right">
-                    <div className="date">
-                        {timeAgo(comment.created_at)} ago
-                    </div>
-                </div>
-            </div>
 
-            <div className="controls flex items-center border border-dark">
-
-                <div className="btn">
-                    <i className="fa-regular fa-comment"></i>
-                    <span>Reply</span>
-                </div>
-                <div className="btn">
-                    <i className="fa-solid fa-retweet"></i>
-                    <span>Share</span>
-                </div>
-                <span>
-                    {comment.score}
-                    <UpVote
-                        direction="up"
-                        filled={myVotes?.[comment.id] === "up"}
-                        enabled={!!session}
-                        onClick={async () => {
-                            //... (existing logic)
-                        }}
-                    />
-                </span>
-            </div> */}
 
             <CommentDetails
               key={comment.id}
               comment={comment}
               myVotes={myVotes}
-              onSinglePageVoteSuccess={onSinglePageVoteSuccess}
+              onVoteSuccess={onVoteSuccess}
               getDepth={getDepth}
             />
 
@@ -284,8 +281,31 @@ function CommentView({
                 <CreateComment
                     parent={comment}
                     onCancel={() => setCommenting(false)}
-                    onSuccess={() => {
-                        onSuccess();
+                    setPostDetailData={setPostDetailData}
+                    postDetailData={postDetailData}
+                    onSuccess={(newComment) => {
+
+                      function addComment (newComment) {
+
+                        let parentIndex;
+                        let realParent = newComment.path.slice(newComment.path.lastIndexOf('.') + 1);
+                        for (let i = 0; i < postDetailData.comments.length; i++) {
+
+                          let transmutedId = postDetailData.comments[i]['id'].replaceAll("-", "_");
+
+                          if (transmutedId === realParent) {
+                            parentIndex = i;
+
+                            break;
+                          }
+                        }
+                        let newPostDetailData = {...postDetailData};
+                        newPostDetailData.comments[parentIndex]['comments'].push(newComment);
+                        setPostDetailData(newPostDetailData);
+                      };
+                      addComment(newComment);
+
+                        setShowReplies(true);
                         setCommenting(false);
                     }}
                     getDepth={getDepth}
@@ -302,7 +322,7 @@ function CommentView({
                 </div>
             )}
             {/* Recursive nested comments */}
-            {!!comment.comments.length && (
+            {!!comment?.comments?.length && (
                 <div className="ml-4">
                     <button
                         onClick={() => setShowReplies(!showReplies)}
@@ -314,7 +334,7 @@ function CommentView({
                 </div>
             )
             }
-            {showReplies && (
+            {true && (
 
               <div className="replyContainer">
                 {comment.comments.map((comment) => (
@@ -322,20 +342,17 @@ function CommentView({
                     key={comment.id}
                     comment={comment}
                     myVotes={myVotes}
-                    onSinglePageVoteSuccess={onSinglePageVoteSuccess}
+                    onVoteSuccess={onVoteSuccess}
                     getDepth={getDepth}
+                    setPostDetailData={setPostDetailData}
+                    postDetailData={postDetailData}
                   />
                 ))}
               </div>
-
             )}
-
         </div>
   );
 }
-
-
-
 
 
 function CreateComment({
@@ -363,13 +380,24 @@ function CreateComment({
             .rpc("create_new_comment", {
               user_id: user.session?.user.id,
               content: comment,
-              path: actualPath,
+              comment_path: actualPath,
             })
             .then(({ data, error }) => {
               if (error) {
                 console.log(error);
               } else {
-                onSuccess();
+                let commentDepth = getDepth(data[0].returned_path);
+                let newComment = {
+                  id: data[0].comment_id,
+                  author_name: user.session.user.username,
+                  created_at: data[0].creation_time,
+                  content: comment,
+                  score: 0,
+                  path: data[0].returned_path,
+                  depth: commentDepth,
+                  comments: [],
+                };
+                onSuccess(newComment);
 
                 textareaRef.current?.value != null &&
                   (textareaRef.current.value = "");

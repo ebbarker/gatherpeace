@@ -7,7 +7,7 @@ import { timeAgo } from "./layout/time-ago";
 import { UpVote } from "./UpVote";
 import { Post } from "./Post.jsx"
 import { PostView } from "./PostView"
-
+import { VoteContext } from "./contexts/VoteContext";
 
 
 export function AllPosts() {
@@ -18,6 +18,7 @@ export function AllPosts() {
   const [voteBumper, setVoteBumper] = useState(0);
   const [myVotes, setMyVotes] = useState({});
   const [totalPages, setTotalPages] = useState(0);
+  const { myContextVotes, setMyContextVotes } = useContext(VoteContext);
   useEffect(() => {
     const queryPageNumber = pageNumber ? +pageNumber : 1;
     Promise.all([
@@ -38,26 +39,26 @@ export function AllPosts() {
     ]);
   }, [session, bumper, pageNumber]);
 
-  useEffect(() => {
-    if (session?.user) {
-      supaClient
-        .from("post_votes")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .then(({ data: votesData }) => {
-          if (!votesData) {
-            return;
-          }
-          const votes = votesData.reduce((acc, vote) => {
-            acc[vote.post_id] = vote.vote_type;
-            return acc;
-          }, {});
-          setMyVotes(votes);
-          console.log('my votes + ' + JSON.stringify(myVotes))
-        });
-    }
+  // useEffect(() => {
+  //   if (session?.user) {
+  //     supaClient
+  //       .from("post_votes")
+  //       .select("*")
+  //       .eq("user_id", session.user.id)
+  //       .then(({ data: votesData }) => {
+  //         if (!votesData) {
+  //           return;
+  //         }
+  //         const votes = votesData.reduce((acc, vote) => {
+  //           acc[vote.post_id] = vote.vote_type;
+  //           return acc;
+  //         }, {});
+  //         setMyVotes(votes);
+  //         console.log('my votes + ' + JSON.stringify(myVotes))
+  //       });
+  //   }
 
-  }, [session, voteBumper])
+  // }, [session, voteBumper])
 
   // const incrementVote = (commentId, direction, wasNew) => {
 
@@ -79,23 +80,24 @@ export function AllPosts() {
             posts={posts}
             index={i}
             postData={post}
-            myVotes={myVotes || undefined}
             parentIsTimeline={true}
             onVoteSuccess={(id, direction) => {
-              console.log('id: ' + id)
 
-              console.log('direction: ' + direction);
 
               // let id = post[i]?.id;
               // let temp = posts;
               // console.log(id);
 
-              if (myVotes[id] && direction === myVotes[id]) null;
-              if (!myVotes[id] && direction === 'delete') null;
+              // if (myContextVotes[id] && direction === myContextVotes[id]) {
+              //   console.log('failure 1');
+              //   null;
+              // } else if (!myContextVotes[id] && direction === 'delete') {
+              //   console.log('failure 2');
+              //   null;
+              // } else {
 
-              else {
-                setPosts(oldPosts => {
-                  return oldPosts.map((current) => {
+                setPosts(posts => {
+                  return posts.map((current) => {
 
                   if (current.id == id) {
                     if (direction === 'delete') {
@@ -115,36 +117,9 @@ export function AllPosts() {
                   }
 
                 })});
-                  setMyVotes(myVotes => {
-                    if (direction === 'delete') {
-                      delete myVotes[id];
-                    }
-                    if (direction === 'up') {
-                      myVotes[id] = 'up';
-                    }
 
-                    return myVotes;
-                  })
-              };
-              console.log('my votes + ' + JSON.stringify(myVotes))
+              //};
 
-
-
-              //   if (!myVotes[id]) {
-              //   if (direction === "up") temp[i].score = temp[i].score + 1;
-              //   if (direction === "down") temp[i].score = temp[i].score -1;
-              //   if (direction === "delete") temp[i].score = temp[i].score -1;
-
-              // } else {
-              //   if (myVotes[id] && direction !== myVotes[id]) {
-              //     if (direction === "up") temp[i].score = temp[i].score + 2;
-              //     if (direction === "down") temp[i].score = temp[i].score -2;
-              //     if (direction === "delete") temp[i].score = temp[i].score -1;
-              //   }
-              // }
-              // setPosts(temp);
-              // setVoteBumper(voteBumper => voteBumper + 1);
-              // setBumper(bumper => bumper + 1);
             }}
           />
           // <PostView postId={post.id} key={i}/>
@@ -160,7 +135,7 @@ export async function castVote({
   voteType,
   onSuccess = () => {},
 }) {
-  console.log('vote type, ' + voteType)
+
   if (voteType === "up") {
     await supaClient.from("post_votes").upsert(
       {
@@ -169,22 +144,15 @@ export async function castVote({
         vote_type: voteType,
       },
       { onConflict: "post_id,user_id" }
-    );
-    onSuccess();
+    ).then(onSuccess());
+
   } else if (voteType === "delete") {
    const res = await supaClient
         .rpc("delete_post_vote", { p_user_id: userId, p_post_id: postId })
-        .then(res => console.log(res))
+        .then(onSuccess());
 
 
-    // const postId = '5faf347d-36f0-4672-a2a4-fd18f2ec682b'
-    // const res = await supaClient
-    //     .from("post_votes")
-    //     .delete()
-    //     .eq('id', postId)
 
-        //console.log(res);
-        onSuccess();
   }
 
 }

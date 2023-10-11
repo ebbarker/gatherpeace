@@ -13,11 +13,6 @@ create table posts (
     score int default 0 not null
 );
 
-create table post_score (
-    post_id uuid primary key references posts (id) not null,
-    score int not null
-);
-
 create table post_contents (
     id uuid primary key default uuid_generate_v4() not null,
     user_id uuid references auth.users (id) not null,
@@ -27,13 +22,12 @@ create table post_contents (
     created_at timestamp with time zone default now() not null
 );
 
-create table post_votes (
-    id uuid primary key default uuid_generate_v4() not null,
-    post_id uuid references posts (id) not null,
-    user_id uuid references auth.users (id) not null,
-    vote_type text not null,
-    is_comment BOOLEAN DEFAULT FALSE,
-    unique (post_id, user_id)
+CREATE TABLE post_votes (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+    post_id uuid NOT NULL,  -- This will refer to either a post or a comment.
+    user_id uuid REFERENCES auth.users (id) NOT NULL,
+    vote_type text NOT NULL CHECK (vote_type IN ('up', 'down')),
+    UNIQUE (post_id, user_id)
 );
 
 create table comments (
@@ -57,47 +51,41 @@ create table email_list (
 CREATE OR REPLACE FUNCTION update_post_score()
 RETURNS TRIGGER
 LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
 AS $$
+DECLARE
+    target_post_id uuid;
 BEGIN
-    IF NEW.is_comment IS NOT NULL AND NEW.is_comment THEN
-        IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
-            UPDATE comments
-            SET score = COALESCE((
-                SELECT SUM(CASE WHEN vote_type = 'up' THEN 1 ELSE -1 END)
-                FROM post_votes
-                WHERE post_id = NEW.post_id AND is_comment = TRUE
-            ), 0)
-            WHERE id = NEW.post_id;
-        ELSIF TG_OP = 'DELETE' THEN
-            UPDATE comments
-            SET score = COALESCE((
-                SELECT SUM(CASE WHEN vote_type = 'up' THEN 1 ELSE -1 END)
-                FROM post_votes
-                WHERE post_id = OLD.post_id AND is_comment = TRUE
-            ), 0)
-            WHERE id = OLD.post_id;
-        END IF;
+    -- Determine which record (OLD or NEW) to refer to based on the operation.
+    IF TG_OP = 'DELETE' THEN
+        target_post_id := OLD.post_id;
     ELSE
-        IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
-            UPDATE posts
-            SET score = COALESCE((
-                SELECT SUM(CASE WHEN vote_type = 'up' THEN 1 ELSE -1 END)
-                FROM post_votes
-                WHERE post_id = NEW.post_id AND is_comment = FALSE
-            ), 0)
-            WHERE id = NEW.post_id;
-        ELSIF TG_OP = 'DELETE' THEN
-            UPDATE posts
-            SET score = COALESCE((
-                SELECT SUM(CASE WHEN vote_type = 'up' THEN 1 ELSE -1 END)
-                FROM post_votes
-                WHERE post_id = OLD.post_id AND is_comment = FALSE
-            ), 0)
-            WHERE id = OLD.post_id;
-        END IF;
+        target_post_id := NEW.post_id;
     END IF;
 
-    RETURN NULL;
+    -- Update score for posts table
+    IF EXISTS(SELECT 1 FROM posts WHERE id = target_post_id) THEN
+        UPDATE posts
+        SET score = COALESCE((
+            SELECT SUM(CASE WHEN vote_type = 'up' THEN 1 ELSE -1 END)
+            FROM post_votes
+            WHERE post_id = target_post_id
+        ), 0)
+        WHERE id = target_post_id;
+
+    -- Update score for comments table
+    ELSIF EXISTS(SELECT 1 FROM comments WHERE id = target_post_id) THEN
+        UPDATE comments
+        SET score = COALESCE((
+            SELECT SUM(CASE WHEN vote_type = 'up' THEN 1 ELSE -1 END)
+            FROM post_votes
+            WHERE post_id = target_post_id
+        ), 0)
+        WHERE id = target_post_id;
+    END IF;
+
+    RETURN null;
 END;
 $$;
 
@@ -153,23 +141,21 @@ $$;
 
 
 CREATE OR REPLACE FUNCTION create_new_post("userId" uuid, "title" text, "content" text)
-RETURNS uuid
+RETURNS TABLE(new_post_id UUID, creation_time TIMESTAMP WITH TIME ZONE)
 LANGUAGE plpgsql
 AS $$
-DECLARE
-    new_post_id UUID;
 BEGIN
   WITH "inserted_post" AS (
     INSERT INTO "posts" ("user_id", "path")
     VALUES ("userId", 'root')
-    RETURNING "id"
+    RETURNING "id", "created_at"
   )
-  SELECT "id" INTO new_post_id FROM "inserted_post";
+  SELECT "id", "created_at" INTO new_post_id, creation_time FROM "inserted_post";
 
   INSERT INTO "post_contents" ("post_id", "title", "content", "user_id")
   VALUES (new_post_id, "title", "content", "userId");
 
-  RETURN new_post_id;
+  RETURN NEXT; -- returns the row of new_post_id and creation_time
 END; $$;
 
 
@@ -249,15 +235,21 @@ END;
 $$;
 
 
-create or replace function create_new_comment(user_id uuid, content text, path ltree)
-returns boolean
-language plpgsql
-as $$
-begin
-  insert into comments (user_id, path, content)
-  values ($1, $3, $2);
-  return true;
-end; $$;
+CREATE OR REPLACE FUNCTION create_new_comment("user_id" UUID, content TEXT, comment_path LTREE)
+RETURNS TABLE(comment_id UUID, creation_time TIMESTAMP WITH TIME ZONE, returned_path LTREE)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  WITH "inserted_comment" AS (
+    INSERT INTO "comments" ("user_id", "path", "content")
+    VALUES ($1, $3, $2)
+    RETURNING "id", "created_at", "path"
+  )
+  SELECT "id", "created_at", "path" INTO comment_id, creation_time, returned_path FROM "inserted_comment";
+
+  RETURN NEXT; -- returns the row of comment_id and creation_time
+END;
+$$;
 
 CREATE OR REPLACE FUNCTION get_comments_by_post_id(post_id uuid)
 RETURNS TABLE (

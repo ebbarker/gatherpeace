@@ -73,18 +73,9 @@ export default function CommentDetails ({
               if (!comment) {
                 return;
               }
-              let voteType = myVotes[comment?.id] === "up" ? "delete" : "up";
+              let voteType = myContextVotes[comment?.id] === "up" ? "delete" : "up";
 
-              setMyContextVotes((myContextVotes) => {
-                if (voteType === 'delete') {
-                  delete myContextVotes[comment.id];
-                }
-                if (voteType === 'up') {
-                  myContextVotes[comment.id] = 'up';
-                }
 
-                return myContextVotes;
-              });
 
               await castVote({
                 postId: comment?.id,
@@ -92,7 +83,17 @@ export default function CommentDetails ({
                 voteType: voteType,
                 onSuccess: () => {
                   onVoteSuccess(comment?.id, voteType);
-                  onSinglePageVoteSuccess();
+                  // onSinglePageVoteSuccess();
+                  setMyContextVotes((myContextVotes) => {
+                    if (voteType === 'delete') {
+                      delete myContextVotes[comment.id];
+                    }
+                    if (voteType === 'up') {
+                      myContextVotes[comment.id] = 'up';
+                    }
+
+                    return myContextVotes;
+                  });
                 },
               });
             }}
