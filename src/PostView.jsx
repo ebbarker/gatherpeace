@@ -76,7 +76,7 @@ export function PostView({ postData = null,  myVotes = null, onVoteSuccess = nul
         return 0; // If neither depth 1 nor 2, don't change order
     });
 
-    console.log('sorted comments: ' + JSON.stringify(sortedByDepthThenCreationTime.length));
+
 
     for (const post of sortedByDepthThenCreationTime) {
         if (post.depth === 1) {
@@ -159,10 +159,6 @@ export function PostView({ postData = null,  myVotes = null, onVoteSuccess = nul
     });
   }, [userContext, params, bumper]);
 
-  // const nestedComments = useMemo(
-  //   () => unsortedCommentsToNested(postDetailData.comments),
-  //   [postDetailData]
-  // );
 
   function onCommentVoteSuccess (id, direction)  {
     if (id === postId) {
@@ -218,6 +214,7 @@ export function PostView({ postData = null,  myVotes = null, onVoteSuccess = nul
               comment={postData ? postData : postDetailData.post}
               onVoteSuccess={onVoteSuccess ? onVoteSuccess : onCommentVoteSuccess}
               getDepth={getDepth}
+              repliesCount={postDetailData.comments.length}
             />
           </div>
         <div className="create-comments-container">
@@ -226,6 +223,7 @@ export function PostView({ postData = null,  myVotes = null, onVoteSuccess = nul
               parent={postData ? postData : postDetailData.post}
               onSuccess={(newComment) => {
                 let newPostDetailData = {...postDetailData};
+                newPostDetailData.post.count_comments++;
                 newPostDetailData.comments.push(newComment);
                 setPostDetailData(newPostDetailData);
               }}
@@ -262,6 +260,7 @@ function CommentView({
   const [commenting, setCommenting] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
   const { session } = useContext(UserContext);
+  const repliesCount = comment.comments.length;
 
 
   return (
@@ -275,6 +274,9 @@ function CommentView({
               myVotes={myVotes}
               onVoteSuccess={onVoteSuccess}
               getDepth={getDepth}
+              commenting={commenting}
+              setCommenting={setCommenting}
+              repliesCount={repliesCount}
             />
 
             {commenting && (
@@ -301,6 +303,7 @@ function CommentView({
                         }
                         let newPostDetailData = {...postDetailData};
                         newPostDetailData.comments[parentIndex]['comments'].push(newComment);
+                        newPostDetailData.post.count_comments++;
                         setPostDetailData(newPostDetailData);
                       };
                       addComment(newComment);
@@ -311,16 +314,7 @@ function CommentView({
                     getDepth={getDepth}
                 />
             )}
-            {!commenting && (
-                <div className="ml-4">
-                    <button
-                        onClick={() => setCommenting(!commenting)}
-                        disabled={!session}
-                    >
-                        {commenting ? "Cancel" : "Reply"}
-                    </button>
-                </div>
-            )}
+
             {/* Recursive nested comments */}
             {!!comment?.comments?.length && (
                 <div className="ml-4">
@@ -334,7 +328,7 @@ function CommentView({
                 </div>
             )
             }
-            {true && (
+            {showReplies && (
 
               <div className="replyContainer">
                 {comment.comments.map((comment) => (
@@ -346,6 +340,7 @@ function CommentView({
                     getDepth={getDepth}
                     setPostDetailData={setPostDetailData}
                     postDetailData={postDetailData}
+
                   />
                 ))}
               </div>

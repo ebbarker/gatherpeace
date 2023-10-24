@@ -39,32 +39,6 @@ export function AllPosts() {
     ]);
   }, [session, bumper, pageNumber]);
 
-  // useEffect(() => {
-  //   if (session?.user) {
-  //     supaClient
-  //       .from("post_votes")
-  //       .select("*")
-  //       .eq("user_id", session.user.id)
-  //       .then(({ data: votesData }) => {
-  //         if (!votesData) {
-  //           return;
-  //         }
-  //         const votes = votesData.reduce((acc, vote) => {
-  //           acc[vote.post_id] = vote.vote_type;
-  //           return acc;
-  //         }, {});
-  //         setMyVotes(votes);
-  //         console.log('my votes + ' + JSON.stringify(myVotes))
-  //       });
-  //   }
-
-  // }, [session, voteBumper])
-
-  // const incrementVote = (commentId, direction, wasNew) => {
-
-  //   setVoteBumper(voteBumper + 1);
-  // }
-
 
   return (
     <>
@@ -82,19 +56,6 @@ export function AllPosts() {
             postData={post}
             parentIsTimeline={true}
             onVoteSuccess={(id, direction) => {
-
-
-              // let id = post[i]?.id;
-              // let temp = posts;
-              // console.log(id);
-
-              // if (myContextVotes[id] && direction === myContextVotes[id]) {
-              //   console.log('failure 1');
-              //   null;
-              // } else if (!myContextVotes[id] && direction === 'delete') {
-              //   console.log('failure 2');
-              //   null;
-              // } else {
 
                 setPosts(posts => {
                   return posts.map((current) => {
@@ -220,39 +181,6 @@ function Pagination({
     </div>
   );
 }
-
-
-
-
-
-// export async function castVote({
-//   postId,
-//   userId,
-//   voteType,
-//   //onSuccess = () => {},
-// }: {
-//   postId: string;
-//   userId: string;
-//   voteType: "up" | "down";
-//   voteId?: Promise<string | undefined>;
-//   //onSuccess?: () => void;
-// }) {
-//   const voteId = await getVoteId(userId, postId);
-//   const { data, error } = voteId
-//     ? await supaClient.from("post_votes").update({
-//         id: voteId,
-//         post_id: postId,
-//         user_id: userId,
-//         vote_type: voteType,
-//       })
-//     : await supaClient.from("post_votes").insert({
-//         post_id: postId,
-//         user_id: userId,
-//         vote_type: voteType,
-//       });
-//   // handle error
-//   //onSuccess();
-// }
 
 export async function getVoteId(
   userId,

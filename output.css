@@ -27,6 +27,17 @@
   --tw-content: '';
 }
 
+:root {
+  --body_background: white;
+  --body_color: black;
+  --link_color: green;
+}
+[theme="dark-theme"] {
+  --body_background: #282c34;
+  --body_color: white;
+  --link_color: cyan;
+}
+
 /*
 1. Use a consistent sensible line-height in all browsers.
 2. Prevent adjustments of font size after orientation changes in iOS.
@@ -1754,112 +1765,7 @@ svg {
   text-align: center;
 }
 
-/* NavBar component styles */
 
-/* .nav-bar{
-  margin-left: auto;
-  margin-right: auto;
-  display: flex;
-  width: 100%;
-  max-width: 1536px;
-  justify-content: space-between;
-  padding: 1.5rem;
-  padding-left: 0.75rem;
-  padding-right: 0.75rem;
-  --tw-text-opacity: 1;
-  color: rgb(248 248 248 / var(--tw-text-opacity));
-}
-
-@media (min-width: 768px){
-  .nav-bar{
-    padding: 2rem;
-    padding-left: 2rem;
-    padding-right: 2rem;
-  }
-}
-
-.nav-logo-link{
-  visibility: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-@media (min-width: 768px){
-  .nav-logo-link{
-    visibility: visible;
-  }
-}
-
-.nav-logo{
-  margin-top: 1rem;
-  width: 0px;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-backdrop-filter;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-backdrop-filter;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-
-.nav-logo:hover{
-  --tw-scale-x: 1.25;
-  --tw-scale-y: 1.25;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-  --tw-drop-shadow: drop-shadow(0 0 9px rgba(34,197,94,0.9));
-  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
-}
-
-@media (min-width: 768px){
-  .nav-logo{
-    width: 16rem;
-  }
-}
-
-.nav-right-list{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.nav-message-board-list-item{
-  margin-left: 0.5rem;
-  margin-right: 0.5rem;
-  transition-property: transform;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-
-.nav-message-board-list-item:hover{
-  --tw-scale-x: 1.05;
-  --tw-scale-y: 1.05;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-
-@media (min-width: 768px){
-  .nav-message-board-list-item{
-    margin-left: 1rem;
-    margin-right: 1rem;
-  }
-}
-
-.nav-message-board-link{
-  font-family: sofia-pro, sans-serif;
-  font-size: 1.25rem;
-  line-height: 1.75rem;
-  font-weight: 700;
-  line-height: 1;
-  --tw-text-opacity: 1;
-  color: rgb(219 225 232 / var(--tw-text-opacity));
-}
-
-.nav-auth-item{
-  position: relative;
-  margin-left: 0.5rem;
-  margin-right: 1.5rem;
-} */
-
-/* Post component styles */
 
 .post-detail-outer-container{
   display: flex;

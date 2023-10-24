@@ -8,14 +8,16 @@ import { UpVote } from "./UpVote";
 import { VoteContext } from "./contexts/VoteContext";
 
 
-export default function CommentDetails ({
+export default function CommentDetails({
   key,
   comment,
   myVotes,
-  onVoteSuccess = ()=>{},
+  onVoteSuccess = () => {},
   index,
-  onSinglePageVoteSuccess = ()=>{},
-
+  onSinglePageVoteSuccess = () => {},
+  commenting,
+  setCommenting,
+  repliesCount
 }) {
   const userContext = useContext(UserContext);
   const { session } = useContext(UserContext);
@@ -50,57 +52,66 @@ export default function CommentDetails ({
         </div>
       </div>
       <div className="controls flex items-center border border-dark">
-        <div className="btn">
-          <i className="fa-regular fa-comment"></i>
-          <span>100k</span>
-        </div>
-        <div className="btn">
-          <i className="fa-solid fa-retweet"></i>
-          <span>10k</span>
-        </div>
-        <div className="btn">
-          <input type="checkbox" name="" id="like" />
-          <label htmlFor="like"></label>
-          <span>300</span>
-        </div>
-        <span>
-          {comment?.score}
-          <UpVote
-            direction="up"
-            filled={myContextVotes[comment?.id] === "up"}
-            enabled={!!userContext.session}
-            onClick={async () => {
-              if (!comment) {
-                return;
-              }
-              let voteType = myContextVotes[comment?.id] === "up" ? "delete" : "up";
+        <div className="post-votes-container">
+          <div>
+            <span>
 
+              <UpVote
+                direction="up"
+                filled={myContextVotes[comment?.id] === "up"}
+                enabled={!!userContext.session}
+                onClick={async () => {
+                  if (!comment) {
+                    return;
+                  }
+                  let voteType =
+                    myContextVotes[comment?.id] === "up" ? "delete" : "up";
 
+                  await castVote({
+                    postId: comment?.id,
+                    userId: userContext.session?.user?.id,
+                    voteType: voteType,
+                    onSuccess: () => {
+                      onVoteSuccess(comment?.id, voteType);
+                      // onSinglePageVoteSuccess();
+                      setMyContextVotes((myContextVotes) => {
+                        if (voteType === "delete") {
+                          delete myContextVotes[comment.id];
+                        }
+                        if (voteType === "up") {
+                          myContextVotes[comment.id] = "up";
+                        }
 
-              await castVote({
-                postId: comment?.id,
-                userId: userContext.session?.user?.id,
-                voteType: voteType,
-                onSuccess: () => {
-                  onVoteSuccess(comment?.id, voteType);
-                  // onSinglePageVoteSuccess();
-                  setMyContextVotes((myContextVotes) => {
-                    if (voteType === 'delete') {
-                      delete myContextVotes[comment.id];
-                    }
-                    if (voteType === 'up') {
-                      myContextVotes[comment.id] = 'up';
-                    }
-
-                    return myContextVotes;
+                        return myContextVotes;
+                      });
+                    },
                   });
-                },
-              });
-            }}
-          />
-        </span>
-        <div className="btn">
-          <i className="fa-solid fa-arrow-up-from-bracket"></i>
+                }}
+              />
+              {comment?.score}
+            </span>
+          </div>
+        </div>
+        <div post-comments-count-container>
+          {comment?.path === "root" ?
+            <div >
+
+              <div>
+
+                  {comment?.count_comments} {comment?.count_comments === 1 ? "Comment" : "Comments"}
+
+              </div>
+            </div>
+            :
+            <div className="btn">
+              <i className="fa-solid fa-retweet"></i>
+                <div className="ml-4">
+                  <button onClick={() => setCommenting(!commenting)} disabled={!session}>
+                    {repliesCount}{commenting ? " Cancel" : repliesCount === 1 ? " Reply" : " Replies"}
+                  </button>
+                </div>
+            </div>
+          }
         </div>
       </div>
     </>

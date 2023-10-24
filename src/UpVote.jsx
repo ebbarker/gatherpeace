@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { BsPeaceFill, BsPeace } from "react-icons/bs";
+import { FaHandPeace, FaRegHandPeace } from "react-icons/fa6";
 
 export function UpVote({
     direction = "up",
@@ -25,16 +25,16 @@ export function UpVote({
   }, [direction, filled, enabled]);
   return (
     <>
-    {BsPeace}
+    {FaRegHandPeace}
       {filled ?
         <button
         disabled={!enabled}
         onClick={onClick}
         data-e2e={`${direction}vote`}
         data-filled={filled}
-        Icon={filled ? BsPeaceFill : BsPeace }
+        Icon={filled ? FaHandPeace : FaRegHandPeace }
         >
-        <BsPeaceFill />
+        <FaHandPeace />
         </button>
         :
         <button
@@ -42,9 +42,9 @@ export function UpVote({
         onClick={onClick}
         data-e2e={`${direction}vote`}
         data-filled={filled}
-        Icon={filled ? BsPeaceFill : BsPeace }
+        Icon={filled ? FaHandPeace : FaRegHandPeace }
         >
-        <BsPeace />
+        <FaRegHandPeace />
         </button>
 
       }

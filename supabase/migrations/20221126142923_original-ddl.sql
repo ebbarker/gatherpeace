@@ -10,7 +10,8 @@ create table posts (
     user_id uuid references auth.users (id) not null,
     created_at timestamp with time zone default now() not null,
     path ltree not null,
-    score int default 0 not null
+    score int default 0 not null,
+    count_comments INT DEFAULT 0 NOT NULL
 );
 
 create table post_contents (
@@ -120,17 +121,18 @@ RETURNS TABLE (
     created_at TIMESTAMP WITH TIME ZONE,
     content TEXT,
     score INT,
-    username TEXT
+    username TEXT,
+    count_comments INT
 ) LANGUAGE plpgsql AS $$
 BEGIN
     RETURN QUERY
     WITH LimitedPosts AS (
-        SELECT p.id, p.user_id, p.created_at, p.score FROM posts p
+        SELECT p.id, p.user_id, p.created_at, p.score, p.count_comments FROM posts p
         WHERE p.path ~ 'root'
         ORDER BY p.score DESC, p.created_at DESC
         LIMIT 10 OFFSET (page_number - 1) * 10
     )
-    SELECT p.id, p.user_id, p.created_at, pc.content, p.score, up.username
+    SELECT p.id, p.user_id, p.created_at, pc.content, p.score, up.username, p.count_comments
     FROM LimitedPosts p
     JOIN post_contents pc ON p.id = pc.post_id
     JOIN user_profiles up ON p.user_id = up.user_id
@@ -196,10 +198,10 @@ RETURNS TABLE (
     id uuid,
     author_name text,
     created_at timestamp with time zone,
-    title text,
     content text,
     score int,
-    path ltree
+    path ltree,
+    count_comments int
 )
 LANGUAGE plpgsql
 AS $$
@@ -209,10 +211,10 @@ BEGIN
       p.id,
       up.username as author_name,
       p.created_at,
-      pc.title,
       pc.content,
       p.score,
-      p.path
+      p.path,
+      p.count_comments
     FROM posts p
     JOIN post_contents pc ON p.id = pc.post_id
     JOIN user_profiles up ON p.user_id = up.user_id
@@ -223,10 +225,10 @@ BEGIN
       c.id,
       up.username as author_name,
       c.created_at,
-      NULL as title,
       c.content,
       c.score,
-      c.path
+      c.path,
+      NULL AS count_comments
     FROM comments c
     JOIN user_profiles up ON c.user_id = up.user_id
     WHERE
@@ -258,7 +260,8 @@ RETURNS TABLE (
     created_at timestamp with time zone,
     content text,
     score int,
-    path ltree
+    path ltree,
+    count_comments int
 )
 LANGUAGE plpgsql
 AS $$
@@ -270,12 +273,55 @@ BEGIN
         c.created_at,
         c.content,
         c.score,
-        c.path
+        c.path,
+        c.count_comments
     FROM comments c
     JOIN user_profiles up ON c.user_id = up.user_id
     WHERE c.path <@ text2ltree(concat('root.', replace(post_id::text, '-', '_')));
 END;
 $$;
+
+-- Trigger function to increment count_comments on a new comment
+CREATE OR REPLACE FUNCTION increment_comment_count()
+RETURNS TRIGGER LANGUAGE plpgsql
+AS $$
+BEGIN
+    UPDATE posts
+    SET count_comments = count_comments + 1
+    WHERE id = (
+        SELECT REPLACE((REGEXP_MATCHES(NEW.path::TEXT, 'root\.([0-9a-fA-F_]+)\.?'))[1], '_', '-')::UUID
+    );
+
+    RETURN NEW;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION decrement_comment_count()
+RETURNS TRIGGER LANGUAGE plpgsql
+AS $$
+BEGIN
+    UPDATE posts
+    SET count_comments = count_comments - 1
+    WHERE id = (
+        SELECT REPLACE((REGEXP_MATCHES(OLD.path::TEXT, 'root\.([0-9a-fA-F_]+)\.?'))[1], '_', '-')::UUID
+    );
+
+    RETURN OLD;
+END;
+$$;
+
+
+
+-- Attach the trigger functions to the comments table
+CREATE TRIGGER trigger_increment_comment_count
+AFTER INSERT ON comments
+FOR EACH ROW
+EXECUTE FUNCTION increment_comment_count();
+
+CREATE TRIGGER trigger_decrement_comment_count
+AFTER DELETE ON comments
+FOR EACH ROW
+EXECUTE FUNCTION decrement_comment_count();
 
 
 -- CREATE POLICY "can see all" ON "public"."user_profiles"
