@@ -9,26 +9,32 @@ import { supaClient } from "./layout/supa-client";
 
 export function CreatePost({ newPostCreated = () => {}, posts, setPosts }) {
   const user = useContext(UserContext);
-  const [title, setTitle] = useState("");
+
   const [content, setContent] = useState("");
   const navigate = useNavigate();
+  const title = 'null';
 
-  function appendPost(userId, title, content, newId, created_at) {
+  function appendPost(userId, content, newId, created_at) {
     let newPost = {
       id: newId,
       content,
       score: 0,
       username: user?.profile?.username,
       user_id: userId,
-      created_at
+      created_at,
+      count_comments: 0
     }
     setPosts([newPost, ...posts])
   }
+
+  //rounded border-2 p-4 ml-4 flex flex-col justify-start gap-4 mb-8
+
   return (
     <>
     <div></div>
       <form
-        className="rounded border-2 p-4 ml-4 flex flex-col justify-start gap-4 mb-8"
+
+        className="create-new-post-form"
         data-e2e="create-post-form"
         onSubmit={(event) => {
           event.preventDefault();
@@ -44,21 +50,12 @@ export function CreatePost({ newPostCreated = () => {}, posts, setPosts }) {
               } else {
                 console.log(JSON.stringify(data))
 
-                appendPost(user.session?.user.id, title, content, data[0].new_post_id, data[0].creation_time);
+                appendPost(user.session?.user.id, content, data[0].new_post_id, data[0].creation_time);
               }
             });
         }}
       >
         <h3>Create A New Post</h3>
-        <input
-          type="text"
-          name="title"
-          className="text-gray-800 p-2 rounded text-xl"
-          placeholder="Your Title Here"
-          onChange={({ target: { value } }) => {
-            setTitle(value);
-          }}
-        />
         <textarea
           name="contents"
           placeholder="Your content here"

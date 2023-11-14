@@ -6,6 +6,7 @@ import { supaClient } from "./layout/supa-client";
 import { timeAgo } from "./layout/time-ago";
 import { UpVote } from "./UpVote";
 import { VoteContext } from "./contexts/VoteContext";
+import { BiCommentDetail } from "react-icons/bi"
 
 
 export default function CommentDetails({
@@ -17,31 +18,43 @@ export default function CommentDetails({
   onSinglePageVoteSuccess = () => {},
   commenting,
   setCommenting,
-  repliesCount
+  repliesCount,
+  setShowReplies,
+  showReplies,
+  leftBorderLine,
+  modalShow,
+  setModalShow,
+  arrLength,
+  replyIndex
 }) {
   const userContext = useContext(UserContext);
   const { session } = useContext(UserContext);
   const { myContextVotes, setMyContextVotes } = useContext(VoteContext);
+  const borderLineRef = useRef(null);
+  const contentContainerRef = useRef(null);
+  useEffect(() => {
+    // Ensure both elements are present
+    if (borderLineRef.current && contentContainerRef.current) {
+      // Set the height of left-border-line based on post-content-container
+      const contentHeight = contentContainerRef.current.offsetHeight;
+      borderLineRef.current.style.height = `${contentHeight + 150}px`;
+    }
+  }, [comment, arrLength]); // Dependency array: re-run effect if comment changes
+
 
   return (
     <>
-      <div className="head flex justify-between items-start" key={key}>
+      <div className="details-container">
+      <div className="head flex justify-between" key={key}>
         <div className="head-left flex flex-col">
           <div className="flex items-center">
             <div className="image"></div>
             <div className="name">
               <div className="username">
-                {comment?.author_name}
+                {`@${comment?.username}`}
               </div>
-              <div className="handle">@{comment?.username}</div>
-              <Link to={`/peace-wall/post/${comment?.id}`} className="flex-auto">
-                <div className="tweet-content-container">
-                  {comment?.content?.split("\n").map((paragraph) => (
-                    <p className="text-left">{paragraph}</p>
-                  ))}
-                  <div className="comment-id">{comment?.id}</div>
-                </div>
-              </Link>
+              {modalShow && <div>Modal Showing</div>}
+
             </div>
           </div>
         </div>
@@ -51,7 +64,34 @@ export default function CommentDetails({
           </div>
         </div>
       </div>
-      <div className="controls flex items-center border border-dark">
+          {
+            replyIndex < arrLength - 1  && <div ref={borderLineRef} className="left-border-line"></div>
+          }
+          {
+            comment?.path?.length > 45 ?
+            <div className="hacked"></div>
+            :
+            null
+          }
+      {!comment?.path ?
+        <Link to={`/peace-wall/post/${comment?.id}`} className="flex-auto">
+                  <div ref={contentContainerRef} className="post-content-container">
+                    {comment?.content?.split("\n").map((paragraph) => (
+                      <p className="text-left">{paragraph}</p>
+                    ))}
+                  </div>
+        </Link>
+      :
+        <div className="flex-auto">
+          <div ref={contentContainerRef} className="post-content-container">
+          {comment?.content?.split("\n").map((paragraph) => (
+            <p className="text-left">{paragraph}</p>
+          ))}
+          </div>
+        </div>
+      }
+
+      <div className="post-details-container flex items-center">
         <div className="post-votes-container">
           <div>
             <span>
@@ -92,27 +132,48 @@ export default function CommentDetails({
             </span>
           </div>
         </div>
-        <div post-comments-count-container>
-          {comment?.path === "root" ?
-            <div >
+        <div className="post-comments-count-container">
+          { //if !comment?.path then this is in a timeline because those posts don't have paths.
+            //if it has a path of root then it is the main post and should not be clickable.
+            //if it has a path !== root then it is a reply.
+             !comment?.path ?
 
-              <div>
 
-                  {comment?.count_comments} {comment?.count_comments === 1 ? "Comment" : "Comments"}
+                  <div className="count-root-comments" onClick={() => setModalShow(!modalShow)}>
 
-              </div>
-            </div>
-            :
-            <div className="btn">
-              <i className="fa-solid fa-retweet"></i>
-                <div className="ml-4">
-                  <button onClick={() => setCommenting(!commenting)} disabled={!session}>
-                    {repliesCount}{commenting ? " Cancel" : repliesCount === 1 ? " Reply" : " Replies"}
-                  </button>
+
+                    {comment?.count_comments} {comment?.count_comments === 1 ? "Comment" : "Comments"}
+
+                  </div>
+
+
+              : comment?.path === "root" ?
+
+                <div className="count-root-comments" >
+
+                {comment?.count_comments} {comment?.count_comments === 1 ? "Comment" : "Comments"}
+
                 </div>
-            </div>
+              :
+                <div className="btn">
+                  <i className="fa-solid fa-repost"></i>
+                    <div className="ml-4">
+                      {commenting ?
+                        <div className="reply-count-container" onClick={() => {setCommenting(!commenting); setShowReplies(!showReplies)}} disabled={!session}>
+                          Cancel
+                        </div>
+                        :
+                        <div className="reply-count-container" onClick={() => {setCommenting(!commenting); setShowReplies(true)}} disabled={!session}>
+                          {commenting ? " Cancel" : repliesCount === 1 ? repliesCount + " Reply" : repliesCount + " Replies"}
+                        </div>
+                      }
+                    </div>
+                </div>
+
           }
+
         </div>
+      </div>
       </div>
     </>
   );

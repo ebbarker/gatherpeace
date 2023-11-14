@@ -5,7 +5,7 @@ import { CreatePost } from "./CreatePost";
 import { supaClient } from "./layout/supa-client";
 import { timeAgo } from "./layout/time-ago";
 import { UpVote } from "./UpVote";
-import { Post } from "./Post.jsx"
+import { Post } from "./PostModal.jsx"
 import { PostView } from "./PostView"
 import { VoteContext } from "./contexts/VoteContext";
 
@@ -13,9 +13,9 @@ import { VoteContext } from "./contexts/VoteContext";
 export function AllPosts() {
   const { session } = useContext(UserContext);
   const { pageNumber } = useParams();
-  const [bumper, setBumper] = useState(0);
+  //const [bumper, setBumper] = useState(0);
   const [posts, setPosts] = useState([]);
-  const [voteBumper, setVoteBumper] = useState(0);
+  //const [voteBumper, setVoteBumper] = useState(0);
   const [myVotes, setMyVotes] = useState({});
   const [totalPages, setTotalPages] = useState(0);
   const { myContextVotes, setMyContextVotes } = useContext(VoteContext);
@@ -27,6 +27,7 @@ export function AllPosts() {
         .select("*")
         .then(({ data }) => {
           setPosts(data);
+          console.log(JSON.stringify(data));
 
         }),
       supaClient
@@ -37,7 +38,8 @@ export function AllPosts() {
           count == null ? 0 : setTotalPages(Math.ceil(count / 10));
         }),
     ]);
-  }, [session, bumper, pageNumber]);
+
+  }, [session, pageNumber]);
 
 
   return (
@@ -47,7 +49,7 @@ export function AllPosts() {
         totalPages={totalPages}
         currentPage={pageNumber ? +pageNumber : 0}
       />
-      <div id="primary-page" className="grid grid-cols-1 width-xl">
+      <div id="news-feed" className="news-feed-container">
         {posts?.map((post, i) => (
           <Post
             key={post?.id}
@@ -74,13 +76,12 @@ export function AllPosts() {
                       }
                     }
                   } else {
+
                     return current;
                   }
-
                 })});
 
               //};
-
             }}
           />
           // <PostView postId={post.id} key={i}/>
@@ -111,9 +112,6 @@ export async function castVote({
    const res = await supaClient
         .rpc("delete_post_vote", { p_user_id: userId, p_post_id: postId })
         .then(onSuccess());
-
-
-
   }
 
 }
@@ -181,6 +179,8 @@ function Pagination({
     </div>
   );
 }
+
+
 
 export async function getVoteId(
   userId,

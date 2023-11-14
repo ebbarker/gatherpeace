@@ -19,6 +19,7 @@ import { Welcome, welcomeLoader } from "./Welcome";
 import * as Sentry from "@sentry/react"
 import { VoteProvider } from "../contexts/VoteContext"
 
+
 Sentry.init({
   dsn: "https://5a282404b548c3304777f4db6615b992@o4505705490350080.ingest.sentry.io/4505705494478848",
   integrations: [

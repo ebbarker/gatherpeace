@@ -35,7 +35,7 @@ export default function Login() {
             Login
           </a>
         </div>{" "}
-        <span className="p-2"> or </span>{" "}
+        <span className="or"> or </span>{" "}
         <div className="nav-item" id="sign-up"
           onClick={() => {
             setAuthMode("sign_up");

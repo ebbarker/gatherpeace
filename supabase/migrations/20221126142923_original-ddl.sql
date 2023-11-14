@@ -165,7 +165,7 @@ END; $$;
 create or replace function get_single_post_with_comments_old(post_id uuid)
 returns table (
     id uuid,
-    author_name text,
+    username text,
     created_at timestamp with time zone,
     title text,
     content text,
@@ -196,7 +196,7 @@ end;$$;
 CREATE OR REPLACE FUNCTION get_single_post_with_comments(post_id uuid)
 RETURNS TABLE (
     id uuid,
-    author_name text,
+    username text,
     created_at timestamp with time zone,
     content text,
     score int,
@@ -209,7 +209,7 @@ BEGIN
     RETURN QUERY
     SELECT
       p.id,
-      up.username as author_name,
+      up.username as username,
       p.created_at,
       pc.content,
       p.score,
@@ -223,7 +223,7 @@ BEGIN
     UNION ALL
     SELECT
       c.id,
-      up.username as author_name,
+      up.username as username,
       c.created_at,
       c.content,
       c.score,
@@ -256,12 +256,11 @@ $$;
 CREATE OR REPLACE FUNCTION get_comments_by_post_id(post_id uuid)
 RETURNS TABLE (
     id uuid,
-    author_name text,
+    username text,
     created_at timestamp with time zone,
     content text,
     score int,
-    path ltree,
-    count_comments int
+    path ltree
 )
 LANGUAGE plpgsql
 AS $$
@@ -269,12 +268,11 @@ BEGIN
     RETURN QUERY
     SELECT
         c.id,
-        up.username AS author_name,
+        up.username AS username,
         c.created_at,
         c.content,
         c.score,
-        c.path,
-        c.count_comments
+        c.path
     FROM comments c
     JOIN user_profiles up ON c.user_id = up.user_id
     WHERE c.path <@ text2ltree(concat('root.', replace(post_id::text, '-', '_')));

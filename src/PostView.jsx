@@ -117,10 +117,10 @@ export function PostView({ postData = null,  myVotes = null, onVoteSuccess = nul
         setPageError(error);
         throw new Error(JSON.stringify(error));
       }
-      if (!data || data.length === 0) {
-        setPageError({message: 'post not found'});
-        throw new Error('post not found');
-      }
+      // if (!data || data.length === 0) {
+      //   setPageError({message: 'post not found'});
+      //   throw new Error('post not found');
+      // }
 
       postData.path = 'root';
       if (!data) {
@@ -199,11 +199,11 @@ export function PostView({ postData = null,  myVotes = null, onVoteSuccess = nul
 
   return (
     <>
-      <div className="tweetContainer flex flex-col">
-      <div class="tweet flex flex-col place-content-center border grow">
+      <div className="post-container flex flex-col">
+      <div class="post flex flex-col place-content-center grow">
         {pageError &&
           <>
-            <h4>Error</h4>
+            <h4>There was an error loading the page. The details of the error are:</h4>
             <div>{pageError.details}</div>
             <div>{pageError.hint}</div>
             <div>{pageError.message}</div>
@@ -231,7 +231,7 @@ export function PostView({ postData = null,  myVotes = null, onVoteSuccess = nul
             />
           )}
         </div>
-        <div className="commentsContainer flex flex-col m-2 w-full grow">
+        <div className="comments-container flex flex-col w-full grow">
           {postDetailData.comments.map((comment) => (
             <CommentView
               key={comment.id}
@@ -255,7 +255,10 @@ function CommentView({
   getDepth,
   onVoteSuccess,
   setPostDetailData,
-  postDetailData
+  postDetailData,
+  leftBorderLine,
+  replyIndex,
+  arrLength
 }) {
   const [commenting, setCommenting] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
@@ -265,7 +268,7 @@ function CommentView({
 
   return (
 
-    <div className="comment tweet flex flex-col my-4 ml-4 border-l-2 rounded">
+    <div className="comment flex flex-col  rounded">
 
 
             <CommentDetails
@@ -277,6 +280,11 @@ function CommentView({
               commenting={commenting}
               setCommenting={setCommenting}
               repliesCount={repliesCount}
+              showReplies={showReplies}
+              setShowReplies={setShowReplies}
+              leftBorderLine={leftBorderLine}
+              arrLength={arrLength}
+              replyIndex={replyIndex}
             />
 
             {commenting && (
@@ -288,6 +296,7 @@ function CommentView({
                     onSuccess={(newComment) => {
 
                       function addComment (newComment) {
+                        console.log('this is the new comment being written: ' + JSON.stringify(newComment));
 
                         let parentIndex;
                         let realParent = newComment.path.slice(newComment.path.lastIndexOf('.') + 1);
@@ -312,6 +321,8 @@ function CommentView({
                         setCommenting(false);
                     }}
                     getDepth={getDepth}
+                    arrLength={arrLength}
+                    replyIndex={replyIndex}
                 />
             )}
 
@@ -328,20 +339,25 @@ function CommentView({
                 </div>
             )
             }
-            {showReplies && (
+            {showReplies && !!comment.comments.length && (
 
-              <div className="replyContainer">
-                {comment.comments.map((comment) => (
-                  <CommentView
-                    key={comment.id}
-                    comment={comment}
-                    myVotes={myVotes}
-                    onVoteSuccess={onVoteSuccess}
-                    getDepth={getDepth}
-                    setPostDetailData={setPostDetailData}
-                    postDetailData={postDetailData}
+              <div className="reply-container" id="reply-container">
+                {comment.comments.map((reply, index) => (
 
-                  />
+                  <>
+
+                    <CommentView
+                      key={reply.id}
+                      comment={reply}
+                      myVotes={myVotes}
+                      onVoteSuccess={onVoteSuccess}
+                      getDepth={getDepth}
+                      setPostDetailData={setPostDetailData}
+                      postDetailData={postDetailData}
+                      replyIndex={index}
+                      arrLength={comment.comments.length}
+                    />
+                  </>
                 ))}
               </div>
             )}
@@ -350,19 +366,58 @@ function CommentView({
 }
 
 
+
+
 function CreateComment({
   parent,
   onCancel,
   onSuccess,
   getDepth,
+  showReplies,
+  setShowReplies,
+  arrLength,
+  replyIndex,
+
 }) {
   const user = useContext(UserContext);
   const [comment, setComment] = useState("");
   const textareaRef = useRef(null);
+  const containerRef = useRef(null);
+  const borderLineRef = useRef(null);
+
+
+  useEffect(() => {
+
+    if (textareaRef.current && borderLineRef.current) {
+      const additionalHeight = 120; // Additional height in pixels
+      const textareaHeight = textareaRef.current.offsetHeight;
+      borderLineRef.current.style.height = `${textareaHeight + additionalHeight}px`;
+    }
+
+
+
+  }, [comment]); // Depend on the comment state to update when the text changes
+
+
+  const scrollIntoView = () => {
+    if (containerRef.current && comment.length === 0) {
+      const extraOffset = 15; // Adjust the offset as needed
+      containerRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "end", // Scroll to the bottom of the container
+      });
+
+      // Scroll a little more down to create extra space
+    window.scrollBy(0, extraOffset);
+    }
+    console.log('called scroll');
+  };
+
   return (
     <>
       <form
-        className="rounded border-2 p-4 mx-4 flex flex-col justify-start gap-4"
+        ref={containerRef}
+        className="p-4 flex flex-col justify-start mobile-full-width create-reply"
         data-e2e="create-comment-form"
         onSubmit={(event) => {
           event.preventDefault();
@@ -384,7 +439,7 @@ function CreateComment({
                 let commentDepth = getDepth(data[0].returned_path);
                 let newComment = {
                   id: data[0].comment_id,
-                  author_name: user.session.user.username,
+                  username: user.profile.username,
                   created_at: data[0].creation_time,
                   content: comment,
                   score: 0,
@@ -392,10 +447,13 @@ function CreateComment({
                   depth: commentDepth,
                   comments: [],
                 };
+
                 onSuccess(newComment);
+
 
                 textareaRef.current?.value != null &&
                   (textareaRef.current.value = "");
+
                 const commentId = data;
                 let intervalId = setInterval(() => {
                   const comment = document.querySelector(
@@ -411,6 +469,7 @@ function CreateComment({
         }}
       >
         <h4>Add a New Comment</h4>
+        {replyIndex < arrLength - 1 && <div ref={borderLineRef} className="left-border-line-from-comment"></div>}
         <textarea autoFocus
           ref={textareaRef}
           name="comment"
@@ -420,7 +479,7 @@ function CreateComment({
             setComment(value);
           }}
         />
-        <div className="flex gap-2">
+        <div className="flex gap-2 comment-submit-container">
           <button
             type="submit"
             id="new-comment-submit"
