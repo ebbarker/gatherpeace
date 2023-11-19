@@ -67,8 +67,10 @@ export function CreatePost({ newPostCreated = () => {}, posts, setPosts }) {
         <div>
           <button
             type="submit"
-            className="bg-green-400 rounded font-display text-lg p-2"
-          >
+            className="create-post-submit-button"
+            disabled={content.length < 3}
+           >
+
             Submit
           </button>
         </div>

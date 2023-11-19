@@ -25,29 +25,34 @@ export function UpVote({
   // }, [direction, filled, enabled]);
   return (
     <>
-    {FaRegHandPeace}
+    {/* {FaRegHandPeace} */}
       {filled ?
-        <button
+        <div
         className="vote-container-button"
         disabled={!enabled}
-        onClick={onClick}
+
         data-e2e={`${direction}vote`}
         data-filled={filled}
         Icon={filled ? FaHandPeace : FaRegHandPeace }
         >
-        <FaHandPeace />
-        </button>
+
+          <i className="like-icon-container">
+            <FaHandPeace />
+          </i>
+        </div>
         :
-        <button
+        <div
         className="vote-container-button vote-filled"
         disabled={!enabled}
-        onClick={onClick}
+        
         data-e2e={`${direction}vote`}
         data-filled={filled}
         Icon={filled ? FaHandPeace : FaRegHandPeace }
         >
-        <FaRegHandPeace />
-        </button>
+          <i className="like-icon-container">
+            <FaRegHandPeace />
+          </i>
+        </div>
 
       }
     </>

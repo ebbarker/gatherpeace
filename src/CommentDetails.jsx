@@ -7,6 +7,8 @@ import { timeAgo } from "./layout/time-ago";
 import { UpVote } from "./UpVote";
 import { VoteContext } from "./contexts/VoteContext";
 import { BiCommentDetail } from "react-icons/bi"
+import { PiLinkBold } from "react-icons/pi";
+
 
 
 export default function CommentDetails({
@@ -22,10 +24,11 @@ export default function CommentDetails({
   setShowReplies,
   showReplies,
   leftBorderLine,
-  modalShow,
-  setModalShow,
+  toggleModal,
+  showModal,
   arrLength,
-  replyIndex
+  replyIndex,
+  parentIsTimeline
 }) {
   const userContext = useContext(UserContext);
   const { session } = useContext(UserContext);
@@ -40,7 +43,38 @@ export default function CommentDetails({
       borderLineRef.current.style.height = `${contentHeight + 150}px`;
     }
   }, [comment, arrLength]); // Dependency array: re-run effect if comment changes
+  async function onVoteClick () {
 
+      if (!comment) {
+        return;
+      }
+      let voteType =
+        myContextVotes[comment?.id] === "up" ? "delete" : "up";
+
+      await castVote({
+        postId: comment?.id,
+        userId: userContext.session?.user?.id,
+        voteType: voteType,
+        onSuccess: () => {
+          onVoteSuccess(comment?.id, voteType);
+          // onSinglePageVoteSuccess();
+          setMyContextVotes((myContextVotes) => {
+            if (voteType === "delete") {
+              delete myContextVotes[comment.id];
+            }
+            if (voteType === "up") {
+              myContextVotes[comment.id] = "up";
+            }
+
+            return myContextVotes;
+          });
+        },
+      });
+  }
+
+  function copyLink () {
+    navigator.clipboard.writeText(`localhost:1337/peace-wall/post/${comment?.id}`)
+  }
 
   return (
     <>
@@ -53,8 +87,6 @@ export default function CommentDetails({
               <div className="username">
                 {`@${comment?.username}`}
               </div>
-              {modalShow && <div>Modal Showing</div>}
-
             </div>
           </div>
         </div>
@@ -69,7 +101,7 @@ export default function CommentDetails({
           }
           {
             comment?.path?.length > 45 ?
-            <div className="hacked"></div>
+            <div className="left-curve"></div>
             :
             null
           }
@@ -92,7 +124,7 @@ export default function CommentDetails({
       }
 
       <div className="post-details-container flex items-center">
-        <div className="post-votes-container">
+        <button className="post-votes-container post-control-button" onClick={onVoteClick}>
           <div>
             <span>
 
@@ -100,64 +132,38 @@ export default function CommentDetails({
                 direction="up"
                 filled={myContextVotes[comment?.id] === "up"}
                 enabled={!!userContext.session}
-                onClick={async () => {
-                  if (!comment) {
-                    return;
-                  }
-                  let voteType =
-                    myContextVotes[comment?.id] === "up" ? "delete" : "up";
 
-                  await castVote({
-                    postId: comment?.id,
-                    userId: userContext.session?.user?.id,
-                    voteType: voteType,
-                    onSuccess: () => {
-                      onVoteSuccess(comment?.id, voteType);
-                      // onSinglePageVoteSuccess();
-                      setMyContextVotes((myContextVotes) => {
-                        if (voteType === "delete") {
-                          delete myContextVotes[comment.id];
-                        }
-                        if (voteType === "up") {
-                          myContextVotes[comment.id] = "up";
-                        }
-
-                        return myContextVotes;
-                      });
-                    },
-                  });
-                }}
               />
-              {comment?.score}
+              {' ' + comment?.score}
             </span>
           </div>
-        </div>
-        <div className="post-comments-count-container">
+        </button>
+        <button className="post-comments-count-container post-control-button" onClick={toggleModal}>
           { //if !comment?.path then this is in a timeline because those posts don't have paths.
             //if it has a path of root then it is the main post and should not be clickable.
             //if it has a path !== root then it is a reply.
-             !comment?.path ?
-
-
-                  <div className="count-root-comments" onClick={() => setModalShow(!modalShow)}>
-
-
-                    {comment?.count_comments} {comment?.count_comments === 1 ? "Comment" : "Comments"}
-
-                  </div>
-
-
+             !comment?.path || parentIsTimeline ?
+              <>
+                <i className="comment-icon-container">
+                  <BiCommentDetail />
+                </i>
+                <div className="count-root-comments" >
+                    {' ' + comment?.count_comments}
+                </div>
+              </>
               : comment?.path === "root" ?
+              <>
+                <i className="comment-icon-container">
+                  <BiCommentDetail />
+                </i>
 
                 <div className="count-root-comments" >
-
-                {comment?.count_comments} {comment?.count_comments === 1 ? "Comment" : "Comments"}
-
+                  {' ' + comment?.count_comments}
+                {/* {comment?.count_comments === 1 ? "Comment" : "Comments"} */}
                 </div>
+                </>
               :
-                <div className="btn">
-                  <i className="fa-solid fa-repost"></i>
-                    <div className="ml-4">
+                <>
                       {commenting ?
                         <div className="reply-count-container" onClick={() => {setCommenting(!commenting); setShowReplies(!showReplies)}} disabled={!session}>
                           Cancel
@@ -167,12 +173,20 @@ export default function CommentDetails({
                           {commenting ? " Cancel" : repliesCount === 1 ? repliesCount + " Reply" : repliesCount + " Replies"}
                         </div>
                       }
-                    </div>
-                </div>
-
+                </>
           }
+        </button>
+        {comment?.path == 'root' && (
+            <button className="post-control-button copy-link-button" onClick={copyLink}>
+            <i className="link-icon-container">
+              <PiLinkBold />
+            </i>
+            <div className="copy-link-text">Copy Link</div>
 
-        </div>
+          </button>
+
+        )}
+
       </div>
       </div>
     </>

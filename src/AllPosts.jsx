@@ -50,7 +50,9 @@ export function AllPosts() {
         currentPage={pageNumber ? +pageNumber : 0}
       />
       <div id="news-feed" className="news-feed-container">
-        {posts?.map((post, i) => (
+        {posts?.map((post, i) => {
+          post.path = 'root';
+          return (
           <Post
             key={post?.id}
             posts={posts}
@@ -61,7 +63,6 @@ export function AllPosts() {
 
                 setPosts(posts => {
                   return posts.map((current) => {
-
                   if (current.id == id) {
                     if (direction === 'delete') {
                       return {
@@ -84,8 +85,9 @@ export function AllPosts() {
               //};
             }}
           />
+          )
           // <PostView postId={post.id} key={i}/>
-        ))}
+          })}
       </div>
     </>
   );
