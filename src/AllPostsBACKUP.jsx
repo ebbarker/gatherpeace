@@ -1,40 +1,40 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, useLoaderData, useParams } from "react-router-dom";
-import { UserContext } from "./layout/App";
-import { CreateLetter } from "./CreateLetter";
-import { supaClient } from "./layout/supa-client";
-import { timeAgo } from "./layout/time-ago";
-import { UpVote } from "./UpVote";
-
-import { LetterView } from "./LetterView"
-import { VoteContext } from "./contexts/VoteContext";
-import { Stepform } from "./createPostForm/Stepform";
-import { Letter } from "./Letter"
+import { UserContext } from "./layout/App.tsx";
+import { CreatePost } from "./CreatePost.jsx";
+import { supaClient } from "./layout/supa-client.ts";
+import { timeAgo } from "./layout/time-ago.ts";
+import { UpVote } from "./UpVote.jsx";
+import { Post } from "./PostModal.jsx"
+import { PostView } from "./PostView.jsx"
+import { VoteContext } from "./contexts/VoteContext.jsx";
+import { Stepform } from "./createPostForm/Stepform.jsx";
 
 
 export function AllPosts() {
   const { session } = useContext(UserContext);
   const { pageNumber } = useParams();
   //const [bumper, setBumper] = useState(0);
-  const [letters, setLetters] = useState([]);
+  const [posts, setPosts] = useState([]);
   //const [voteBumper, setVoteBumper] = useState(0);
   const [myVotes, setMyVotes] = useState({});
   const [totalPages, setTotalPages] = useState(0);
   const { myContextVotes, setMyContextVotes } = useContext(VoteContext);
   useEffect(() => {
     const queryPageNumber = pageNumber ? +pageNumber : 1;
-    console.log (' promise all query called')
     Promise.all([
       supaClient
-        .rpc("get_letters", { page_number: queryPageNumber })
+        .rpc("get_posts", { page_number: queryPageNumber })
         .select("*")
         .then(({ data }) => {
-          setLetters(data);
+          setPosts(data);
+          console.log(JSON.stringify(data));
 
         }),
       supaClient
-        .from("letters")
+        .from("posts")
         .select("*", { count: "exact", head: true })
+        .filter("path", "eq", "root")
         .then(({ count }) => {
           count == null ? 0 : setTotalPages(Math.ceil(count / 10));
         }),
@@ -45,38 +45,38 @@ export function AllPosts() {
 
   return (
     <>
-      {/* {session && <Createletter letters={letters} setLetters={setLetters}/>} */}
-      <Stepform letters={letters} setLetters={setLetters}/>
+      {session && <CreatePost posts={posts} setPosts={setPosts}/>}
+      <Stepform />
       <Pagination
         totalPages={totalPages}
         currentPage={pageNumber ? +pageNumber : 0}
       />
       <div id="news-feed" className="news-feed-container">
-
-        {letters?.map((letter, i) => {
-          letter.path = 'root';
+        
+        {posts?.map((post, i) => {
+          post.path = 'root';
           return (
-          <Letter
-            key={letter?.id}
-            letters={letters}
+          <Post
+            key={post?.id}
+            posts={posts}
             index={i}
-            letterData={letter}
+            postData={post}
             parentIsTimeline={true}
             onVoteSuccess={(id, direction) => {
 
-                setLetters(letters => {
-                  return letters.map((current) => {
+                setPosts(posts => {
+                  return posts.map((current) => {
                   if (current.id == id) {
                     if (direction === 'delete') {
                       return {
                         ...current,
-                        likes: current.likes - 1
+                        score: current.score - 1
                       }
                     }
                     if (direction === 'up') {
                       return {
                         ...current,
-                        likes: current.likes + 1
+                        score: current.score + 1
                       }
                     }
                   } else {
@@ -89,58 +89,48 @@ export function AllPosts() {
             }}
           />
           )
-          // <letterView letterId={letter.id} key={i}/>
+          // <PostView postId={post.id} key={i}/>
           })}
       </div>
     </>
   );
 }
 
-export async function castLetterVote({
-  letterId,
+export async function castVote({
+  postId,
   userId,
   voteType,
   onSuccess = () => {},
-  onError = (error) => console.log('error!!!') // Optional: define an onError callback for handling errors
 }) {
-  console.log('castVote called for id: ' + letterId + " " + userId + ' vote type: ' + voteType);
 
   if (voteType === "up") {
-    await supaClient.rpc("insert_letter_vote",
+    await supaClient.from("post_votes").upsert(
       {
-        p_letter_id: letterId,
-        p_user_id: userId,
-        p_vote_type: voteType,
-      })
-    .then(({ data, error }) => {
+        post_id: postId,
+        user_id: userId,
+        vote_type: voteType,
+      },
+      { onConflict: "post_id,user_id" }
+    ).then(({ data, error }) => {
       if (error) {
-        console.error(error.message);
+        console.log(error);
       } else {
-        console.log('data: ' + JSON.stringify(data) + ' error: ' + error);
         onSuccess();
       }
     });
   } else if (voteType === "delete") {
-    await supaClient.rpc("delete_letter_vote", { p_user_id: userId, p_letter_id: letterId })
-    .then(({ data, error }) => {
-      if (error) {
-        console.error(error.message);
-      } else {
-        onSuccess();
-      }
-    })
+   const res = await supaClient
+        .rpc("delete_post_vote", { p_user_id: userId, p_post_id: postId })
+        .then(({ data, error }) => {
+          if (error) {
+            console.log(error);
+          } else {
+            onSuccess();
+          }
+        });
   }
+
 }
-
-// .then(({ data, error }) => {
-//   if (error) {
-//     console.log(error);
-//   } else {
-//     console.log(JSON.stringify(data));
-
-//     appendLetter(user.session?.user.id, content, data[0].new_letter_id, data[0].creation_time);
-//   }
-// });
 
 const selectedStyles = "border-2 border-white rounded p-2 bg-gray-700";
 const notSelectedStyles = "rounded p-2 bg-gray-700";
@@ -206,42 +196,17 @@ function Pagination({
   );
 }
 
-export async function castPostVote({
-  postId,
-  userId,
-  voteType,
-  onSuccess = () => {},
-}) {
-
-  if (voteType === "up") {
-    await supaClient.from("post_votes").upsert(
-      {
-        post_id: postId,
-        user_id: userId,
-        vote_type: voteType,
-      },
-      { onConflict: "post_id,user_id" }
-    ).then(onSuccess());
-
-  } else if (voteType === "delete") {
-   const res = await supaClient
-        .rpc("delete_post_vote", { p_user_id: userId, p_post_id: postId })
-        .then(onSuccess());
-  }
-
-}
 
 
-
-export async function getVoteId(
-  userId,
-  letterId
-){
-  const { data, error } = await supaClient
-    .from("letter_votes")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("letter_id", letterId)
-    .single();
-  return data?.id || undefined;
-}
+// export async function getVoteId(
+//   userId,
+//   postId
+// ){
+//   const { data, error } = await supaClient
+//     .from("post_votes")
+//     .select("id")
+//     .eq("user_id", userId)
+//     .eq("post_id", postId)
+//     .single();
+//   return data?.id || undefined;
+// }

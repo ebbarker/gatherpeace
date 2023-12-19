@@ -5,7 +5,7 @@ import { CreatePost } from "./CreatePost";
 import { supaClient } from "./layout/supa-client";
 import { timeAgo } from "./layout/time-ago";
 import { UpVote } from "./UpVote";
-import { Post } from "./Post.jsx"
+import { Post } from "./PostModal.jsx"
 
 
 interface PostData {

@@ -1,0 +1,84 @@
+.create-post-step-container {
+  position: relative;
+  background-color: var(--container_background);
+  border: 1px solid black;
+  padding: 1rem;
+  border-radius: .5rem;
+  color: var(--text_color);
+  min-height: 300px;
+}
+
+.header-secondary {
+  font-size: 12px;
+  color: var(--secondary_text_color);
+}
+@media screen and (min-width: 800px) {
+  .create-post-step-container {
+    width: 800px;
+    left: 50%;
+    transform: translate(-50%);
+  }
+}
+
+@media screen and (max-width: 799px) {
+  .create-post-step-container {
+    width: 100%;
+    border-radius: 0;
+    border: none;
+  }
+}
+
+
+.create-post-stepform {
+  height: 100%;
+}
+
+.create-post-form-container {
+  height: 100%;
+}
+
+.stepform-page-counter {
+  position: absolute;
+  top: .5rem;
+  right: .5rem;
+}
+
+.create-post-stepform-controls {
+  margin-top: 1rem;
+  display: flex;
+  gap: .5rem;
+  justify-content: flex-end;
+}
+
+.form-children-wrapper {
+  justify-content: flex-start;
+  gap: 1rem .5rem;
+}
+
+.form-children-wrapper > div {
+  display: grid;
+  grid-template-columns: 100px auto; /* Same as parent for consistent alignment */
+  align-items: center;
+
+}
+
+.form-content-input {
+  height: 160px;
+  display: flex;
+}
+
+.form-input {
+  background-color: var(--text_area_color);
+  color: var(--text_color);
+  border-radius: 8px;
+  border: none;
+  padding: 2px;
+
+}
+
+.form-button {
+  background-color: var(--button_color);
+  border: 0;
+  border-radius: 8px;
+  color: var(--text_color)
+}

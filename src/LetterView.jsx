@@ -1,23 +1,25 @@
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useLoaderData, useParams } from "react-router-dom";
-import { castPostVote } from "./AllPosts";
+import { castLetterVote } from "./AllPosts";
 import { UserContext } from "./layout/App";
 import { supaClient } from "./layout/supa-client";
 import { timeAgo } from "./layout/time-ago";
 import { UpVote } from "./UpVote";
 import CommentDetails from "./CommentDetails";
+import LetterDetails from "./LetterDetails";
+import ReplyDetails from "./ReplyDetails";
 //import { SupashipUserInfo } from "./layout/use-session";
 
 
-export function PostView({ postData = null,  myVotes = null, onVoteSuccess = null}) {
+export function LetterView({ letterData = null,  myVotes = null, onVoteSuccess = null}) {
   const userContext = useContext(UserContext);
 
   const params = useParams();
-  const postId = postData ? postData.id : params.postId;
+  const letterId = letterData ? letterData.id : params.LetterId;
   // const [voteBumper, setVoteBumper] = useState(0);
   const [bumper, setBumper] = useState(0);
-  const [postDetailData, setPostDetailData] = useState({
-    post: null,
+  const [letterDetailData, setletterDetailData] = useState({
+    letter: null,
     comments: [],
   });
   const [pageError, setPageError] = useState(null)
@@ -78,93 +80,92 @@ export function PostView({ postData = null,  myVotes = null, onVoteSuccess = nul
 
 
 
-    for (const post of sortedByDepthThenCreationTime) {
-        if (post.depth === 1) {
-            result.push(post);
+    for (const letter of sortedByDepthThenCreationTime) {
+        if (letter.depth === 1) {
+            result.push(letter);
         } else {
-            const parentNode = getParent(commentMap, post.path);
-            parentNode.comments.push(post);
+            const parentNode = getParent(commentMap, letter.path);
+            parentNode.comments.push(letter);
         }
     }
 
     return result;
   }
 
-  async function postDetailLoader({ params, userContext }) {
+  async function letterDetailLoader({ params, userContext }) {
 
 
     let data, error;
-      if (!postData) {
-        console.log('getting post and comments together');
+      if (!letterData) {
+        console.log('getting letter and comments together ' + letterId);
           ({ data, error } = await supaClient
-          .rpc("get_single_post_with_comments", { post_id: postId })
+          .rpc("get_single_letter_with_comments", { letter_id: letterId })
           .select("*"));
         if (error ) {
           setPageError(error);
           throw new Error(JSON.stringify(error));
         }
         if (!data || data.length === 0) {
-          setPageError({message: 'post not found'});
-          throw new Error('post not found');
+          setPageError({message: 'letter not found'});
+          throw new Error('letter not found');
         }
 
       } else {
-    //     console.log('using postId to get comments');
+        console.log('using letterId to get comments');
           ({ data, error } = await supaClient
-        .rpc("get_comments_by_post_id", { post_id: postId })
+        .rpc("get_comments_by_letter_id", { letter_id: letterId })
         .select("*"));
-      if (error ) {
-        setPageError(error);
-        throw new Error(JSON.stringify(error));
+        if (error ) {
+          setPageError(error);
+          throw new Error(JSON.stringify(error));
+        }
+        // if (!data || data.length === 0) {
+        //   setPageError({message: 'letter not found'});
+        //   throw new Error('letter not found');
+        // }
+
+        letterData.path = 'root';
+        if (!data) {
+          data = [letterData];
+        } else {
+          data.push(letterData);
+        }
+
       }
-      // if (!data || data.length === 0) {
-      //   setPageError({message: 'post not found'});
-      //   throw new Error('post not found');
-      // }
-
-      postData.path = 'root';
-      if (!data) {
-        data = [postData];
-      } else {
-        data.push(postData);
-      }
-
-  }
 
 
 
 
-
-    const postMap = data.reduce((acc, post) => {
-      acc[post.id] = post;
+    const letterMap = data.reduce((acc, letter) => {
+      acc[letter.id] = letter;
       return acc;
     }, {});
-    const post = postMap[postId];
-    const comments = data.filter((x) => x.id !== postId);
+    const letter = letterMap[letterId];
+    const comments = data.filter((x) => x.id !== letterId);
 
-    return { post, comments };
+    return { letter, comments };
   }
 
   useEffect(() => {
 
-    postDetailLoader({
-      params: postId ? { postId } : params,
+    letterDetailLoader({
+      params: letterId ? { letterId } : params,
       userContext,
-    }).then((newPostDetailData) => {
-      if (newPostDetailData) {
-        let sortedDetails = {...newPostDetailData};
-        sortedDetails.comments = unsortedCommentsToNested(newPostDetailData.comments);
-        setPostDetailData(sortedDetails);
+    }).then((newletterDetailData) => {
+      if (newletterDetailData) {
+        let sortedDetails = {...newletterDetailData};
+        sortedDetails.comments = unsortedCommentsToNested(newletterDetailData.comments);
+        setletterDetailData(sortedDetails);
       }
     });
   }, [userContext, params, bumper]);
 
 
-  function onCommentVoteSuccess (id, direction)  {
-    if (id === postId) {
-      let newData = {...postDetailData};
-      direction == 'delete' ? newData.post.score-- : newData.post.score++;
-      setPostDetailData(newData);
+  function onLetterVoteSuccess (id, direction)  {
+    if (id === letterId) {
+      let newData = {...letterDetailData};
+      direction == 'delete' ? newData.letter.score-- : newData.letter.score++;
+      setletterDetailData(newData);
     }
 
     function recursiveCommentMapper (current) {
@@ -190,17 +191,51 @@ export function PostView({ postData = null,  myVotes = null, onVoteSuccess = nul
 
     }
 
-        let commentsArr = postDetailData.comments.map(recursiveCommentMapper);
-        let newPostDetailData = {...postDetailData};
-        newPostDetailData.comments = commentsArr;
-        setPostDetailData(newPostDetailData);
+        let commentsArr = letterDetailData.comments.map(recursiveCommentMapper);
+        let newletterDetailData = {...letterDetailData};
+        newletterDetailData.comments = commentsArr;
+        setletterDetailData(newletterDetailData);
+
+  }
+
+  function onCommentVoteSuccess(id, direction)  {
+
+
+    function recursiveCommentMapper (current) {
+
+      if (current.id == id) {
+        if (direction === 'delete') {
+          return {
+            ...current,
+            score: current.score - 1
+          }
+        }
+        if (direction === 'up') {
+          return {
+            ...current,
+            score: current.score + 1
+          }
+        }
+      } else if (current.comments.length > 0) {
+        let newChildComments = current.comments.map(recursiveCommentMapper);
+        current.comments = newChildComments;
+      }
+        return current;
+
+    }
+
+        let commentsArr = letterDetailData.comments.map(recursiveCommentMapper);
+        let newletterDetailData = {...letterDetailData};
+        newletterDetailData.comments = commentsArr;
+        setletterDetailData(newletterDetailData);
 
   }
 
   return (
     <>
-      <div className="post-container flex flex-col">
-      <div class="post flex flex-col place-content-center grow">
+
+      <div className="letter-container flex flex-col">
+      <div class="letter flex flex-col place-content-center grow">
         {pageError &&
           <>
             <h4>There was an error loading the page. The details of the error are:</h4>
@@ -209,37 +244,37 @@ export function PostView({ postData = null,  myVotes = null, onVoteSuccess = nul
             <div>{pageError.message}</div>
           </>
         }
-            <CommentDetails
-              key={postDetailData?.post?.id}
-              comment={postData ? postData : postDetailData.post}
-              onVoteSuccess={onVoteSuccess ? onVoteSuccess : onCommentVoteSuccess}
+            <LetterDetails
+              key={letterDetailData?.letter?.id}
+              letter={letterData ? letterData : letterDetailData.letter}
+              onVoteSuccess={onVoteSuccess ? onVoteSuccess : onLetterVoteSuccess}
               getDepth={getDepth}
-              repliesCount={postDetailData.comments.length}
+              repliesCount={letterDetailData.comments.length}
             />
           </div>
         <div className="create-comments-container">
           {userContext.session  && (
             <CreateComment
-              parent={postData ? postData : postDetailData.post}
+              parent={letterData ? letterData : letterDetailData.letter}
               onSuccess={(newComment) => {
-                let newPostDetailData = {...postDetailData};
-                newPostDetailData.post.count_comments++;
-                newPostDetailData.comments.push(newComment);
-                setPostDetailData(newPostDetailData);
+                let newletterDetailData = {...letterDetailData};
+                newletterDetailData.letter.count_comments++;
+                newletterDetailData.comments.push(newComment);
+                setletterDetailData(newletterDetailData);
               }}
               getDepth={getDepth}
             />
           )}
         </div>
         <div className="comments-container flex flex-col w-full grow">
-          {postDetailData.comments.map((comment) => (
+          {letterDetailData.comments.map((comment) => (
             <CommentView
               key={comment.id}
               comment={comment}
               onVoteSuccess={onCommentVoteSuccess}
               getDepth={getDepth}
-              postDetailData={postDetailData}
-              setPostDetailData={setPostDetailData}
+              letterDetailData={letterDetailData}
+              setletterDetailData={setletterDetailData}
             />
           ))}
         </div>
@@ -254,8 +289,8 @@ function CommentView({
   myVotes,
   getDepth,
   onVoteSuccess,
-  setPostDetailData,
-  postDetailData,
+  setletterDetailData,
+  letterDetailData,
   leftBorderLine,
   replyIndex,
   arrLength
@@ -271,7 +306,7 @@ function CommentView({
     <div className="comment flex flex-col  rounded">
 
 
-            <CommentDetails
+            <ReplyDetails
               key={comment.id}
               comment={comment}
               myVotes={myVotes}
@@ -291,8 +326,8 @@ function CommentView({
                 <CreateComment
                     parent={comment}
                     onCancel={() => setCommenting(false)}
-                    setPostDetailData={setPostDetailData}
-                    postDetailData={postDetailData}
+                    setletterDetailData={setletterDetailData}
+                    letterDetailData={letterDetailData}
                     onSuccess={(newComment) => {
 
                       function addComment (newComment) {
@@ -300,9 +335,9 @@ function CommentView({
 
                         let parentIndex;
                         let realParent = newComment.path.slice(newComment.path.lastIndexOf('.') + 1);
-                        for (let i = 0; i < postDetailData.comments.length; i++) {
+                        for (let i = 0; i < letterDetailData.comments.length; i++) {
 
-                          let transmutedId = postDetailData.comments[i]['id'].replaceAll("-", "_");
+                          let transmutedId = letterDetailData.comments[i]['id'].replaceAll("-", "_");
 
                           if (transmutedId === realParent) {
                             parentIndex = i;
@@ -310,10 +345,10 @@ function CommentView({
                             break;
                           }
                         }
-                        let newPostDetailData = {...postDetailData};
-                        newPostDetailData.comments[parentIndex]['comments'].push(newComment);
-                        newPostDetailData.post.count_comments++;
-                        setPostDetailData(newPostDetailData);
+                        let newletterDetailData = {...letterDetailData};
+                        newletterDetailData.comments[parentIndex]['comments'].push(newComment);
+                        newletterDetailData.letter.count_comments++;
+                        setletterDetailData(newletterDetailData);
                       };
                       addComment(newComment);
 
@@ -329,15 +364,14 @@ function CommentView({
             {/* Recursive nested comments */}
             {!!comment?.comments?.length && (
                 <div className="ml-4">
-                    <button
+                    <button className="show-replies-button"
                         onClick={() => setShowReplies(!showReplies)}
-                        disabled={!session}
                     >
                         {showReplies ? "Hide Replies" :
                         (comment.comments.length === 1) ? `Show 1 Reply` : `Show ${comment.comments.length} Replies`}
                     </button>
                 </div>
-            )
+              )
             }
             {showReplies && !!comment.comments.length && (
 
@@ -352,8 +386,8 @@ function CommentView({
                       myVotes={myVotes}
                       onVoteSuccess={onVoteSuccess}
                       getDepth={getDepth}
-                      setPostDetailData={setPostDetailData}
-                      postDetailData={postDetailData}
+                      setletterDetailData={setletterDetailData}
+                      letterDetailData={letterDetailData}
                       replyIndex={index}
                       arrLength={comment.comments.length}
                     />
@@ -410,7 +444,7 @@ function CreateComment({
       // Scroll a little more down to create extra space
     window.scrollBy(0, extraOffset);
     }
-    console.log('called scroll');
+
   };
 
   return (
@@ -421,10 +455,10 @@ function CreateComment({
         data-e2e="create-comment-form"
         onSubmit={(event) => {
           event.preventDefault();
-          let actualPath = `${parent.path}.${parent.id.replaceAll("-", "_")}`;
-          let parentDepth = getDepth(parent.path);
+          let actualPath = `${parent?.path}.${parent.id.replaceAll("-", "_")}`;
+          let parentDepth = getDepth(parent?.path);
           if (parentDepth >= 2) {
-            actualPath = parent.path;
+            actualPath = parent?.path;
           }
           supaClient
             .rpc("create_new_comment", {
@@ -468,12 +502,12 @@ function CreateComment({
             });
         }}
       >
-        <h4>Add a New Comment</h4>
-        {replyIndex < arrLength - 1 && <div ref={borderLineRef} className="left-border-line-from-comment"></div>}
+        {parent?.path === 'root' ? <h4>Add a New Comment</h4> : <h3>Add a New Reply</h3>}
+        
         <textarea autoFocus
           ref={textareaRef}
           name="comment"
-          placeholder="Your comment here"
+          placeholder={parent?.path === 'root' ? 'Your Comment Here' : 'Your Reply Here'}
           className="text-gray-800 p-4 rounded"
           onChange={({ target: { value } }) => {
             setComment(value);

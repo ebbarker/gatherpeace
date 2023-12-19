@@ -128,7 +128,7 @@ export default function CommentDetails({
         </div>
       }
 
-      <div className="post-details-container flex items-center">
+      <div className="post-controls-container flex items-center">
         <button className="post-votes-container post-control-button" onClick={onVoteClick}>
           <div>
             <span>
@@ -148,50 +148,25 @@ export default function CommentDetails({
           { //if !comment?.path then this is in a timeline because those posts don't have paths.
             //if it has a path of root then it is the main post and should not be clickable.
             //if it has a path !== root then it is a reply.
-             !comment?.path || parentIsTimeline ?
-              <>
-                <i className="comment-icon-container">
-                  <BiCommentDetail />
-                </i>
-                <div className="count-root-comments" >
-                    {' ' + comment?.count_comments}
-                </div>
-              </>
-              : comment?.path === "root" ?
-              <>
-                <i className="comment-icon-container">
-                  <BiCommentDetail />
-                </i>
 
-                <div className="count-root-comments" >
-                  {' ' + comment?.count_comments}
-                {/* {comment?.count_comments === 1 ? "Comment" : "Comments"} */}
-                </div>
-                </>
-              :
+
                 <>
+
                       {commenting ?
-                        <div className="reply-count-container" onClick={() => {setCommenting(!commenting); setShowReplies(!showReplies)}} disabled={!session}>
+                        <div className="reply-count-container" onClick={() => {setCommenting(!commenting)}} disabled={!session}>
                           Cancel
                         </div>
                         :
-                        <div className="reply-count-container" onClick={() => {setCommenting(!commenting); setShowReplies(true)}} disabled={!session}>
-                          {commenting ? " Cancel" : repliesCount === 1 ? repliesCount + " Reply" : repliesCount + " Replies"}
+                        <div className="reply-count-container" onClick={() => {setCommenting(!commenting)}} disabled={!session}>
+                          <i className="comment-icon-container">
+                            <BiCommentDetail />
+                          </i>
+                          {commenting ? " Cancel" : " Reply" }
                         </div>
                       }
                 </>
           }
         </button>
-        {comment?.path == 'root' && (
-            <button className="post-control-button copy-link-button" onClick={copyLink}>
-            <i className="link-icon-container">
-              <PiLinkBold />
-            </i>
-            {copied ? <div className="copy-link-text">Copied!</div> : <div className="copy-link-text">Copy Link</div> }
-
-          </button>
-
-        )}
 
       </div>
       </div>

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { FaHandPeace, FaRegHandPeace } from "react-icons/fa6";
 
 export function UpVote({
@@ -6,46 +6,42 @@ export function UpVote({
     filled = false,
     enabled = true,
     onClick = () => {},
+    isClicked
   }) {
-  const classes = useMemo(() => {
-    const temp = [];
-    if (direction === "down") {
-      temp.push("origin-center rotate-180");
-    }
-    if (filled) {
-      temp.push(direction === "up" ? "fill-green-400" : "fill-red-400");
-      temp.push("glow");
-    } else {
-      temp.push("fill-white");
-    }
-    if (!enabled) {
-      temp.push("opacity-50");
-    }
-    return temp.join(" ");
-  }, [direction, filled, enabled]);
+
+
   return (
     <>
-    {FaRegHandPeace}
+    {/* {FaRegHandPeace} */}
       {filled ?
-        <button
+        <div
+        className={`vote-container-button vote-filled ${isClicked ? 'vote-rotate' : 'vote-centered'}`}
+
         disabled={!enabled}
-        onClick={onClick}
+
         data-e2e={`${direction}vote`}
         data-filled={filled}
         Icon={filled ? FaHandPeace : FaRegHandPeace }
         >
-        <FaHandPeace />
-        </button>
+
+          <i className="like-icon-container like-filled">
+            <FaHandPeace />
+          </i>
+        </div>
         :
-        <button
+        <div
+        className={`vote-container-button ${isClicked ? 'vote-rotate' : 'vote-centered'}`}
+        
         disabled={!enabled}
-        onClick={onClick}
+
         data-e2e={`${direction}vote`}
         data-filled={filled}
         Icon={filled ? FaHandPeace : FaRegHandPeace }
         >
-        <FaRegHandPeace />
-        </button>
+          <i className="like-icon-container like-unfilled">
+            <FaRegHandPeace />
+          </i>
+        </div>
 
       }
     </>

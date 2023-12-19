@@ -12,6 +12,7 @@ import { Navbar, Nav, NavDropdown, Form, FormControl,  Container } from "react-b
 import Hamburger from "./Hamburger"
 import { supaClient } from "./supa-client";
 import { Auth, ThemeSupa } from "@supabase/auth-ui-react";
+import DarkMode from "../DarkMode";
 
 
 
@@ -52,6 +53,9 @@ export default function NavBar() {
         <div class="collapse navbar-collapse my-2 my-lg-0" id="navbarSupportedContent">
 
           <ul class="navbar-menu-right navbar-nav ml-auto">
+            <li className="nav-item">
+              <DarkMode />
+            </li>
             <li class="nav-item active nav-item-custom">
               <a class="nav-link" href="#"><Link className="nav-home-link" to="/">Home </Link><span class="sr-only">(current)</span></a>
             </li>

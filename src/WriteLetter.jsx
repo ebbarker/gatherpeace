@@ -3,11 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { router, UserContext } from "./layout/App";
 import { supaClient } from "./layout/supa-client";
 
-// export interface CreatePostProps {
-//   newPostCreated?: () => void;
-// }
-
-export function CreatePost({ newPostCreated = () => {}, posts, setPosts }) {
+export function WriteLetter({ newPostCreated = () => {}, posts, setPosts }) {
   const user = useContext(UserContext);
 
   const [content, setContent] = useState("");

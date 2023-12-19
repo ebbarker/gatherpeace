@@ -140,6 +140,37 @@ BEGIN
 END;
 $$;
 
+-- query below written with Shiva
+-- BEGIN
+--     RETURN QUERY
+--     WITH LimitedPosts AS (
+--         SELECT id, score, created_at, user_id FROM posts
+--         ORDER BY score DESC, created_at DESC
+--         LIMIT 10 OFFSET (page_number - 1) * 10
+--     )
+--     SELECT p.id, p.user_id, p.created_at, pc.content, p.score, up.username
+--     FROM LimitedPosts p
+--     JOIN post_contents pc ON p.id = pc.post_id
+--     JOIN user_profiles up ON p.user_id = up.user_id;
+-- END;
+
+-- CREATE OR REPLACE FUNCTION get_limited_posts_with_shiva(page_number INT)
+-- RETURNS TABLE (post_id uuid, user_id uuid, post_created_at TIMESTAMPTZ, content TEXT, post_score INT, username TEXT) AS $$
+-- BEGIN
+--     RETURN QUERY
+--     WITH LimitedPosts AS (
+--         SELECT p.id, p.score, p.created_at, p.user_id FROM posts p
+--         ORDER BY p.score DESC, p.created_at DESC
+--         LIMIT 10 OFFSET (page_number - 1) * 10
+--     )
+--     SELECT lp.id AS post_id, lp.user_id, lp.created_at AS post_created_at,
+--            pc.content, lp.score AS post_score, up.username
+--     FROM LimitedPosts lp
+--     JOIN post_contents pc ON lp.id = pc.post_id
+--     JOIN user_profiles up ON lp.user_id = up.user_id;
+-- END;
+-- $$ LANGUAGE plpgsql;
+
 
 
 CREATE OR REPLACE FUNCTION create_new_post("userId" uuid, "title" text, "content" text)
@@ -162,41 +193,41 @@ END; $$;
 
 
 
-create or replace function get_single_post_with_comments_old(post_id uuid)
-returns table (
-    id uuid,
-    author_name text,
-    created_at timestamp with time zone,
-    title text,
-    content text,
-    score int,
-    path ltree
-)
-language plpgsql
-as $$
-begin
-    return query
-    select
-      posts.id,
-      user_profiles.username,
-      posts.created_at,
-      post_contents.title,
-      post_contents.content,
-      posts.score,
-      posts.path
-    from posts
-    join post_contents on posts.id = post_contents.post_id
-    join user_profiles on posts.user_id = user_profiles.user_id
-    where
-      posts.path <@ text2ltree(concat('root.', replace(concat($1, ''), '-', '_')))
-    or
-      posts.id = $1;
-end;$$;
+-- create or replace function get_single_post_with_comments_old(post_id uuid)
+-- returns table (
+--     id uuid,
+--     username text,
+--     created_at timestamp with time zone,
+--     title text,
+--     content text,
+--     score int,
+--     path ltree
+-- )
+-- language plpgsql
+-- as $$
+-- begin
+--     return query
+--     select
+--       posts.id,
+--       user_profiles.username,
+--       posts.created_at,
+--       post_contents.title,
+--       post_contents.content,
+--       posts.score,
+--       posts.path
+--     from posts
+--     join post_contents on posts.id = post_contents.post_id
+--     join user_profiles on posts.user_id = user_profiles.user_id
+--     where
+--       posts.path <@ text2ltree(concat('root.', replace(concat($1, ''), '-', '_')))
+--     or
+--       posts.id = $1;
+-- end;$$;
 
 CREATE OR REPLACE FUNCTION get_single_post_with_comments(post_id uuid)
 RETURNS TABLE (
     id uuid,
-    author_name text,
+    username text,
     created_at timestamp with time zone,
     content text,
     score int,
@@ -209,7 +240,7 @@ BEGIN
     RETURN QUERY
     SELECT
       p.id,
-      up.username as author_name,
+      up.username as username,
       p.created_at,
       pc.content,
       p.score,
@@ -223,7 +254,7 @@ BEGIN
     UNION ALL
     SELECT
       c.id,
-      up.username as author_name,
+      up.username as username,
       c.created_at,
       c.content,
       c.score,
@@ -256,12 +287,11 @@ $$;
 CREATE OR REPLACE FUNCTION get_comments_by_post_id(post_id uuid)
 RETURNS TABLE (
     id uuid,
-    author_name text,
+    username text,
     created_at timestamp with time zone,
     content text,
     score int,
-    path ltree,
-    count_comments int
+    path ltree
 )
 LANGUAGE plpgsql
 AS $$
@@ -269,12 +299,11 @@ BEGIN
     RETURN QUERY
     SELECT
         c.id,
-        up.username AS author_name,
+        up.username AS username,
         c.created_at,
         c.content,
         c.score,
-        c.path,
-        c.count_comments
+        c.path
     FROM comments c
     JOIN user_profiles up ON c.user_id = up.user_id
     WHERE c.path <@ text2ltree(concat('root.', replace(post_id::text, '-', '_')));

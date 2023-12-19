@@ -43,14 +43,14 @@ export default function Dialog({
           }
           updateDialogState(false);
         }}
-        className="justify-center items-start mt-12 flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none w-screen"
+        className="login-blackout"
       >
-        <div className="relative my-6 mx-auto w-128">
-          <div className="relative group">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-green-200 to-green-600 rounded-lg blur-lg opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-2000"></div>
+        <div className="login-container">
+          <div className="login-grouper">
+            <div className="UNKNOWN absolute -inset-0.5 bg-gradient-to-r from-green-200 to-green-600 rounded-lg blur-lg opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-2000"></div>
             <div
               ref={dialog}
-              className="relative p-6 bg-black rounded-lg grid place-content-center"
+              className="login-details-container"
             >
               {contents}
             </div>

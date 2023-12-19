@@ -3,19 +3,20 @@ import { useNavigate } from "react-router-dom";
 import { router, UserContext } from "./layout/App";
 import { supaClient } from "./layout/supa-client";
 
-// export interface CreatePostProps {
-//   newPostCreated?: () => void;
+// export interface CreateLetterProps {
+//   newLetterCreated?: () => void;
 // }
 
-export function CreatePost({ newPostCreated = () => {}, posts, setPosts }) {
+export function CreateLetter({ newLetterCreated = () => {}, letters, setLetters }) {
   const user = useContext(UserContext);
 
   const [content, setContent] = useState("");
   const navigate = useNavigate();
   const title = 'null';
 
-  function appendPost(userId, content, newId, created_at) {
-    let newPost = {
+  function appendLetter(userId, content, newId, created_at) {
+
+    let newLetter = {
       id: newId,
       content,
       score: 0,
@@ -24,7 +25,8 @@ export function CreatePost({ newPostCreated = () => {}, posts, setPosts }) {
       created_at,
       count_comments: 0
     }
-    setPosts([newPost, ...posts])
+    console.log('new letter: ' + JSONS.stringify(newLetter))
+    setLetters([newLetter, ...letters])
   }
 
   //rounded border-2 p-4 ml-4 flex flex-col justify-start gap-4 mb-8
@@ -34,12 +36,12 @@ export function CreatePost({ newPostCreated = () => {}, posts, setPosts }) {
     <div></div>
       <form
 
-        className="create-new-post-form"
-        data-e2e="create-post-form"
+        className="create-new-letter-form"
+        data-e2e="create-letter-form"
         onSubmit={(event) => {
           event.preventDefault();
           supaClient
-            .rpc("create_new_post", {
+            .rpc("create_new_letter", {
               userId: user?.session?.user?.id,
               title,
               content,
@@ -48,14 +50,14 @@ export function CreatePost({ newPostCreated = () => {}, posts, setPosts }) {
               if (error) {
                 console.log(error);
               } else {
-                console.log(JSON.stringify(data))
+                console.log(JSON.stringify(data));
 
-                appendPost(user.session?.user.id, content, data[0].new_post_id, data[0].creation_time);
+                appendLetter(user.session?.user.id, content, data[0].new_letter_id, data[0].creation_time);
               }
             });
         }}
       >
-        <h3>Create A New Post</h3>
+        <h3>Create A New Letter</h3>
         <textarea
           name="contents"
           placeholder="Your content here"
@@ -67,7 +69,7 @@ export function CreatePost({ newPostCreated = () => {}, posts, setPosts }) {
         <div>
           <button
             type="submit"
-            className="create-post-submit-button"
+            className="create-letter-submit-button"
             disabled={content.length < 3}
            >
 
