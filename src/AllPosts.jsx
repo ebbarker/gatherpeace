@@ -42,6 +42,8 @@ export function AllPosts() {
 
   }, [session, pageNumber]);
 
+  }, [session, pageNumber]);
+
 
   return (
     <>
@@ -80,6 +82,7 @@ export function AllPosts() {
                       }
                     }
                   } else {
+
 
                     return current;
                   }

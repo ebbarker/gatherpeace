@@ -9,6 +9,9 @@ import { VoteContext } from "./contexts/VoteContext";
 import { BiCommentDetail } from "react-icons/bi"
 import { PiLinkBold } from "react-icons/pi";
 
+import { BiCommentDetail } from "react-icons/bi"
+import { PiLinkBold } from "react-icons/pi";
+
 
 
 export default function CommentDetails({
@@ -20,6 +23,15 @@ export default function CommentDetails({
   onSinglePageVoteSuccess = () => {},
   commenting,
   setCommenting,
+  repliesCount,
+  setShowReplies,
+  showReplies,
+  leftBorderLine,
+  toggleModal,
+  showModal,
+  arrLength,
+  replyIndex,
+  parentIsTimeline
   repliesCount,
   setShowReplies,
   showReplies,

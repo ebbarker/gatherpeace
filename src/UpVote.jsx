@@ -13,11 +13,13 @@ export function UpVote({
   return (
     <>
     {/* {FaRegHandPeace} */}
+    {/* {FaRegHandPeace} */}
       {filled ?
         <div
         className={`vote-container-button vote-filled ${isClicked ? 'vote-rotate' : 'vote-centered'}`}
 
         disabled={!enabled}
+
 
         data-e2e={`${direction}vote`}
         data-filled={filled}
@@ -31,7 +33,7 @@ export function UpVote({
         :
         <div
         className={`vote-container-button ${isClicked ? 'vote-rotate' : 'vote-centered'}`}
-        
+
         disabled={!enabled}
 
         data-e2e={`${direction}vote`}

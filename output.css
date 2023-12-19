@@ -1,6 +1,7 @@
 
 :root {
   --body_background: rgb(2, 140, 140);
+  --body_background: rgb(2, 140, 140);
   --body_color: black;
   --link_color: green;
 }
@@ -38,6 +39,12 @@ body {
 
 .rounded{
   border-radius: 0.25rem !important;
+  background-color: var(--body_background) !important;
+  color: var(--text_color) !important;
+}
+
+.rounded{
+  border-radius: 0.25rem !important;
 }
 
 .main-title {
@@ -48,8 +55,32 @@ body {
   margin-top: 4px;
   margin-right: 2px;
   padding: 0.5rem !important;
+.main-title {
+  padding-top: 20px;
 }
 
+.or {
+  margin-top: 4px;
+  margin-right: 2px;
+  padding: 0.5rem !important;
+}
+
+/* .modal-content {
+  background-color: var(--modal_color);
+  position: absolute;
+  align-items: center;
+  left: auto;
+  right: auto;
+  margin: 0 auto;
+} */
+
+/* .post-modal {
+  background-color: var(--modal_color);
+  position: absolute;
+  align-items: center;
+  left: auto;
+  right: auto;
+  margin: 0 auto;
 /* .modal-content {
   background-color: var(--modal_color);
   position: absolute;
@@ -81,6 +112,19 @@ body {
 .date {
   color: var(--secondary_text_color);
   font-size: 14px;
+
+
+.modal-dialog {
+  background-color: var(--modal_color);
+
+  left: auto;
+  right: auto;
+  margin: 0 auto;
+} */
+
+.date {
+  color: var(--secondary_text_color);
+  font-size: 14px;
 }
 
 .ml-4{
@@ -98,6 +142,10 @@ body {
 .justify-center{
   justify-content: center !important;
 }
+
+.main-title {
+
+    place-content: center !important;
 
 .main-title {
 
