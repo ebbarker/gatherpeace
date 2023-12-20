@@ -53,6 +53,7 @@ export function useSession(): SupashipUserInfo {
       .select("*")
       .filter("user_id", "eq", userId);
     if (!data?.length) {
+      console.log('CALLING WELCOME FROM USe-SESSION')
       navigate("/welcome");
     }
     setUserInfo({ ...userInfo, profile: data?.[0] });

@@ -149,7 +149,6 @@ export function Stepform ({ newPostCreated = () => {}, letters, setLetters }) {
 
   return (
     <>
-    <div>STEP FORM</div>
     <div className="create-post-step-container">
       <div className="create-post-form-container">
         <form className="create-post-stepform">

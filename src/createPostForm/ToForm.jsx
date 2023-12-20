@@ -45,23 +45,23 @@ export default function ToForm({
       </div>
       <div>
         <label>Recipient Country</label>
-        <select
+        <input
           id="recipient-country"
           required
           onChange={e => updateFields({ recipientCountry: e.target.value })}
           onKeyDown={handleKeyDown}
           value={recipientCountry}
-        >
-          <option value="">Select a country</option>
+        />
+          {/* <option value="">Select a country</option>
           {countries.map((country) => (
             <option key={country.name} value={country.name}>
               {country.name}
             </option>
-          ))}
-        </select>
+          ))} */}
+        {/* </select> */}
       </div>
       <div>
-        <label>State/Province</label>
+        <label>State or Province</label>
         <input
         id="recipient-state"
         required

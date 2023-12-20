@@ -72,7 +72,7 @@ export const router = sentryCreateBrowserRouter([
       {
         path: "welcome",
         element: <Welcome />,
-        loader: welcomeLoader,
+        //loader: welcomeLoader,
       },
       { path: "privacy-policy", element: <PrivacyPolicy /> },
     ],

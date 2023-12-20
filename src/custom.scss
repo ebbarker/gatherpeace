@@ -1,9 +1,7 @@
 
 @import "../node_modules/bootstrap/scss/bootstrap";
 
-// #root {
-//   background-color: black;
-// }
+
 
 .logo-container {
   display: flex;
@@ -18,7 +16,7 @@
 .navbar {
   background: #29E4B4;
   display: flex;
-  align-items: center;  /* This will vertically align all elements in navbar */
+  align-items: center; 
 }
 
 .navbar-toggler.collapsed {
@@ -30,14 +28,14 @@
   right: 0;
 }
 
-/* Make sure all elements in navbar menu are also centered */
+
 .navbar-menu-right {
   display: flex;
   align-items: center;
   color: black;
 }
 
-/* Target login and signup specifically */
+
 #login, #sign-up {
   display: flex;
   align-items: center;
@@ -87,112 +85,4 @@ $theme-colors: (
 }
 
 
-
-//   .image {
-//     width: 60px;
-//     height: 60px;
-//     border-radius: 50%;
-//     background: var(--image);
-//     margin-right: 10px;
-//   }
-//   .name {
-//     width: fit-content;
-//     display: flex;
-//     align-items: flex-start;
-//     justify-content: center;
-//     flex-direction: column;
-//   }
-//   .username {
-//     font-size: 22px;
-//     font-family: poppins;
-//     font-weight: 500;
-//     display: flex;
-//     align-items: center;
-//     justify-content: center;
-//     line-height: 26px;
-//   }
-//   .username span {
-//     font-size: 20px;
-//     margin-left: 5px;
-//     color: rgb(6, 166, 250);
-//   }
-//   .handle,
-//   .date {
-//     font-family: poppins;
-//     font-size: 13px;
-//     color: var(--teritiary);
-//     font-weight: 500;
-//   }
-//   .content {
-//     font-size: 13px;
-//     color: var(--secondary);
-//     font-family: poppins;
-//     flex-grow: 1;
-//     display: flex;
-//     align-items: center;
-//     justify-content: center;
-//   }
-//   .content span {
-//     color: rgb(6, 166, 250);
-//   }
-//   .date {
-//     font-size: 11px;
-//   }
-//   .controls {
-//     width: 100%;
-//     display: flex;
-//     align-items: center;
-//     justify-content: space-evenly;
-//     color: var(--teritiary);
-//   }
-//   .controls .btn {
-//     display: flex;
-//     align-items: center;
-//   }
-//   .btn i {
-//     margin-right: 5px;
-//     font-size: 16px;
-//   }
-
-//   .btn span {
-//     font-family: poppins;
-//     font-size: 14px;
-//     font-weight: 500;
-//   }
-
-
-
-// .post-modal {
-//   background-color: #171717;
-// }
-
-// .post {
-//   border-color: #48CFAD !important;
-// }
-
-// .postContainer {
-//   padding: 0 20px; /* 20px horizontal padding, adjust as needed */
-//   display: flex;
-//   flex-direction: column;
-
-//   gap: 20px; /* Adds space between child elements, adjust as needed */
-//   height: auto;
-//   grid-row: 1;
-
-// }
-
-// .commentsContainer {
-//   display: flex;
-//   flex-direction: column;
-//   gap: 1rem;
-//   margin-top: 2rem;
-//   align-items: stretch;
-// }
-
-// // Styles for nested comments
-// .comment {
-//   margin-left: 1rem;
-//   margin-top: 0.5rem; // Add some margin at the top for separation
-// }
-// // // Import Bootstrap and its default variables
 

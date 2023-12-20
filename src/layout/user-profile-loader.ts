@@ -5,6 +5,7 @@ import { UserContext } from "./App";
 export function userWelcomeLoader() {
   const user = useContext(UserContext);
   if (user.session && !user.profile) {
+    console.log('need username')
     redirect("/welcome");
   }
 }

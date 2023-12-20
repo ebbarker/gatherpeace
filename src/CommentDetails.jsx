@@ -6,13 +6,8 @@ import { supaClient } from "./layout/supa-client";
 import { timeAgo } from "./layout/time-ago";
 import { UpVote } from "./UpVote";
 import { VoteContext } from "./contexts/VoteContext";
-import { BiCommentDetail } from "react-icons/bi"
+import { BiCommentDetail } from "react-icons/bi";
 import { PiLinkBold } from "react-icons/pi";
-
-import { BiCommentDetail } from "react-icons/bi"
-import { PiLinkBold } from "react-icons/pi";
-
-
 
 export default function CommentDetails({
   key,
@@ -24,23 +19,12 @@ export default function CommentDetails({
   commenting,
   setCommenting,
   repliesCount,
-  setShowReplies,
   showReplies,
   leftBorderLine,
   toggleModal,
   showModal,
   arrLength,
   replyIndex,
-  parentIsTimeline
-  repliesCount,
-  setShowReplies,
-  showReplies,
-  leftBorderLine,
-  toggleModal,
-  showModal,
-  arrLength,
-  replyIndex,
-  parentIsTimeline
 }) {
   const userContext = useContext(UserContext);
   const { session } = useContext(UserContext);

@@ -58,7 +58,7 @@ export default function FromForm({
       </div>
 
       <div>
-        <label>Your State/Province</label>
+        <label>State or Province</label>
         <input
           required
           id="sender-state"

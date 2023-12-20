@@ -5,23 +5,49 @@ import Dialog from "./Dialog";
 import { supaClient } from "./supa-client";
 
 export async function welcomeLoader() {
-  const {
-    data: { user },
-  } = await supaClient.auth.getUser();
-  if (!user) {
-    console.log('line 12')
-    return redirect("/");
-  }
-  const { data } = await supaClient
-    .from("user_profiles")
-    .select("*")
-    .eq("user_id", user?.id)
-    .single();
-  if (data?.username) {
-    console.log(data?.username)
-    return redirect("/");
-  }
-  return null
+  console.log('welcome loader is Called');
+  // try {
+  //   const {
+  //     data: { user },
+  //   } = await supaClient.auth.getUser();
+
+  //   if (!user) {
+  //     console.log('line 12');
+  //     return redirect("/");
+  //   } else {
+  //     console.log('user: ' + JSON.stringify(user));
+  //     console.log('line 15');
+  //   }
+
+  //   try {
+  //     const { data, error } = await supaClient
+  //       .from("user_profiles")
+  //       .select("*")
+  //       .eq("user_id", user.id)
+  //       .single();
+
+  //     if (error) {
+  //       throw error;
+  //       return null;
+  //     }
+
+  //     if (data?.username) {
+  //       console.log('data.username on line 33' + data?.username);
+  //       return redirect("/");
+  //     }
+
+  //     return null;
+  //   } catch (innerError) {
+  //     console.error("Error fetching user profile:", innerError);
+  //     return null;
+  //     // Handle the error or redirect as needed
+  //     // Example: return redirect("/error-page");
+  //   }
+  // } catch (outerError) {
+  //   console.error("Error fetching user data:", outerError);
+  //   // Handle the error or redirect as needed
+  //   // Example: return redirect("/error-page");
+  // }
 }
 
 export function Welcome() {
@@ -34,7 +60,7 @@ export function Welcome() {
 
   return (
     <Dialog
-      allowClose={false}
+      allowClose={true}
       open={true}
       contents={
         <>
@@ -49,26 +75,28 @@ export function Welcome() {
             onSubmit={(event) => {
               event.preventDefault();
               supaClient
-                .from("user_profiles")
-                .insert([
-                  {
-                    user_id: user.session?.user.id,
-                    username: userName,
-                  },
-                ])
-                .then(({ error }) => {
-                  if (error) {
-                    setServerError(`Username "${userName}" is already taken`);
-                  } else {
-                    const target = localStorage.getItem("returnPath") || "/";
-                    localStorage.removeItem("returnPath");
-                    console.log('redirecting line 65')
-                    setTimeout(() => {
-                      navigate(target)
-                    }, 200);
-                  }
-                });
-            }}
+                  .from("user_profiles")
+                  .insert([
+                      {
+                          user_id: user.session?.user.id,
+                          username: userName,
+                      },
+                  ])
+                  .then(({ error }) => {
+                      if (error) {
+                          setServerError(`Username "${userName}" is already taken`);
+                          console.log(JSON.stringify(error));
+                      } else {
+                          setUserName(userName); // Set the username state here
+                          const target = localStorage.getItem("returnPath") || "/";
+                          localStorage.removeItem("returnPath");
+                          console.log('redirecting line 65');
+                          setTimeout(() => {
+                              navigate(target);
+                          }, 200);
+                      }
+                  });
+          }}
           >
             <input
               name="username"
