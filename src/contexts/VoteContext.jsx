@@ -75,7 +75,7 @@ export const VoteProvider = ({ children }) => {
     });
     }
 
-  }, [session]);
+  }, [session?.user?.id]);
 
   return (
     <VoteContext.Provider value={{ myContextVotes, setMyContextVotes }}>

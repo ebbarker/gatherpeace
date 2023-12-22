@@ -40,7 +40,7 @@ export function AllPosts() {
         }),
     ]);
 
-  }, [session, pageNumber]);
+  }, [pageNumber]);
 
 
   return (

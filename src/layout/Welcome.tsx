@@ -6,48 +6,48 @@ import { supaClient } from "./supa-client";
 
 export async function welcomeLoader() {
   console.log('welcome loader is Called');
-  // try {
-  //   const {
-  //     data: { user },
-  //   } = await supaClient.auth.getUser();
+  try {
+    const {
+      data: { user },
+    } = await supaClient.auth.getUser();
 
-  //   if (!user) {
-  //     console.log('line 12');
-  //     return redirect("/");
-  //   } else {
-  //     console.log('user: ' + JSON.stringify(user));
-  //     console.log('line 15');
-  //   }
+    if (!user) {
+      console.log('line 12');
+      return redirect("/");
+    } else {
+      console.log('user: ' + JSON.stringify(user));
+      console.log('line 15');
+    }
 
-  //   try {
-  //     const { data, error } = await supaClient
-  //       .from("user_profiles")
-  //       .select("*")
-  //       .eq("user_id", user.id)
-  //       .single();
+    try {
+      const { data, error } = await supaClient
+        .from("user_profiles")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
 
-  //     if (error) {
-  //       throw error;
-  //       return null;
-  //     }
+      if (error) {
+        throw error;
+        return null;
+      }
 
-  //     if (data?.username) {
-  //       console.log('data.username on line 33' + data?.username);
-  //       return redirect("/");
-  //     }
+      if (data?.username) {
+        console.log('data.username on line 33' + data?.username);
+        return redirect("/");
+      }
 
-  //     return null;
-  //   } catch (innerError) {
-  //     console.error("Error fetching user profile:", innerError);
-  //     return null;
-  //     // Handle the error or redirect as needed
-  //     // Example: return redirect("/error-page");
-  //   }
-  // } catch (outerError) {
-  //   console.error("Error fetching user data:", outerError);
-  //   // Handle the error or redirect as needed
-  //   // Example: return redirect("/error-page");
-  // }
+      return null;
+    } catch (innerError) {
+      console.error("Error fetching user profile:", innerError);
+      return null;
+      // Handle the error or redirect as needed
+      // Example: return redirect("/error-page");
+    }
+  } catch (outerError) {
+    console.error("Error fetching user data:", outerError);
+    // Handle the error or redirect as needed
+    // Example: return redirect("/error-page");
+  }
 }
 
 export function Welcome() {

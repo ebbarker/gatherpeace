@@ -576,9 +576,9 @@
   integrity sha512-9g9dWI4gsSVe8bNLlb+lMkBYsnIKCZTmvqvDG+Avnn69XfmHZKiaMrx7cgTaddq7aTPPmXiTsbFcUy0xgI4+wA==
 
 "@supabase/auth-ui-react@^0.2.6":
-  version "0.2.6"
-  resolved "https://registry.npmjs.org/@supabase/auth-ui-react/-/auth-ui-react-0.2.6.tgz"
-  integrity sha512-N2qxgsjxPQZPdDotVumzruj4RHaKNFb9ZRecttMeGOvrYFbMWRQVpWT/rYkTPsRW2phKiGXQlMwha6YxUE+t6Q==
+  version "0.2.8"
+  resolved "https://registry.npmjs.org/@supabase/auth-ui-react/-/auth-ui-react-0.2.8.tgz"
+  integrity sha512-CfN9Zt2t1PMfri8htLCFYYIWho6F15ZvbWICE3RuOZ348z1P15iP6scjxB3704Jbu334Q+ykCQP+UzdnB7cXHQ==
   dependencies:
     "@stitches/core" "^1.2.8"
     "@stitches/react" "^1.2.8"
