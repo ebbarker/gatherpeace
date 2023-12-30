@@ -3,20 +3,25 @@ CREATE TABLE letters (
     user_id uuid REFERENCES auth.users (id) NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     path ltree NOT NULL,
-    sender text,
     sender_country text,
     sender_state text,
     sender_city text,
     sign_off text,
     sender_name text,
     recipient text,
-    recipient_country text,
-    recipient_state text,
-    recipient_city text,
     score int DEFAULT 0 NOT NULL,
     count_comments INT DEFAULT 0 NOT NULL,
-    likes int DEFAULT 0 NOT NULL
+    likes int DEFAULT 0 NOT NULL,
+    post_type text,
+    tsv TSVECTOR
 );
+
+
+
+
+
+
+
 
 CREATE TABLE letter_contents (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
@@ -135,49 +140,6 @@ END;
 $$;
 
 
-
--- CREATE OR REPLACE FUNCTION get_letters(page_number INT)
--- RETURNS TABLE (
---     id UUID,
---     user_id UUID,
---     created_at TIMESTAMP WITH TIME ZONE,
---     content TEXT,
---     score INT,
---     username TEXT,
---     count_comments INT
--- ) LANGUAGE plpgsql AS $$
--- BEGIN
---     RETURN QUERY
---     WITH Limitedletters AS (
---         SELECT p.id, p.user_id, p.created_at, p.score, p.count_comments FROM letters p
---         WHERE p.path ~ 'root'
---         ORDER BY p.score DESC, p.created_at DESC
---         LIMIT 10 OFFSET (page_number - 1) * 10
---     )
---     SELECT p.id, p.user_id, p.created_at, pc.content, p.score, up.username, p.count_comments
---     FROM Limitedletters p
---     JOIN letter_contents pc ON p.id = pc.letter_id
---     JOIN user_profiles up ON p.user_id = up.user_id
---     ORDER BY p.score DESC, p.created_at DESC;
--- END;
--- $$;
-
--- query below written with Shiva
--- BEGIN
---     RETURN QUERY
---     WITH Limitedletters AS (
---         SELECT id, score, created_at, user_id FROM letters
---         ORDER BY score DESC, created_at DESC
---         LIMIT 10 OFFSET (page_number - 1) * 10
---     )
---     SELECT p.id, p.user_id, p.created_at, pc.content, p.score, up.username
---     FROM Limitedletters p
---     JOIN letter_contents pc ON p.id = pc.letter_id
---     JOIN user_profiles up ON p.user_id = up.user_id;
--- END;
-
---below is get limited letters with shiva. renamed to get_letters
-
 CREATE OR REPLACE FUNCTION get_letters(page_number INT)
 RETURNS TABLE (
     id uuid,
@@ -221,21 +183,77 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
-
-CREATE OR REPLACE FUNCTION create_new_letter(
-    "userId" uuid,
-    "content" text,
-    sender text,
+CREATE OR REPLACE FUNCTION get_letters_with_tsv(
+    page_number INT,
+    search_keyword TEXT DEFAULT NULL
+)
+RETURNS TABLE (
+    id uuid,
+    user_id uuid,
+    created_at TIMESTAMP WITH TIME ZONE,
+    content TEXT,
+    score INT,
+    likes INT,
+    path ltree,
     sender_country text,
     sender_state text,
     sender_city text,
     sign_off text,
     sender_name text,
     recipient text,
-    recipient_country text,
-    recipient_state text,
-    recipient_city text
+    count_comments INT
+) AS $$
+BEGIN
+    RETURN QUERY
+    WITH LimitedLetters AS (
+        SELECT l.id, l.user_id, l.created_at, l.path,
+               l.sender_country, l.sender_state, l.sender_city,
+               l.sender_name, l.sign_off, l.recipient, l.score, l.likes, l.count_comments
+        FROM letters l
+        WHERE
+            (search_keyword IS NULL OR l.tsv @@ plainto_tsquery('english', search_keyword))
+        ORDER BY l.score DESC, l.created_at DESC
+        LIMIT 10 OFFSET (page_number - 1) * 10
+    )
+    SELECT ll.id, ll.user_id, ll.created_at, lc.content, ll.score, ll.likes,
+           ll.path, ll.sender_country, ll.sender_state,
+           ll.sender_city, ll.sign_off, ll.sender_name, ll.recipient, ll.count_comments
+    FROM LimitedLetters ll
+    JOIN letter_contents lc ON ll.id = lc.letter_id;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION letters_tsv_trigger() RETURNS trigger AS $$
+BEGIN
+  NEW.tsv := to_tsvector(
+      'english',
+      coalesce(NEW.sender_name, '') || ' ' ||
+      coalesce(NEW.sender_country, '') || ' ' ||
+      coalesce(NEW.sender_state, '') || ' ' ||
+      coalesce(NEW.sender_city, '') || ' ' ||
+      coalesce(NEW.sign_off, '') || ' ' ||
+      coalesce(NEW.recipient, '')
+  );
+  RETURN NEW;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_update_letters_tsv BEFORE INSERT OR UPDATE ON letters
+FOR EACH ROW EXECUTE FUNCTION letters_tsv_trigger();
+
+
+CREATE OR REPLACE FUNCTION create_new_letter(
+    "userId" uuid,
+    "content" text,
+    sender_country text,
+    sender_state text,
+    sender_city text,
+    sign_off text,
+    sender_name text,
+    recipient text,
+    post_type text
+
 )
 RETURNS TABLE(new_letter_id UUID, creation_time TIMESTAMP WITH TIME ZONE)
 LANGUAGE plpgsql
@@ -245,30 +263,24 @@ BEGIN
     INSERT INTO "letters" (
         "user_id",
         "path",
-        "sender",
         "sender_country",
         "sender_state",
         "sender_city",
         "sign_off",
         "sender_name",
         "recipient",
-        "recipient_country",
-        "recipient_state",
-        "recipient_city"
+        "post_type"
     )
     VALUES (
         "userId",
         'root',
-        sender,
         sender_country,
         sender_state,
         sender_city,
         sign_off,
         sender_name,
         recipient,
-        recipient_country,
-        recipient_state,
-        recipient_city
+        post_type
     )
     RETURNING "id", "created_at"
   )
@@ -285,7 +297,7 @@ BEGIN
     "userId"
   );
 
-  RETURN NEXT; -- returns the row of new_letter_id and creation_time
+  RETURN NEXT;
 END; $$;
 
 

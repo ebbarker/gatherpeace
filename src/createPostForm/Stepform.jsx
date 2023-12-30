@@ -85,16 +85,12 @@ export function Stepform ({ newPostCreated = () => {}, letters, setLetters }) {
       user_id: userId,
       created_at,
       count_comments: 0,
-      sender,
       sender_country: senderCountry,
       sender_state: senderState,
       sender_city: senderCity,
       sign_off: signOff,
       sender_name: senderName,
       recipient,
-      recipient_country: recipientCountry,
-      recipient_state: recipientState,
-      recipient_city: recipientCity
     }
     setLetters([newLetter, ...letters]);
     console.log(letters);
@@ -107,16 +103,13 @@ export function Stepform ({ newPostCreated = () => {}, letters, setLetters }) {
       .rpc("create_new_letter", {
         userId: user?.session?.user?.id,
         content: formData.letterContent,
-        sender: formData.sender,
         sender_country: formData.senderCountry,
         sender_state: formData.senderState,
         sender_city: formData.senderCity,
         sign_off: formData.signOff,
         sender_name: formData.senderName,
         recipient: formData.recipient,
-        recipient_country: formData.recipientCountry,
-        recipient_state: formData.recipientState,
-        recipient_city: formData.recipientCity
+        post_type: 'letter'
       })
       .then(({ data, error }) => {
         if (error) {
@@ -127,16 +120,12 @@ export function Stepform ({ newPostCreated = () => {}, letters, setLetters }) {
             formData.letterContent,
             data[0].new_letter_id,
             data[0].creation_time,
-            formData.sender,
             formData.senderCountry,
             formData.senderState,
             formData.senderCity,
             formData.signOff,
             formData.senderName,
             formData.recipient,
-            formData.recipientCountry,
-            formData.recipientState,
-            formData.recipientCity
           );
           setFormData(formFields);
 
@@ -149,23 +138,28 @@ export function Stepform ({ newPostCreated = () => {}, letters, setLetters }) {
 
   return (
     <>
-    <div className="create-post-step-container">
-      <div className="create-post-form-container">
-        <form className="create-post-stepform">
-          <div className="stepform-page-counter">
-            {currentStepIndex + 1} / {steps.length}
+    { user.session ?
+            <div className="create-post-step-container">
+            <div className="create-post-form-container">
+              <form className="create-post-stepform">
+                <div className="stepform-page-counter">
+                  {currentStepIndex + 1} / {steps.length}
+                </div>
+                {step}
+                <div className="create-post-stepform-controls">
+                  {!isFirstStep && <button className="form-button" onClick={back}>Back</button>}
+                  {isLastStep ? <button className="form-button" id="submit-button" type="submit" onClick={createLetter}>Finnish</button>  : <button id="next" className="form-button" onClick={next}>Next</button>}
+                </div>
+
+              </form>
+            </div>
+
+
           </div>
-          {step}
-          <div className="create-post-stepform-controls">
-            {!isFirstStep && <button className="form-button" onClick={back}>Back</button>}
-            {isLastStep ? <button className="form-button" id="submit-button" type="submit" onClick={createLetter}>Finnish</button>  : <button id="next" className="form-button" onClick={next}>Next</button>}
-          </div>
+          :
+          null
+    }
 
-        </form>
-      </div>
-
-
-    </div>
     </>
   )
 }

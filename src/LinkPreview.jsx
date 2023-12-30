@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-function LinkPreview({ url }) {
+export function LinkPreview({ url }) {
   const [previewData, setPreviewData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -81,5 +81,3 @@ function LinkPreview({ url }) {
     </div>
   );
 }
-
-export default LinkPreview;

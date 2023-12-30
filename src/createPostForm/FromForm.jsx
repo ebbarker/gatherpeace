@@ -1,12 +1,10 @@
 import { FormWrapper } from "./FormWrapper";
 
 export default function FromForm({
-  sender,
   senderCountry,
   senderState,
   senderCity,
   updateFields,
-  senderName,
   handleKeyDown,
   next
 }) {
@@ -31,19 +29,8 @@ export default function FromForm({
   };
 
   return (
-    <FormWrapper title="Sender Details">
-      <div>
-        <label>From</label>
-        <input
-        required
-        autoFocus
-        type="text"
-        className="form-input"
-        onChange={e => updateFields({ sender: e.target.value })}
-        onKeyDown={handleKeyDown}
-        value={sender}
-        />
-      </div>
+    <FormWrapper title="Where are you from?">
+
       <div>
         <label>Your Country</label>
         <input

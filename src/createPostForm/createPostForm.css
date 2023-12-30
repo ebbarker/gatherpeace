@@ -26,6 +26,9 @@
     border-radius: 0;
     border: none;
   }
+  .form-title {
+    font-size: 26px;
+  }
 }
 
 
@@ -41,6 +44,7 @@
   position: absolute;
   top: .5rem;
   right: .5rem;
+  margin-bottom: 10px;
 }
 
 .create-post-stepform-controls {
@@ -54,7 +58,9 @@
   justify-content: flex-start;
   gap: 1rem .5rem;
 }
-
+.form-title {
+  margin-top: 8px;
+}
 .form-children-wrapper > div {
   display: grid;
   grid-template-columns: 100px auto; /* Same as parent for consistent alignment */

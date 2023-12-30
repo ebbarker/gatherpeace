@@ -27,16 +27,16 @@ export function useSession() {
     console.log('user info ' + JSON.stringify(userInfo))
     if (userInfo.session?.user && !userInfo.profile) {
       listenToUserProfileChanges(userInfo.session.user.id)
-      // .then(
-      //   (newChannel) => {
-      //     if (newChannel) {
-      //       if (channel) {
-      //         channel.unsubscribe();
-      //       }
-      //       setChannel(newChannel);
-      //     }
-      //   }
-      // );
+      .then(
+        (newChannel) => {
+          if (newChannel) {
+            if (channel) {
+              channel.unsubscribe();
+            }
+            setChannel(newChannel);
+          }
+        }
+      );
     } else if (!userInfo.session?.user) {
       channel?.unsubscribe();
       setChannel(null);
@@ -54,23 +54,25 @@ export function useSession() {
       console.log(JSON.stringify('data'));
       setShownWelcome(true);
       navigate("/welcome");
+    } else {
+      console.log('setting user info...');
+      setUserInfo({ ...userInfo, profile: data?.[0] });
     }
-    setUserInfo({ ...userInfo, profile: data?.[0] });
-    // return supaClient
-    //   .channel(`public:user_profiles`)
-    //   .on(
-    //     "postgres_changes",
-    //     {
-    //       event: "*",
-    //       schema: "public",
-    //       table: "user_profiles",
-    //       filter: `user_id=eq.${userId}`,
-    //     },
-    //     (payload) => {
-    //       setUserInfo({ ...userInfo, profile: payload.new });
-    //     }
-    //   )
-    //   .subscribe();
+    return supaClient
+      .channel(`public:user_profiles`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "user_profiles",
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          setUserInfo({ ...userInfo, profile: payload.new });
+        }
+      )
+      .subscribe();
   }
 
   return userInfo;

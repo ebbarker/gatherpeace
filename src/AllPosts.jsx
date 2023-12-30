@@ -20,15 +20,38 @@ export function AllPosts() {
   //const [voteBumper, setVoteBumper] = useState(0);
   const [myVotes, setMyVotes] = useState({});
   const [totalPages, setTotalPages] = useState(0);
+
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchFilter, setSearchFilter] = useState('both');
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    getLetters();
+    // Trigger re-fetching of letters with the new search keyword and filter
+  };
+
+
   const { myContextVotes, setMyContextVotes } = useContext(VoteContext);
   useEffect(() => {
+    if (searchKeyword.length) return;
+    getLetters();
+
+
+  }, [pageNumber]);
+
+  async function getLetters() {
+    console.log('get letters');
     const queryPageNumber = pageNumber ? +pageNumber : 1;
     console.log (' promise all query called')
     Promise.all([
       supaClient
-        .rpc("get_letters", { page_number: queryPageNumber })
+        .rpc("get_letters_with_tsv", {
+          page_number: queryPageNumber,
+          search_keyword: searchKeyword.length? searchKeyword : null,
+        })
         .select("*")
         .then(({ data }) => {
+          console.log('data from getletters: ' + data);
           setLetters(data);
 
         }),
@@ -39,20 +62,40 @@ export function AllPosts() {
           count == null ? 0 : setTotalPages(Math.ceil(count / 10));
         }),
     ]);
-
-  }, [pageNumber]);
+  }
 
 
   return (
     <>
       {/* {session && <Createletter letters={letters} setLetters={setLetters}/>} */}
-      <div>1:39
+      <div>
       </div>
       <Stepform letters={letters} setLetters={setLetters}/>
       <Pagination
         totalPages={totalPages}
         currentPage={pageNumber ? +pageNumber : 0}
       />
+      <form className="search-letters" onSubmit={handleSearch}>
+        <label className="search-label" htmlFor="searchFilter">Find letters that are </label>
+        <select
+          id="searchFilter"
+          value={searchFilter}
+          onChange={(e) => setSearchFilter(e.target.value)}
+          className="search-dropdown"
+        >
+          <option value="both"> TO or FROM</option>
+          <option value="from">FROM</option>
+          <option value="to">TO</option>
+        </select>
+        <input
+          type="text"
+          value={searchKeyword}
+          onChange={(e) => setSearchKeyword(e.target.value)}
+          placeholder="Enter search keyword"
+          className="search-input"
+        />
+        <button type="submit" className="search-button">Search</button>
+      </form>
       <div id="news-feed" className="news-feed-container">
 
         {letters?.map((letter, i) => {

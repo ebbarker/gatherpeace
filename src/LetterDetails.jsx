@@ -8,6 +8,10 @@ import { UpVote } from "./UpVote";
 import { VoteContext } from "./contexts/VoteContext";
 import { BiCommentDetail } from "react-icons/bi"
 import { PiLinkBold } from "react-icons/pi";
+import { LinkPreview } from "./LinkPreview";
+import { corsHeaders } from "./layout/cors.ts";
+import { FunctionsHttpError, FunctionsRelayError, FunctionsFetchError } from '@supabase/supabase-js';
+
 
 
 
@@ -37,6 +41,68 @@ export default function LetterDetails({
   const contentContainerRef = useRef(null);
   const [copied, setCopied] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
+  const [ogpreview, setOgpreview] = useState(null);
+
+
+  useEffect(() => {
+
+    async function getOg() {
+
+
+      const { data, error } = await supaClient.functions.invoke('hello', {
+        body: JSON.stringify({ name: 'Functions' }),
+      })
+
+      // const { data, error } = await supaClient.functions.invoke('hello', {
+      //   headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ foo: 'bar' }),
+      // })
+
+      if (error instanceof FunctionsHttpError) {
+        const errorMessage = await error.context.json()
+        console.log('Function returned an error', errorMessage)
+      } else if (error instanceof FunctionsRelayError) {
+        console.log('Relay error:', error.message)
+      } else if (error instanceof FunctionsFetchError) {
+        console.log('Fetch error:', error.message)
+      }
+      console.log(data);
+
+      // try {
+      //   const response = await supaClient.functions.invoke('hello', {
+      //     method: 'POST',
+      //     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      //     body: JSON.stringify({ name: 'Functions' }),
+      //   });
+
+
+      //   console.log("Raw response:", JSON.stringify(data));
+
+      //   if (response.error) {
+      //     setOgpreview('OG ERROR: ' + response.error.message);
+      //   } else {
+      //     console.log('OG DATA:', response.data);
+      //     setOgpreview(response.data);
+      //   }
+      // } catch (error) {
+      //   console.error('Error fetching data:', error);
+      //   // Handle additional error scenarios
+      // }
+
+        // const response = await supaClient.functions.invoke('hello', {
+        //   method: 'POST',
+        //   headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        //   data: JSON.stringify({ name: 'Functions' }),
+        // });
+        // console.log('resp ', JSON.stringify(response));
+    }
+
+    getOg();
+  }, []);
+
+
+
+
   // useEffect(() => {
   //   // Ensure both elements are present
   //   if (borderLineRef.current && contentContainerRef.current) {
@@ -111,6 +177,7 @@ export default function LetterDetails({
       </div>
     </div>
 
+
     <div className="letter-sender-details">
       <div className="sender-signoff">{letter?.sign_off}</div>
 
@@ -123,6 +190,8 @@ export default function LetterDetails({
       <div className="sender-state header-secondary">{letter?.sender_state}</div>
       <div className="sender-city header-secondary">{letter?.sender_city} </div>
     </div>
+
+    {/* <LinkPreview url={"https://www.tiktok.com/@tinoandshelby/video/7315176576579308846"}/> */}
 
     <div className="post-controls-container flex items-center">
       <button className="post-votes-container post-control-button" onClick={onVoteClick}>
@@ -156,3 +225,5 @@ export default function LetterDetails({
 </>
   );
 }
+
+

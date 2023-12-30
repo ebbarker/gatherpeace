@@ -16,7 +16,7 @@
 .navbar {
   background: #29E4B4;
   display: flex;
-  align-items: center; 
+  align-items: center;
 }
 
 .navbar-toggler.collapsed {
@@ -36,7 +36,7 @@
 }
 
 
-#login, #sign-up {
+.login-buttons-container > #login, #sign-up {
   display: flex;
   align-items: center;
 }
@@ -68,7 +68,9 @@ $theme-colors: (
   color: #000000;
 }
 
-.signup-btn {
+.navbar-login-container >
+.login-buttons-container >
+.sign-up-button > .signup-btn {
   display: inline-block;
   border: 2px solid #000000;
   border-radius: 5px;

@@ -63,7 +63,7 @@ export default function NavBar() {
               <a class="nav-link" href="#"><Link className="nav-home-link" to="/peace-wall/1">Peace Wall</Link></a>
             </li>
 
-            <li>
+            <li className="navbar-login-container">
             {session?.user ?
               <li class="nav-item dropdown">
 

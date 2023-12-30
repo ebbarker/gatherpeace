@@ -5,9 +5,6 @@ import countries from "./countries";
 
 export default function ToForm({
   recipient,
-  recipientCountry,
-  recipientState,
-  recipientCity,
   updateFields,
   handleKeyDown,
   next
@@ -43,45 +40,7 @@ export default function ToForm({
         onKeyDown={handleKeyDown}
         value={recipient}/>
       </div>
-      <div>
-        <label>Recipient Country</label>
-        <input
-          id="recipient-country"
-          required
-          onChange={e => updateFields({ recipientCountry: e.target.value })}
-          onKeyDown={handleKeyDown}
-          value={recipientCountry}
-        />
-          {/* <option value="">Select a country</option>
-          {countries.map((country) => (
-            <option key={country.name} value={country.name}>
-              {country.name}
-            </option>
-          ))} */}
-        {/* </select> */}
-      </div>
-      <div>
-        <label>State or Province</label>
-        <input
-        id="recipient-state"
-        required
-        type="text"
-        className="form-input"
-        onChange={e => updateFields({ recipientState: e.target.value })}
-        onKeyDown={handleKeyDown}
-        value={recipientState}/>
-      </div>
-      <div>
-        <label>Recipient City</label>
-        <input
-        id="recipient-city"
-        required
-        type="text"
-        className="form-input"
-        onChange={e => updateFields({ recipientCity: e.target.value })}
-        onKeyDown={handleKeyDown}
-        value={recipientCity}/>
-      </div>
+
 
     </FormWrapper>
   )

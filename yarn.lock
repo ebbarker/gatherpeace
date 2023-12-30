@@ -1322,6 +1322,13 @@ d@^1.0.1, d@1:
     es5-ext "^0.10.50"
     type "^1.0.1"
 
+dafo@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.npmjs.org/dafo/-/dafo-0.1.1.tgz"
+  integrity sha512-18XhtDt5qQ5pAfWzo1t3mRXQPanY8diFQFjCxh+/0mko5QHztCv6oLgPL9kKxB8aeYutp8lWC7BqjGzC8GWX1w==
+  dependencies:
+    noda "^0.1.2"
+
 dashdash@^1.12.0:
   version "1.14.1"
   resolved "https://registry.npmjs.org/dashdash/-/dashdash-1.14.1.tgz"
@@ -1375,6 +1382,15 @@ delegates@^1.0.0:
   version "1.0.0"
   resolved "https://registry.npmjs.org/delegates/-/delegates-1.0.0.tgz"
   integrity sha512-bd2L678uiWATM6m5Z1VzNCErI3jiGzt6HGY8OVICs40JQq/HALfbyNJmp0UDakEY4pMMaN0Ly5om/B1VI/+xfQ==
+
+deno@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.npmjs.org/deno/-/deno-0.1.1.tgz"
+  integrity sha512-vdXCOZOXXgRUFPIV2HbyBBT+u1TjKmDueCEJuk9Q+ADLS7jmVfdfGxp0vI5o/gOjbA1OwOYMVfg249+9vjYa7w==
+  dependencies:
+    dafo "^0.1.1"
+    noda "^0.6.0"
+    qir "^0.1.0"
 
 depd@^2.0.0:
   version "2.0.0"
@@ -2452,6 +2468,16 @@ no-case@^3.0.4:
     lower-case "^2.0.2"
     tslib "^2.0.3"
 
+noda@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.npmjs.org/noda/-/noda-0.1.2.tgz"
+  integrity sha512-oP5xzQsC4dujsuRlshsnb2R+0BWJmPRJx8MXQlTgbrSSqi5Szeu67Lr8Od1/lkc+8evLPRDmHl9L0xeVJYRGaw==
+
+noda@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.npmjs.org/noda/-/noda-0.6.0.tgz"
+  integrity sha512-Zj3eTQ1cL83zGvorxbGmeqNnt/h+2nH3jT/XLI2oXHL9LH6IKoPvFh6feT1e/yFhRRByP3Q+waM+2dcXIdZkqg==
+
 node-domexception@^1.0.0:
   version "1.0.0"
   resolved "https://registry.npmjs.org/node-domexception/-/node-domexception-1.0.0.tgz"
@@ -2836,6 +2862,13 @@ punycode@^2.1.0, punycode@^2.1.1:
   version "2.3.0"
   resolved "https://registry.npmjs.org/punycode/-/punycode-2.3.0.tgz"
   integrity sha512-rRV+zQD8tVFys26lAGR9WUuS4iUAngJScM+ZRSKtvl5tKeZ2t5bvdNFdNHBW9FWR4guGHlgmsZ1G7BSm2wTbuA==
+
+qir@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.npmjs.org/qir/-/qir-0.1.0.tgz"
+  integrity sha512-LJUKDMyPsaog5uDarzqterz+SfdyA3mfvq45kSLV0X5IOSPy/nlueKvLg8nClOSKp57c1E0bU/BFHwHFUoVhcw==
+  dependencies:
+    noda "^0.6.0"
 
 qs@~6.5.2:
   version "6.5.3"
