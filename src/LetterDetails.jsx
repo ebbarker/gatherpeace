@@ -8,9 +8,8 @@ import { UpVote } from "./UpVote";
 import { VoteContext } from "./contexts/VoteContext";
 import { BiCommentDetail } from "react-icons/bi"
 import { PiLinkBold } from "react-icons/pi";
-import { LinkPreview } from "./LinkPreview";
-import { corsHeaders } from "./layout/cors.ts";
 import { FunctionsHttpError, FunctionsRelayError, FunctionsFetchError } from '@supabase/supabase-js';
+import  LinkPreview  from "./link-preview/LinkPreview";
 
 
 
@@ -41,32 +40,60 @@ export default function LetterDetails({
   const contentContainerRef = useRef(null);
   const [copied, setCopied] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
-  const [ogpreview, setOgpreview] = useState(null);
+  const [ogPreview, setOgPreview] = useState(null);
 
+
+
+  useEffect(() => {
+    getOgContent(letter.content);
+  }, [letter.content]);
+
+  // Function to find URLs in a text
+ async function getOgContent(text) {
+    const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+    const url = text.match(urlRegex)[0];
+    console.log ('url', url);
+    if (url) {
+
+        const { data, error } = await supaClient.functions.invoke('hello', {
+          body: JSON.stringify({ externalLink: url }),
+        })
+        if (error instanceof FunctionsHttpError) {
+          const errorMessage = await error.context.json()
+          console.log('Function returned an error', errorMessage)
+        } else if (error instanceof FunctionsRelayError) {
+          console.log('Relay error:', error.message)
+        } else if (error instanceof FunctionsFetchError) {
+          console.log('Fetch error:', error.message)
+        } else {
+          console.log('data returned', data);
+          let ogPreviewObject = {
+            title: data.metaTags?.twitter?.title ? data.metaTags?.twitter?.title : data.metaTags?.og?.title,
+            image: data.metaTags?.twitter?.image ? data.metaTags?.twitter?.image : data.metaTags?.og?.image,
+            description: data.metaTags?.twitter?.description ? data.metaTags?.twitter?.description : data.metaTags?.og?.description
+           }
+          setOgPreview(ogPreviewObject);
+        }
+
+    }
+
+  return url;
+
+  }
 
   useEffect(() => {
 
     async function getOg() {
 
 
-      const { data, error } = await supaClient.functions.invoke('hello', {
-        body: JSON.stringify({ name: 'Functions' }),
-      })
+
 
       // const { data, error } = await supaClient.functions.invoke('hello', {
       //   headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       //   body: JSON.stringify({ foo: 'bar' }),
       // })
 
-      if (error instanceof FunctionsHttpError) {
-        const errorMessage = await error.context.json()
-        console.log('Function returned an error', errorMessage)
-      } else if (error instanceof FunctionsRelayError) {
-        console.log('Relay error:', error.message)
-      } else if (error instanceof FunctionsFetchError) {
-        console.log('Fetch error:', error.message)
-      }
-      console.log(data);
+
 
       // try {
       //   const response = await supaClient.functions.invoke('hello', {
@@ -190,6 +217,7 @@ export default function LetterDetails({
       <div className="sender-state header-secondary">{letter?.sender_state}</div>
       <div className="sender-city header-secondary">{letter?.sender_city} </div>
     </div>
+    {ogPreview && <LinkPreview ogPreview={ogPreview} /> }
 
     {/* <LinkPreview url={"https://www.tiktok.com/@tinoandshelby/video/7315176576579308846"}/> */}
 
