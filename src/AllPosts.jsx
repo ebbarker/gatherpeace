@@ -10,6 +10,7 @@ import { LetterView } from "./LetterView"
 import { VoteContext } from "./contexts/VoteContext";
 import { Stepform } from "./createPostForm/Stepform";
 import { Letter } from "./Letter"
+import { SearchBar } from "./search-bar/SearchBar"
 
 
 export function AllPosts() {
@@ -23,6 +24,12 @@ export function AllPosts() {
 
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchFilter, setSearchFilter] = useState('both');
+  const [writingMessage, setWritingMessage] = useState(false);
+
+  const showMessageDialog = (e) => {
+    e.preventDefault();
+    setWritingMessage(true);
+  }
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -40,7 +47,7 @@ export function AllPosts() {
   }, [pageNumber]);
 
   async function getLetters() {
-    console.log('get letters');
+    console.log('get letterssdfsdf');
     const queryPageNumber = pageNumber ? +pageNumber : 1;
     console.log (' promise all query called')
     Promise.all([
@@ -68,34 +75,21 @@ export function AllPosts() {
   return (
     <>
       {/* {session && <Createletter letters={letters} setLetters={setLetters}/>} */}
-      <div>
-      </div>
-      <Stepform letters={letters} setLetters={setLetters}/>
-      <Pagination
-        totalPages={totalPages}
-        currentPage={pageNumber ? +pageNumber : 0}
+      {!writingMessage &&
+        <div className="call-to-action-container">
+          <button className="write-a-message-button" onClick={showMessageDialog}>Write a Peace Message</button>
+        </div>}
+      {writingMessage && <Stepform letters={letters} setLetters={setLetters}/> }
+
+      <SearchBar
+        searchFilter={searchFilter}
+        searchKeyword={searchKeyword}
+        setSearchFilter={setSearchFilter}
+        setSearchKeyword={setSearchKeyword}
+        handleSearch={handleSearch}
+        getLetters={getLetters}
       />
-      <form className="search-letters" onSubmit={handleSearch}>
-        <label className="search-label" htmlFor="searchFilter">Find letters that are </label>
-        <select
-          id="searchFilter"
-          value={searchFilter}
-          onChange={(e) => setSearchFilter(e.target.value)}
-          className="search-dropdown"
-        >
-          <option value="both"> TO or FROM</option>
-          <option value="from">FROM</option>
-          <option value="to">TO</option>
-        </select>
-        <input
-          type="text"
-          value={searchKeyword}
-          onChange={(e) => setSearchKeyword(e.target.value)}
-          placeholder="Enter search keyword"
-          className="search-input"
-        />
-        <button type="submit" className="search-button">Search</button>
-      </form>
+
       <div id="news-feed" className="news-feed-container">
 
         {letters?.map((letter, i) => {
@@ -138,6 +132,10 @@ export function AllPosts() {
           // <letterView letterId={letter.id} key={i}/>
           })}
       </div>
+      <Pagination
+        totalPages={totalPages}
+        currentPage={pageNumber ? +pageNumber : 0}
+      />
     </>
   );
 }
@@ -149,7 +147,8 @@ export async function castLetterVote({
   onSuccess = () => {},
   onError = (error) => console.log('error!!!') // Optional: define an onError callback for handling errors
 }) {
-  console.log('castVote called for id: ' + letterId + " " + userId + ' vote type: ' + voteType);
+  console.log('castVote called for iddfgdfg: ' + letterId + " " + userId + ' vote type: ' + voteType);
+
 
   if (voteType === "up") {
     await supaClient.rpc("insert_letter_vote",

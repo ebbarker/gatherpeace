@@ -7,8 +7,7 @@ import { corsHeaders } from  "./cors.js";
 import { getOGTags, getTwitterTags, getMetaTags } from "https://deno.land/x/opengraph/mod.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const supabaseUrl = Deno.env.get('localhost:54321');
-const supabaseKey = Deno.env.get('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0');
+
 
 console.log("Hello from Functions!");
 
@@ -45,17 +44,54 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  try {
-    const { externalLink } = await req.json()
-    const metaTags = await getMetaTags(externalLink);
+  const fetchLinkData = async (url: any) => {
+    const { data, error } = await supabaseClient
+        .from('link_previews')
+        .select('*')
+        .eq('url', url)
+        .single();
 
+    if (error) {
+        console.error('Error fetching data:', error);
+        return null;
+    }
+    console.log(JSON.stringify(data));
 
-    // Construct the response data
-    const responseData = {
-      metaTags,
+    return data;
+  };
+
+  const writeLinkDataToDB = async (linkData: any, url: string) => {
+    // Construct the record to be inserted
+    const record = {
+      url,
+      title: linkData.title,
+      description: linkData.description,
+      image_location: linkData.twitter.image ? linkData.twitter.image : linkData.og.image
     };
 
-    return new Response(JSON.stringify(responseData), {
+    // Insert the record into the database
+    const { data, error } = await supabaseClient
+        .from('link_previews')
+        .insert([record]);
+
+    if (error) {
+        console.error('Error writing data:', error);
+    } else {
+        console.log('Data written to DB:', data);
+    }
+  };
+
+  try {
+    const { externalLink } = await req.json();
+   let linkData = await fetchLinkData(externalLink);
+
+    if (!linkData) {
+     linkData = await getMetaTags(externalLink);
+      console.log(JSON.stringify(linkData));
+     writeLinkDataToDB(linkData, externalLink);
+    }
+
+    return new Response(JSON.stringify(linkData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });

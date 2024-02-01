@@ -21,11 +21,13 @@ const DarkMode = () => {
     }
 
     function setDefaultMode () {
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        setDarkMode();
-        let checkBox = document.getElementById('darkmode-toggle');
-        checkBox.checked = true;
-      }
+    //   if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    //     setDarkMode();
+    //     let checkBox = document.getElementById('darkmode-toggle');
+    //     checkBox.checked = true;
+    //   }
+    setLightMode();
+    // checkBox.checked = false;
     };
 
     useEffect (() => {

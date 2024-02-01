@@ -13,14 +13,7 @@ CREATE TABLE letters (
     count_comments INT DEFAULT 0 NOT NULL,
     likes int DEFAULT 0 NOT NULL,
     post_type text,
-    tsv TSVECTOR
 );
-
-
-
-
-
-
 
 
 CREATE TABLE letter_contents (
@@ -183,7 +176,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION get_letters_with_tsv(
+CREATE OR REPLACE FUNCTION get_letters_with_keyword_join_on_content(
     page_number INT,
     search_keyword TEXT DEFAULT NULL
 )
@@ -205,43 +198,34 @@ RETURNS TABLE (
 ) AS $$
 BEGIN
     RETURN QUERY
-    WITH LimitedLetters AS (
+    WITH
+    FilteredLetters AS (
         SELECT l.id, l.user_id, l.created_at, l.path,
                l.sender_country, l.sender_state, l.sender_city,
                l.sender_name, l.sign_off, l.recipient, l.score, l.likes, l.count_comments
         FROM letters l
         WHERE
-            (search_keyword IS NULL OR l.tsv @@ plainto_tsquery('english', search_keyword))
-        ORDER BY l.score DESC, l.created_at DESC
-        LIMIT 10 OFFSET (page_number - 1) * 10
+            (search_keyword IS NULL OR (
+                l.recipient ILIKE '%' || search_keyword || '%' OR
+                l.sender_country ILIKE '%' || search_keyword || '%' OR
+                l.sender_state ILIKE '%' || search_keyword || '%' OR
+                l.sender_city ILIKE '%' || search_keyword || '%'
+            ))
+    ),
+    FilteredContents AS (
+        SELECT lc.letter_id, lc.content
+        FROM letter_contents lc
+        WHERE lc.content ILIKE '%' || search_keyword || '%'
     )
-    SELECT ll.id, ll.user_id, ll.created_at, lc.content, ll.score, ll.likes,
-           ll.path, ll.sender_country, ll.sender_state,
-           ll.sender_city, ll.sign_off, ll.sender_name, ll.recipient, ll.count_comments
-    FROM LimitedLetters ll
-    JOIN letter_contents lc ON ll.id = lc.letter_id;
+    SELECT fl.id, fl.user_id, fl.created_at, fc.content, fl.score, fl.likes,
+           fl.path, fl.sender_country, fl.sender_state,
+           fl.sender_city, fl.sign_off, fl.sender_name, fl.recipient, fl.count_comments
+    FROM FilteredLetters fl
+    LEFT JOIN FilteredContents fc ON fl.id = fc.letter_id
+    ORDER BY fl.score DESC, fl.created_at DESC
+    LIMIT 10 OFFSET (page_number - 1) * 10;
 END;
 $$ LANGUAGE plpgsql;
-
-
-CREATE OR REPLACE FUNCTION letters_tsv_trigger() RETURNS trigger AS $$
-BEGIN
-  NEW.tsv := to_tsvector(
-      'english',
-      coalesce(NEW.sender_name, '') || ' ' ||
-      coalesce(NEW.sender_country, '') || ' ' ||
-      coalesce(NEW.sender_state, '') || ' ' ||
-      coalesce(NEW.sender_city, '') || ' ' ||
-      coalesce(NEW.sign_off, '') || ' ' ||
-      coalesce(NEW.recipient, '')
-  );
-  RETURN NEW;
-END
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_update_letters_tsv BEFORE INSERT OR UPDATE ON letters
-FOR EACH ROW EXECUTE FUNCTION letters_tsv_trigger();
-
 
 CREATE OR REPLACE FUNCTION create_new_letter(
     "userId" uuid,
@@ -253,7 +237,6 @@ CREATE OR REPLACE FUNCTION create_new_letter(
     sender_name text,
     recipient text,
     post_type text
-
 )
 RETURNS TABLE(new_letter_id UUID, creation_time TIMESTAMP WITH TIME ZONE)
 LANGUAGE plpgsql
@@ -455,3 +438,4 @@ CREATE TRIGGER trigger_decrement_letter_comment_count
 AFTER DELETE ON comments
 FOR EACH ROW
 EXECUTE FUNCTION decrement_letter_comment_count();
+

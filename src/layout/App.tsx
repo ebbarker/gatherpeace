@@ -19,6 +19,8 @@ import { Welcome, welcomeLoader } from "./Welcome";
 import * as Sentry from "@sentry/react"
 import { VoteProvider } from "../contexts/VoteContext"
 import { LetterView } from "../LetterView"
+import UserProfile from "../user-profile/UserProfile.jsx";
+import NotFound from "../not-found/NotFound.jsx";
 
 
 
@@ -75,9 +77,25 @@ export const router = sentryCreateBrowserRouter([
         loader: welcomeLoader,
       },
       { path: "privacy-policy", element: <PrivacyPolicy /> },
+      { path: "profile", element: <UserProfile profileName={null}/> },
+      {
+        path: "*", // Use a wildcard to capture all other routes
+        element: <CatchAllRoutes />
+      },
     ],
   },
 ]);
+
+function CatchAllRoutes() {
+  let location = useLocation();
+  let match = location.pathname.match(/^\/@(.+)/);
+
+  if (match) {
+    return <UserProfile profileName={match[1]} />;
+  } else {
+    return <NotFound />; // Render a Not Found page for other unmatched routes
+  }
+}
 
 export const UserContext = createContext<SupashipUserInfo>({
   session: null,

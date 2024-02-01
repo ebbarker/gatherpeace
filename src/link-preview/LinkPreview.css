@@ -23,14 +23,14 @@
 }
 
 .preview-title {
-  font-size: 1.2rem;
+  font-size: 16px;
   margin: 0;
   color: var(--text_color);
   font-weight: bold;
 }
 
 .preview-description {
-  font-size: 1rem;
+  font-size: 12px;
   margin: 0.5rem 0;
   color: var(--secondary_text_color);
 }

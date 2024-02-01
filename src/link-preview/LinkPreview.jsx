@@ -2,6 +2,7 @@ import React from 'react';
 import './LinkPreview.css'; // Importing the CSS file
 
 const LinkPreview = ({ ogPreview }) => {
+
     return (
         <div className="link-preview">
             {ogPreview.image && (

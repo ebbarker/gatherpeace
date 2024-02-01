@@ -60,7 +60,7 @@ export function Welcome() {
 
   return (
     <Dialog
-      allowClose={true}
+      allowClose={false}
       open={true}
       contents={
         <>
@@ -68,7 +68,7 @@ export function Welcome() {
             Welcome to Gather Peace
           </h2>
           <p className="text-center">
-            Let's get started by creating a username:
+            Please fill out a profile.
           </p>
           <form
             className="grid grid-cols-1 place-items-center"
@@ -84,8 +84,14 @@ export function Welcome() {
                   ])
                   .then(({ error }) => {
                       if (error) {
+                        if (error.message.indexOf('duplicate key') !== -1) {
                           setServerError(`Username "${userName}" is already taken`);
                           console.log(JSON.stringify(error));
+                        } else {
+                          setServerError(`Unknown error: ${error.message}`);
+                          console.log(JSON.stringify(error));
+                        }
+
                       } else {
                           setUserName(userName); // Set the username state here
                           const target = localStorage.getItem("returnPath") || "/";
@@ -118,7 +124,7 @@ export function Welcome() {
               </p>
             )}
             <p className="text-center">
-              This is the name people will see you as on the Message Board
+              This is the name people will see you as on Gather Peace
             </p>
             <button
               className="font-display text-2xl bg-green-400 text-center rounded p-2 m-2 mb-8"
@@ -138,7 +144,7 @@ export function Welcome() {
  * This only validates the form on the front end.
  * Server side validation is done at the sql level.
  */
-function validateUsername(username: string): string | undefined {
+function validateUsername(username){
   if (!username) {
     return "Username is required";
   }

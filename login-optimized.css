@@ -40,20 +40,6 @@
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow) !important;
 } */
 .login-blackout {
-  outline: 2px solid transparent !important;
-  outline-offset: 2px !important;
-  overflow-x: hidden !important;
-  margin: 1.5rem !important;
-  justify-content: center !important;
-  align-items: flex-start !important;
-  overflow-y: auto !important;
-  display: flex !important;
-  z-index: 50 !important;
-  top: 0px !important;
-  right: 0px !important;
-  bottom: 0px !important;
-  left: 0px !important;
-  position: fixed !important;
 
 }
 
@@ -66,6 +52,8 @@
   border-width: 0;
   border-style: solid;
   border-color: #e5e7eb;
+  background-color: var(--modal_color) !important;
+  z-index: 51;
 }
 
 .login-grouper {
@@ -80,8 +68,34 @@
   border-radius: 0.3rem !important;
   padding: 1.5rem !important;
   --tw-bg-opacity: 1 !important;
-  background-color: rgb(0 0 0 / var(--tw-bg-opacity)) !important;
+  background-color: rgb(var(--modal_color)) !important;
   place-content: center !important;
   display: grid !important;
   position: relative !important;
 }
+
+.modal-background {
+  position: fixed; /* Fixed relative to the viewport */
+  top: 0; /* Aligns to the top of the viewport */
+  left: 0; /* Aligns to the left of the viewport */
+  width: 100vw; /* Covers the full viewport width */
+  height: 100vh; /* Covers the full viewport height */
+  background-color: rgba(0, 0, 0, 0.75); /* Semi-transparent black */
+  z-index: 50; /* High enough to be above most elements */
+  display: flex; /* Flexbox layout to allow content alignment */
+  justify-content: center; /* Centers content horizontally */
+  align-items: center; /* Centers content vertically */
+  overflow-x: hidden; /* Prevents horizontal scrolling */
+  overflow-y: auto; /* Allows vertical scrolling if needed */
+  /* opacity: .75 !important;
+  position: fixed;
+  top: 0px !important;
+  right: 0px !important;
+  bottom: 0px !important;
+  left: 0px !important;
+  z-index: 40;
+  --tw-bg-opacity: 1 !important;
+  background-color: rgb(0 0 0 / var(--tw-bg-opacity)) !important; */
+}
+
+/* background-color: rgb(var(--modal_color) / var(--tw-bg-opacity)) !important; */

@@ -1,0 +1,26 @@
+.search-input {
+  height: 46px;
+  flex-grow: 1;
+  border: 1px solid #E6E6E6;
+  background: #FFF;
+}
+
+.search-input::placeholder {
+  font-style: italic;
+}
+
+.search-letters {
+  display: flex;
+  align-items: center;
+  height: 46px;
+  padding-top: 45px;
+  padding-bottom: 30px;
+}
+
+.search-button {
+  height: 46px;
+  width: 46px;
+  background: var(--call_to_action_background);
+  border: none;
+}
+

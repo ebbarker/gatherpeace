@@ -29,7 +29,7 @@ export default function Dialog({
 
   return showModal ? (
     <>
-      <div className="opacity-75 fixed inset-0 z-40 bg-black"></div>
+      
       <div
         onClick={({ target }) => {
           if (!allowClose || dialog.current?.contains(target as any)) {
@@ -43,11 +43,11 @@ export default function Dialog({
           }
           updateDialogState(false);
         }}
-        className="login-blackout"
+        className="modal-background login-blackout"
       >
         <div className="login-container">
           <div className="login-grouper">
-            <div className="UNKNOWN absolute -inset-0.5 bg-gradient-to-r from-green-200 to-green-600 rounded-lg blur-lg opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-2000"></div>
+
             <div
               ref={dialog}
               className="login-details-container"

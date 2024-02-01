@@ -138,7 +138,7 @@ export function Stepform ({ newPostCreated = () => {}, letters, setLetters }) {
 
   return (
     <>
-    { user.session ?
+
             <div className="create-post-step-container">
             <div className="create-post-form-container">
               <form className="create-post-stepform">
@@ -156,9 +156,7 @@ export function Stepform ({ newPostCreated = () => {}, letters, setLetters }) {
 
 
           </div>
-          :
-          null
-    }
+          
 
     </>
   )

@@ -14,7 +14,7 @@
 }
 
 .navbar {
-  background: #29E4B4;
+  background: var(--navbar_color);
   display: flex;
   align-items: center;
 }
@@ -58,7 +58,7 @@ $theme-colors: (
 }
 
 .dropdown-item {
-  background-color: #29E4B4;
+  background-color: #CCE4D7;
 }
 
 .navbar,

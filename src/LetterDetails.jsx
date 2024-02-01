@@ -34,7 +34,7 @@ export default function LetterDetails({
   parentIsTimeline
 }) {
   const userContext = useContext(UserContext);
-  const { session } = useContext(UserContext);
+  // const { session } = useContext(UserContext);
   const { myContextVotes, setMyContextVotes } = useContext(VoteContext);
   const borderLineRef = useRef(null);
   const contentContainerRef = useRef(null);
@@ -67,10 +67,21 @@ export default function LetterDetails({
           console.log('Fetch error:', error.message)
         } else {
           console.log('data returned', data);
-          let ogPreviewObject = {
-            title: data.metaTags?.twitter?.title ? data.metaTags?.twitter?.title : data.metaTags?.og?.title,
-            image: data.metaTags?.twitter?.image ? data.metaTags?.twitter?.image : data.metaTags?.og?.image,
-            description: data.metaTags?.twitter?.description ? data.metaTags?.twitter?.description : data.metaTags?.og?.description
+
+          let ogPreviewObject;
+
+          if (data?.url) {
+            ogPreviewObject = {
+              title: data.title,
+              description: data.description,
+              image: data.image_location,
+            }
+          } else {
+            ogPreviewObject = {
+            title: data?.twitter?.title ? data?.twitter?.title : data?.og?.title,
+            image: data?.twitter?.image ? data?.twitter?.image : data?.og?.image,
+            description: data?.twitter?.description ? data?.twitter?.description : data?.og?.description
+            }
            }
           setOgPreview(ogPreviewObject);
         }
@@ -139,7 +150,7 @@ export default function LetterDetails({
   //   }
   // }, [letter, arrLength]); // Dependency array: re-run effect if letter changes
   async function onVoteClick () {
-    console.log(letter);
+
       if (!letter) {
         return;
       }
@@ -208,14 +219,15 @@ export default function LetterDetails({
     <div className="letter-sender-details">
       <div className="sender-signoff">{letter?.sign_off}</div>
 
-      <div className="sender-name">{letter?.sender_name}</div>
-      <div className="sender-description">{letter?.sender}</div>
-
-      <div className="sender-country header-secondary">
-        {letter?.sender_country}
+      <div className="sender-name">{`-${letter?.sender_name}`}</div>
+      <div className="sender-location-details">
+        <div className="sender-city header-secondary">{letter?.sender_city ? `${letter.sender_city}, ` : null} </div>
+        <div className="sender-state header-secondary">{letter?.sender_state ? `${letter.sender_state}, ` : null}</div>
+        <div className="sender-country header-secondary">
+          {letter?.sender_country}
+        </div>
       </div>
-      <div className="sender-state header-secondary">{letter?.sender_state}</div>
-      <div className="sender-city header-secondary">{letter?.sender_city} </div>
+
     </div>
     {ogPreview && <LinkPreview ogPreview={ogPreview} /> }
 

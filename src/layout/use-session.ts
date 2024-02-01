@@ -1,7 +1,7 @@
 import { RealtimeChannel, Session } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supaClient } from "./supa-client";
+import { supaClient } from "./supa-client.ts";
 
 
 export function useSession() {
@@ -13,7 +13,6 @@ export function useSession() {
   const [channel, setChannel] = useState(null);
   const navigate = useNavigate();
   useEffect(() => {
-    console.log('first useEffect called from use-session');
     supaClient.auth.getSession().then(({ data: { session } }) => {
       setUserInfo({ ...userInfo, session });
       supaClient.auth.onAuthStateChange((_event, session) => {
@@ -23,8 +22,6 @@ export function useSession() {
   }, []);
 
   useEffect(() => {
-    console.log('second use effect from use-session called');
-    console.log('user info ' + JSON.stringify(userInfo))
     if (userInfo.session?.user && !userInfo.profile) {
       listenToUserProfileChanges(userInfo.session.user.id)
       .then(
@@ -55,7 +52,7 @@ export function useSession() {
       setShownWelcome(true);
       navigate("/welcome");
     } else {
-      console.log('setting user info...');
+      console.log('setting user info...', JSON.stringify(userInfo));
       setUserInfo({ ...userInfo, profile: data?.[0] });
     }
     return supaClient
