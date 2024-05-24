@@ -13,6 +13,7 @@ CREATE TABLE letters (
     count_comments INT DEFAULT 0 NOT NULL,
     likes int DEFAULT 0 NOT NULL,
     post_type text,
+    tsv TSVECTOR
 );
 
 
@@ -176,7 +177,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION get_letters_with_keyword_join_on_content(
+CREATE OR REPLACE FUNCTION get_letters_with_tsv(
     page_number INT,
     search_keyword TEXT DEFAULT NULL
 )
@@ -198,34 +199,43 @@ RETURNS TABLE (
 ) AS $$
 BEGIN
     RETURN QUERY
-    WITH
-    FilteredLetters AS (
+    WITH LimitedLetters AS (
         SELECT l.id, l.user_id, l.created_at, l.path,
                l.sender_country, l.sender_state, l.sender_city,
                l.sender_name, l.sign_off, l.recipient, l.score, l.likes, l.count_comments
         FROM letters l
         WHERE
-            (search_keyword IS NULL OR (
-                l.recipient ILIKE '%' || search_keyword || '%' OR
-                l.sender_country ILIKE '%' || search_keyword || '%' OR
-                l.sender_state ILIKE '%' || search_keyword || '%' OR
-                l.sender_city ILIKE '%' || search_keyword || '%'
-            ))
-    ),
-    FilteredContents AS (
-        SELECT lc.letter_id, lc.content
-        FROM letter_contents lc
-        WHERE lc.content ILIKE '%' || search_keyword || '%'
+            (search_keyword IS NULL OR l.tsv @@ plainto_tsquery('english', search_keyword))
+        ORDER BY l.score DESC, l.created_at DESC
+        LIMIT 10 OFFSET (page_number - 1) * 10
     )
-    SELECT fl.id, fl.user_id, fl.created_at, fc.content, fl.score, fl.likes,
-           fl.path, fl.sender_country, fl.sender_state,
-           fl.sender_city, fl.sign_off, fl.sender_name, fl.recipient, fl.count_comments
-    FROM FilteredLetters fl
-    LEFT JOIN FilteredContents fc ON fl.id = fc.letter_id
-    ORDER BY fl.score DESC, fl.created_at DESC
-    LIMIT 10 OFFSET (page_number - 1) * 10;
+    SELECT ll.id, ll.user_id, ll.created_at, lc.content, ll.score, ll.likes,
+           ll.path, ll.sender_country, ll.sender_state,
+           ll.sender_city, ll.sign_off, ll.sender_name, ll.recipient, ll.count_comments
+    FROM LimitedLetters ll
+    JOIN letter_contents lc ON ll.id = lc.letter_id;
 END;
 $$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION letters_tsv_trigger() RETURNS trigger AS $$
+BEGIN
+  NEW.tsv := to_tsvector(
+      'english',
+      coalesce(NEW.sender_name, '') || ' ' ||
+      coalesce(NEW.sender_country, '') || ' ' ||
+      coalesce(NEW.sender_state, '') || ' ' ||
+      coalesce(NEW.sender_city, '') || ' ' ||
+      coalesce(NEW.sign_off, '') || ' ' ||
+      coalesce(NEW.recipient, '')
+  );
+  RETURN NEW;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_update_letters_tsv BEFORE INSERT OR UPDATE ON letters
+FOR EACH ROW EXECUTE FUNCTION letters_tsv_trigger();
+
 
 CREATE OR REPLACE FUNCTION create_new_letter(
     "userId" uuid,
@@ -439,3 +449,188 @@ AFTER DELETE ON comments
 FOR EACH ROW
 EXECUTE FUNCTION decrement_letter_comment_count();
 
+
+create extension http with schema extensions;
+
+CREATE OR REPLACE FUNCTION get_user_profile_and_email(profile_name text)
+RETURNS TABLE(username text, website text, avatar_url text, email text) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT up.username, up.website, up.avatar_url, u.email
+  FROM public.user_profiles up
+  JOIN auth.users u ON up.user_id = u.id
+  WHERE up.username = profile_name;
+END;
+$$ LANGUAGE plpgsql STABLE;
+
+
+--avatars
+
+-- alter table user_profiles
+--   enable row level security;
+
+-- create policy "Public profiles are viewable by everyone." on user_profiles
+--   for select using (true);
+
+-- create policy "Users can insert their own profile." on user_profiles
+--   for insert with check (auth.uid() = user_id);
+
+-- create policy "Users can update own profile." on user_profiles
+--   for update using (auth.uid() = user_id);
+
+-- -- This trigger automatically creates a profile entry when a new user signs up via Supabase Auth.
+-- -- See https://supabase.com/docs/guides/auth/managing-user-data#using-triggers for more details.
+-- create function public.handle_new_user()
+-- returns trigger as $$
+-- begin
+--   insert into public.user_profiles (id, full_name, avatar_url)
+--   values (new.id, new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'avatar_url');
+--   return new;
+-- end;
+-- $$ language plpgsql security definer;
+-- create trigger on_auth_user_created
+--   after insert on auth.users
+--   for each row execute procedure public.handle_new_user();
+
+-- -- Set up Storage!
+-- insert into storage.buckets (id, name)
+--   values ('avatars', 'avatars');
+
+-- -- Set up access controls for storage.
+-- -- See https://supabase.com/docs/guides/storage/security/access-control#policy-examples for more details.
+-- create policy "Avatar images are publicly accessible." on storage.objects
+--   for select using (bucket_id = 'avatars');
+
+-- create policy "Anyone can upload an avatar." on storage.objects
+--   for insert with check (bucket_id = 'avatars');
+
+-- create policy "Anyone can update their own avatar." on storage.objects
+--   for update using (auth.uid() = owner) with check (bucket_id = 'avatars');
+
+
+
+--delete old profile photos
+
+create or replace function delete_storage_object(bucket text, object text, out status int, out content text)
+returns record
+language 'plpgsql'
+security definer
+as $$
+declare
+  project_url text := 'http://localhost:54323';
+  service_role_key text := 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0'; --  full access needed
+  url text := project_url||'/storage/v1/object/'||bucket||'/'||object;
+begin
+  select
+      into status, content
+           result.status::int, result.content::text
+      FROM extensions.http((
+    'DELETE',
+    url,
+    ARRAY[extensions.http_header('authorization','Bearer '||service_role_key)],
+    NULL,
+    NULL)::extensions.http_request) as result;
+end;
+$$;
+
+-- create or replace function delete_avatar(target_user_id uuid, out status int, out content text)
+-- returns record
+-- language 'plpgsql'
+-- security definer
+-- as $$
+-- declare
+--   user_avatar_url text;
+-- begin
+--   -- Retrieve the avatar_url for the given target_user_id from the user_profiles table
+--   SELECT avatar_url INTO user_avatar_url
+--   FROM user_profiles
+--   WHERE user_id = target_user_id; -- Resolves ambiguity by using a different variable name
+
+--   -- Proceed only if an avatar_url exists
+--   IF user_avatar_url IS NOT NULL THEN
+--     -- Call the existing function to delete the avatar from storage
+--     SELECT INTO status, content result.status, result.content
+--     FROM public.delete_storage_object('avatars', user_avatar_url) AS result;
+
+--     -- If the avatar is successfully deleted from storage (status = 200),
+--     -- proceed to remove the avatar_url from the user_profiles table
+--     IF status = 200 THEN
+--       UPDATE user_profiles
+--       SET avatar_url = NULL
+--       WHERE user_id = target_user_id; -- Explicitly specifies column with table name
+
+--       -- Adjust the status and content output as necessary
+--       status := 200; -- Confirm success
+--       content := 'Avatar deleted successfully from storage and user_profiles';
+--     END IF;
+--   ELSE
+--     -- Handle the case where no avatar_url exists for the given user_id
+--     status := 404; -- Not found
+--     content := 'No avatar found for the given user_id.';
+--   END IF;
+-- END;
+-- $$;
+
+create or replace function delete_avatar(avatar_url text, out status int, out content text)
+returns record
+language 'plpgsql'
+security definer
+as $$
+begin
+  select
+      into status, content
+           result.status, result.content
+      from public.delete_storage_object('avatars', avatar_url) as result;
+end;
+$$;
+
+
+create or replace function delete_old_avatar()
+returns trigger
+language 'plpgsql'
+security definer
+as $$
+declare
+  status int;
+  content text;
+  avatar_name text;
+begin
+  if coalesce(old.avatar_url, '') <> ''
+      and (tg_op = 'DELETE' or (old.avatar_url <> coalesce(new.avatar_url, ''))) then
+    -- extract avatar name
+    avatar_name := old.avatar_url;
+    select
+      into status, content
+      result.status, result.content
+      from public.delete_avatar(avatar_name) as result;
+    if status <> 200 then
+      raise warning 'Could not delete avatar: % %', status, content;
+    end if;
+  end if;
+  if tg_op = 'DELETE' then
+    return old;
+  end if;
+  return new;
+end;
+$$;
+
+create trigger before_profile_changes
+  before delete on public.user_profiles
+  for each row execute function public.delete_old_avatar();
+
+
+
+create or replace function delete_old_profile()
+returns trigger
+language 'plpgsql'
+security definer
+as $$
+begin
+  delete from public.user_profiles where id = old.id;
+  return old;
+end;
+$$;
+
+create trigger before_delete_user
+  before delete on auth.users
+  for each row execute function public.delete_old_profile();

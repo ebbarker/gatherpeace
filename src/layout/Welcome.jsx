@@ -57,6 +57,7 @@ export function Welcome() {
   const [serverError, setServerError] = useState("");
   const [formIsDirty, setFormIsDirty] = useState(false);
   const invalidString = useMemo(() => validateUsername(userName), [userName]);
+  const { updateProfile } = useContext(UserContext);
 
   return (
     <Dialog
@@ -74,6 +75,7 @@ export function Welcome() {
             className="grid grid-cols-1 place-items-center"
             onSubmit={(event) => {
               event.preventDefault();
+              console.log('user id ' + user.session?.user.id,);
               supaClient
                   .from("user_profiles")
                   .insert([
@@ -87,13 +89,17 @@ export function Welcome() {
                         if (error.message.indexOf('duplicate key') !== -1) {
                           setServerError(`Username "${userName}" is already taken`);
                           console.log(JSON.stringify(error));
-                        } else {
+                        } else if (error.message.indexOf('duplicate key')) {
+                          setServerError(`Unknown error: ${error.message}`);
+                          console.log(JSON.stringify(error));
+                        }  else {
                           setServerError(`Unknown error: ${error.message}`);
                           console.log(JSON.stringify(error));
                         }
 
                       } else {
                           setUserName(userName); // Set the username state here
+                          updateProfile({ username: userName });
                           const target = localStorage.getItem("returnPath") || "/";
                           localStorage.removeItem("returnPath");
                           console.log('redirecting line 65');

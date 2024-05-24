@@ -20,6 +20,16 @@ export function useSession() {
       });
     });
   }, []);
+  // Provide a method to update userInfo
+  const updateProfile = (updatedProfile) => {
+    setUserInfo((prevState) => ({
+      ...prevState,
+      profile: { ...prevState.profile, ...updatedProfile },
+    }));
+  };
+
+// Make sure to provide updateUserInfo as part of the context value
+
 
   useEffect(() => {
     if (userInfo.session?.user && !userInfo.profile) {
@@ -41,18 +51,17 @@ export function useSession() {
   }, [userInfo.session]);
 
   async function listenToUserProfileChanges(userId) {
-    console.log('calling listen to user profile changes');
+
     const { data } = await supaClient
       .from("user_profiles")
       .select("*")
       .filter("user_id", "eq", userId);
     if (!data?.length && !shownWelcome) {
-      console.log('CALLING WELCOME FROM USe-SESSION')
-      console.log(JSON.stringify('data'));
+
       setShownWelcome(true);
       navigate("/welcome");
     } else {
-      console.log('setting user info...', JSON.stringify(userInfo));
+
       setUserInfo({ ...userInfo, profile: data?.[0] });
     }
     return supaClient
@@ -72,5 +81,5 @@ export function useSession() {
       .subscribe();
   }
 
-  return userInfo;
+  return { ...userInfo, updateProfile };
 }

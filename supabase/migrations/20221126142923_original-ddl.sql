@@ -13,27 +13,27 @@ create table user_profiles (
 
 );
 
-alter table user_profiles
-  enable row level security;
+-- alter table user_profiles
+--   enable row level security;
 
-create policy "Public profiles are viewable by everyone." on user_profiles
-  for select using (true);
+-- create policy "Public profiles are viewable by everyone." on user_profiles
+--   for select using (true);
 
-create policy "Users can insert their own profile." on user_profiles
-  for insert with check (auth.uid() = user_id);
+-- create policy "Users can insert their own profile." on user_profiles
+--   for insert with check (auth.uid() = user_id);
 
-create policy "Users can update own profile." on user_profiles
-  for update using (auth.uid() = user_id);
+-- create policy "Users can update own profile." on user_profiles
+--   for update using (auth.uid() = user_id);
 
--- This trigger automatically creates a profile entry when a new user signs up via Supabase Auth.
--- See https://supabase.com/docs/guides/auth/managing-user-data#using-triggers for more details.
+-- -- This trigger automatically creates a profile entry when a new user signs up via Supabase Auth.
+-- -- See https://supabase.com/docs/guides/auth/managing-user-data#using-triggers for more details.
 
 -- Set up Storage!
 insert into storage.buckets (id, name)
   values ('avatars', 'avatars');
 
--- Set up access controls for storage.
--- See https://supabase.com/docs/guides/storage/security/access-control#policy-examples for more details.
+-- -- Set up access controls for storage.
+-- -- See https://supabase.com/docs/guides/storage/security/access-control#policy-examples for more details.
 create policy "Avatar images are publicly accessible." on storage.objects
   for select using (bucket_id = 'avatars');
 
@@ -42,6 +42,12 @@ create policy "Anyone can upload an avatar." on storage.objects
 
 create policy "Anyone can update their own avatar." on storage.objects
   for update using (auth.uid() = owner) with check (bucket_id = 'avatars');
+
+create policy "User can delete own avatar" on storage.objects
+  for delete using (auth.uid() = owner);
+
+
+
 
 create table posts (
     id uuid primary key default uuid_generate_v4() not null,

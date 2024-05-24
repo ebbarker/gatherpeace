@@ -9,7 +9,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 
 
-console.log("Hello from Functions!");
+
 
 serve(async (req) => {
   const authHeader = req.headers.get('Authorization')!

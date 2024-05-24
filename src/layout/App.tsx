@@ -19,7 +19,8 @@ import { Welcome, welcomeLoader } from "./Welcome";
 import * as Sentry from "@sentry/react"
 import { VoteProvider } from "../contexts/VoteContext"
 import { LetterView } from "../LetterView"
-import UserProfile from "../user-profile/UserProfile.jsx";
+import PublicUserProfile from "../user-profile/PublicUserProfile.jsx";
+import PrivateUserProfile from "../user-profile/PrivateUserProfile.jsx";
 import NotFound from "../not-found/NotFound.jsx";
 
 
@@ -77,7 +78,7 @@ export const router = sentryCreateBrowserRouter([
         loader: welcomeLoader,
       },
       { path: "privacy-policy", element: <PrivacyPolicy /> },
-      { path: "profile", element: <UserProfile profileName={null}/> },
+      { path: "profile", element: <PrivateUserProfile /> },
       {
         path: "*", // Use a wildcard to capture all other routes
         element: <CatchAllRoutes />
@@ -91,7 +92,7 @@ function CatchAllRoutes() {
   let match = location.pathname.match(/^\/@(.+)/);
 
   if (match) {
-    return <UserProfile profileName={match[1]} />;
+    return <PublicUserProfile profileName={match[1]} />;
   } else {
     return <NotFound />; // Render a Not Found page for other unmatched routes
   }
@@ -100,6 +101,7 @@ function CatchAllRoutes() {
 export const UserContext = createContext<SupashipUserInfo>({
   session: null,
   profile: null,
+  updateProfile: () => {},
 });
 
 function App() {
@@ -107,9 +109,10 @@ function App() {
 }
 
 function Layout() {
-  const { session, profile } = useSession();
+  const { session, profile, updateProfile } = useSession(); // Assuming useSession now also provides a method to update the userInfo
+
   return (
-    <UserContext.Provider value={{ session, profile }}>
+    <UserContext.Provider value={{ session, profile, updateProfile }}>
       <VoteProvider>
         <NavBar />
         <Outlet />

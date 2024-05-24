@@ -1,6 +1,7 @@
 import { EmailListSignup } from "./EmailListSignup";
 import { PostView } from "../PostView";
 import { AllPosts } from "../AllPosts"
+import { Monument } from "../monument/Monument"
 
 export default function Home() {
 
@@ -11,8 +12,11 @@ export default function Home() {
   };
 
   return (
+    <>
+      <Monument />
+      <AllPosts />
+    </>
 
-     <AllPosts />
 
 
 

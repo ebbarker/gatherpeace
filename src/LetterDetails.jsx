@@ -45,13 +45,16 @@ export default function LetterDetails({
 
 
   useEffect(() => {
-    getOgContent(letter.content);
+    letter?.content.length ? getOgContent(letter?.content) : null;
+
   }, [letter.content]);
 
   // Function to find URLs in a text
  async function getOgContent(text) {
+
     const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-    const url = text.match(urlRegex)[0];
+    const arr = text.match(urlRegex);
+    const url = arr.length ? arr[0] : null;
     console.log ('url', url);
     if (url) {
 
@@ -92,51 +95,51 @@ export default function LetterDetails({
 
   }
 
-  useEffect(() => {
+  // useEffect(() => {
 
-    async function getOg() {
-
-
-
-
-      // const { data, error } = await supaClient.functions.invoke('hello', {
-      //   headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ foo: 'bar' }),
-      // })
+  //   async function getOg() {
 
 
 
-      // try {
-      //   const response = await supaClient.functions.invoke('hello', {
-      //     method: 'POST',
-      //     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      //     body: JSON.stringify({ name: 'Functions' }),
-      //   });
+
+  //     // const { data, error } = await supaClient.functions.invoke('hello', {
+  //     //   headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  //     //   body: JSON.stringify({ foo: 'bar' }),
+  //     // })
 
 
-      //   console.log("Raw response:", JSON.stringify(data));
 
-      //   if (response.error) {
-      //     setOgpreview('OG ERROR: ' + response.error.message);
-      //   } else {
-      //     console.log('OG DATA:', response.data);
-      //     setOgpreview(response.data);
-      //   }
-      // } catch (error) {
-      //   console.error('Error fetching data:', error);
-      //   // Handle additional error scenarios
-      // }
+  //     // try {
+  //     //   const response = await supaClient.functions.invoke('hello', {
+  //     //     method: 'POST',
+  //     //     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  //     //     body: JSON.stringify({ name: 'Functions' }),
+  //     //   });
 
-        // const response = await supaClient.functions.invoke('hello', {
-        //   method: 'POST',
-        //   headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        //   data: JSON.stringify({ name: 'Functions' }),
-        // });
-        // console.log('resp ', JSON.stringify(response));
-    }
 
-    getOg();
-  }, []);
+  //     //   console.log("Raw response:", JSON.stringify(data));
+
+  //     //   if (response.error) {
+  //     //     setOgpreview('OG ERROR: ' + response.error.message);
+  //     //   } else {
+  //     //     console.log('OG DATA:', response.data);
+  //     //     setOgpreview(response.data);
+  //     //   }
+  //     // } catch (error) {
+  //     //   console.error('Error fetching data:', error);
+  //     //   // Handle additional error scenarios
+  //     // }
+
+  //       // const response = await supaClient.functions.invoke('hello', {
+  //       //   method: 'POST',
+  //       //   headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  //       //   data: JSON.stringify({ name: 'Functions' }),
+  //       // });
+  //       // console.log('resp ', JSON.stringify(response));
+  //   }
+
+  //   getOg();
+  // }, []);
 
 
 

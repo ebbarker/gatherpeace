@@ -21,7 +21,7 @@ return (
       type="text"
       value={searchKeyword}
       onChange={(e) => setSearchKeyword(e.target.value)}
-      placeholder="Enter search keywordsdfsdfsdf"
+      placeholder="Enter search keyword"
       className="search-input"
     />
     <button type="submit" className="search-button"><FaSearch /></button>

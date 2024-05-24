@@ -53,7 +53,8 @@
   --divider_color:   #94afa6;
   --section_divider_top_border: none;
   --input_form_border: 1px solid #86ccb5;
-  --greeting_background: #ECF3F3;
+  --greeting_background: rgb(175, 254, 224);
+  /* --greeting_background: #ECF3F3; */
   --navbar_color: #CCE4D7;
   --call_to_action_background: #129E9E;
   --call_to_action_text: #ffffff;
@@ -469,7 +470,7 @@ body {
 
 
 
-.peace-wall-title {
+.wall-title {
   color: var(--body_main);
   padding-bottom: 20px;
   padding-top: 20px;
@@ -636,11 +637,9 @@ body.active-modal {
   display: flex;
 }
 
-.write-a-message-button {
+.action-button {
   display: flex;
-  width: 804px;
   height: 45px;
-  padding: 7px 89px;
   justify-content: center;
   align-items: center;
   gap: 10px;
@@ -649,4 +648,9 @@ body.active-modal {
   background-color: var(--call_to_action_background);
   color: var(--call_to_action_text);
   border: none;
+}
+
+.write-a-message {
+  width: 804px;
+  padding: 7px 89px;
 }

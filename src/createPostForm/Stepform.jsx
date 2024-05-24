@@ -64,7 +64,7 @@ export function Stepform ({ newPostCreated = () => {}, letters, setLetters }) {
 
   }
 
-  const { steps, currentStepIndex, step, back, next, isFirstStep, isLastStep } = useMultiStepform([
+  const { steps, currentStepIndex, step, goTo, back, next, isFirstStep, isLastStep } = useMultiStepform([
     <ToForm {...formData} updateFields={updateFields} />,
     <LetterContent {...formData} updateFields={updateFields} />,
     <FromForm {...formData} updateFields={updateFields} />,
@@ -128,6 +128,7 @@ export function Stepform ({ newPostCreated = () => {}, letters, setLetters }) {
             formData.recipient,
           );
           setFormData(formFields);
+          goTo(0);
 
         }
       });
@@ -148,7 +149,11 @@ export function Stepform ({ newPostCreated = () => {}, letters, setLetters }) {
                 {step}
                 <div className="create-post-stepform-controls">
                   {!isFirstStep && <button className="form-button" onClick={back}>Back</button>}
-                  {isLastStep ? <button className="form-button" id="submit-button" type="submit" onClick={createLetter}>Finnish</button>  : <button id="next" className="form-button" onClick={next}>Next</button>}
+                  {
+                    isLastStep ?
+                    <button className="form-button" id="submit-button" type="submit" onClick={createLetter}>Submit</button>  :
+                    <button id="next" className="form-button" onClick={next}>Next</button>
+                  }
                 </div>
 
               </form>
@@ -156,7 +161,7 @@ export function Stepform ({ newPostCreated = () => {}, letters, setLetters }) {
 
 
           </div>
-          
+
 
     </>
   )

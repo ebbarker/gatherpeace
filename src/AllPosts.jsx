@@ -1,5 +1,5 @@
-import { useContext, useEffect, useMemo, useState } from "react";
-import { Link, useLoaderData, useParams } from "react-router-dom";
+import React, { useContext, useEffect, useMemo, useState } from "react";
+import { Link, useLoaderData, useParams, useNavigate, useLocation } from "react-router-dom";
 import { UserContext } from "./layout/App";
 import { CreateLetter } from "./CreateLetter";
 import { supaClient } from "./layout/supa-client";
@@ -25,50 +25,65 @@ export function AllPosts() {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchFilter, setSearchFilter] = useState('both');
   const [writingMessage, setWritingMessage] = useState(false);
+  const { myContextVotes, setMyContextVotes } = useContext(VoteContext);
+  const location = useLocation();
 
   const showMessageDialog = (e) => {
     e.preventDefault();
     setWritingMessage(true);
   }
 
+  // const handleSearch = (e) => {
+  //   e.preventDefault();
+  //   getLetters();
+  // };
+
+  const navigate = useNavigate();
+
   const handleSearch = (e) => {
     e.preventDefault();
+    // Update the URL with the search keyword while retaining the page number
+    navigate(`/peace-wall/${pageNumber}?query=${encodeURIComponent(searchKeyword)}`);
     getLetters();
-    // Trigger re-fetching of letters with the new search keyword and filter
   };
 
 
-  const { myContextVotes, setMyContextVotes } = useContext(VoteContext);
   useEffect(() => {
-    if (searchKeyword.length) return;
+    const searchParams = new URLSearchParams(location.search);
+    console.log('search params: ' + JSON.stringify(searchParams));
+    const query = searchParams.get('query');
+    console.log('query:' + query);
+    if (query !== null) {
+      setSearchKeyword(decodeURIComponent(query));
+    } else {
+      setSearchKeyword('');
+    }
+    console.log('keyword: ' + searchKeyword);
     getLetters();
-
-
-  }, [pageNumber]);
+    // Add location.search to the dependency array to re-run the effect when the search parameters change
+  }, [pageNumber, location.search]);
 
   async function getLetters() {
-    console.log('get letterssdfsdf');
     const queryPageNumber = pageNumber ? +pageNumber : 1;
-    console.log (' promise all query called')
+    let searchCondition = searchKeyword.length > 0 ? { search_keyword: searchKeyword } : {};
+
     Promise.all([
       supaClient
         .rpc("get_letters_with_tsv", {
           page_number: queryPageNumber,
-          search_keyword: searchKeyword.length? searchKeyword : null,
+          ...searchCondition,
         })
         .select("*")
         .then(({ data }) => {
-          console.log('data from getletters: ' + data);
-          setLetters(data);
-
+          setLetters(data ? data : []);
         }),
       supaClient
         .from("letters")
         .select("*", { count: "exact", head: true })
         .then(({ count }) => {
-          count == null ? 0 : setTotalPages(Math.ceil(count / 10));
+          setTotalPages(count ? Math.ceil(count / 10) : 0);
         }),
-    ]);
+    ]).catch(error => console.error("Error fetching letters:", error));
   }
 
 
@@ -77,7 +92,7 @@ export function AllPosts() {
       {/* {session && <Createletter letters={letters} setLetters={setLetters}/>} */}
       {!writingMessage &&
         <div className="call-to-action-container">
-          <button className="write-a-message-button" onClick={showMessageDialog}>Write a Peace Message</button>
+          <button className="write-a-message action-button" onClick={showMessageDialog}>Write a Peace Message</button>
         </div>}
       {writingMessage && <Stepform letters={letters} setLetters={setLetters}/> }
 
@@ -135,6 +150,8 @@ export function AllPosts() {
       <Pagination
         totalPages={totalPages}
         currentPage={pageNumber ? +pageNumber : 0}
+        searchKeyword={searchKeyword}
+        pageNumber={pageNumber}
       />
     </>
   );
@@ -147,7 +164,7 @@ export async function castLetterVote({
   onSuccess = () => {},
   onError = (error) => console.log('error!!!') // Optional: define an onError callback for handling errors
 }) {
-  console.log('castVote called for iddfgdfg: ' + letterId + " " + userId + ' vote type: ' + voteType);
+
 
 
   if (voteType === "up") {
@@ -161,7 +178,6 @@ export async function castLetterVote({
       if (error) {
         console.error(error.message);
       } else {
-        console.log('data: ' + JSON.stringify(data) + ' error: ' + error);
         onSuccess();
       }
     });
@@ -187,69 +203,7 @@ export async function castLetterVote({
 //   }
 // });
 
-const selectedStyles = "border-2 border-white rounded p-2 bg-gray-700";
-const notSelectedStyles = "rounded p-2 bg-gray-700";
 
-function Pagination({
-  totalPages,
-  currentPage,
-}) {
-  if (!currentPage) currentPage = 1;
-  const middleButtons = [currentPage];
-
-  for (let i = currentPage - 1; i > 0 && i > currentPage - 5; i--) {
-    middleButtons.unshift(i);
-  }
-  for (let i = currentPage + 1; i <= totalPages && i <= currentPage + 4; i++) {
-    middleButtons.push(i);
-  }
-  return (
-    <div className="flex justify-center gap-4 place-items-end">
-      {currentPage > 5 ? (
-        <Link
-          data-e2e={`page-1`}
-          className={notSelectedStyles}
-          to={`/peace-wall/1`}
-          key={1}
-        >
-          1
-        </Link>
-      ) : (
-        <></>
-      )}
-      {currentPage > 6 ? <span data-e2e="starting-elipsis"> ... </span> : <></>}
-      {middleButtons.map((pageNumber) => (
-        <Link
-          key={pageNumber}
-          data-e2e={`page-${pageNumber}`}
-          className={
-            currentPage === pageNumber ? selectedStyles : notSelectedStyles
-          }
-          to={`/peace-wall/${pageNumber}`}
-        >
-          {pageNumber}
-        </Link>
-      ))}
-      {totalPages - currentPage > 5 ? (
-        <span data-e2e="ending-elipsis"> ... </span>
-      ) : (
-        <></>
-      )}
-      {totalPages - currentPage > 4 ? (
-        <Link
-          data-e2e={`page-${totalPages}`}
-          className={notSelectedStyles}
-          to={`/peace-wall/${totalPages}`}
-          key={totalPages}
-        >
-          {totalPages}
-        </Link>
-      ) : (
-        <></>
-      )}
-    </div>
-  );
-}
 
 export async function castPostVote({
   postId,
@@ -274,6 +228,72 @@ export async function castPostVote({
         .then(onSuccess());
   }
 
+}
+
+const selectedStyles = "border-2 border-white rounded p-2 bg-gray-700";
+const notSelectedStyles = "rounded p-2 bg-gray-700";
+
+function Pagination({
+  totalPages,
+  currentPage,
+  searchKeyword,
+  pageNumber
+}) {
+  if (!currentPage) currentPage = 1;
+  const middleButtons = [currentPage];
+
+  for (let i = currentPage - 1; i > 0 && i > currentPage - 5; i--) {
+    middleButtons.unshift(i);
+  }
+  for (let i = currentPage + 1; i <= totalPages && i <= currentPage + 4; i++) {
+    middleButtons.push(i);
+  }
+  return (
+    <div className="flex justify-center gap-4 place-items-end">
+      {currentPage > 5 ? (
+        <Link
+          data-e2e={`page-1`}
+          className={notSelectedStyles}
+          to={`/peace-wall/${pageNumber}?query=${encodeURIComponent(searchKeyword)}`}
+          key={1}
+        >
+          1
+        </Link>
+      ) : (
+        <></>
+      )}
+      {currentPage > 6 ? <span data-e2e="starting-elipsis"> ... </span> : <></>}
+      {middleButtons.map((pageNumbers) => (
+        <Link
+          key={pageNumbers}
+          data-e2e={`page-${pageNumbers}`}
+          className={
+            currentPage === pageNumbers ? selectedStyles : notSelectedStyles
+          }
+          to={`/peace-wall/${pageNumbers}?query=${encodeURIComponent(searchKeyword)}`}
+        >
+          {pageNumbers}
+        </Link>
+      ))}
+      {totalPages - currentPage > 5 ? (
+        <span data-e2e="ending-elipsis"> ... </span>
+      ) : (
+        <></>
+      )}
+      {totalPages - currentPage > 4 ? (
+        <Link
+          data-e2e={`page-${totalPages}`}
+          className={notSelectedStyles}
+          to={`/peace-wall/${pageNumber}?query=${encodeURIComponent(searchKeyword)}`}
+          key={totalPages}
+        >
+          {totalPages}
+        </Link>
+      ) : (
+        <></>
+      )}
+    </div>
+  );
 }
 
 
