@@ -3,11 +3,17 @@ CREATE TABLE letters (
     user_id uuid REFERENCES auth.users (id) NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     path ltree NOT NULL,
+    sender_country text,
+    sender_state text,
+    sender_city text,
+    sign_off text,
+    sender_name text,
+    recipient text,
     score int DEFAULT 0 NOT NULL,
     count_comments INT DEFAULT 0 NOT NULL,
     likes int DEFAULT 0 NOT NULL,
-    post_type text
-
+    post_type text,
+    tsv TSVECTOR
 );
 
 
@@ -16,13 +22,6 @@ CREATE TABLE letter_contents (
     user_id uuid REFERENCES auth.users (id) NOT NULL,
     letter_id uuid REFERENCES letters (id) NOT NULL,
     content text,
-    sender_country text,
-    sender_state text,
-    sender_city text,
-    sign_off text,
-    sender_name text,
-    recipient text,
-    tsv TSVECTOR,
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
@@ -145,26 +144,33 @@ RETURNS TABLE (
     likes INT,
     username TEXT,
     path ltree,
+    sender text,
     sender_country text,
     sender_state text,
     sender_city text,
     sign_off text,
     sender_name text,
     recipient text,
+    recipient_country text,
+    recipient_state text,
+    recipient_city text,
     count_comments INT
 ) AS $$
 BEGIN
     RETURN QUERY
     WITH LimitedLetters AS (
-        SELECT l.id, l.user_id, l.created_at, l.path,
-               l.score, l.likes, l.count_comments
+        SELECT l.id, l.user_id, l.created_at, l.path, l.sender,
+               l.sender_country, l.sender_state, l.sender_city,
+               l.sender_name, l.sign_off, l.recipient, l.recipient_country,
+               l.recipient_state, l.recipient_city, l.score, l.likes, l.count_comments
         FROM letters l
         ORDER BY l.score DESC, l.created_at DESC
         LIMIT 10 OFFSET (page_number - 1) * 10
     )
     SELECT ll.id, ll.user_id, ll.created_at, lc.content, ll.score, ll.likes, up.username,
-           ll.path, lc.sender_country, lc.sender_state, lc.sender_city,
-           lc.sign_off, lc.sender_name, lc.recipient, ll.count_comments
+           ll.path, ll.sender, ll.sender_country, ll.sender_state,
+           ll.sender_city, ll.sign_off, ll.sender_name, ll.recipient, ll.recipient_country,
+           ll.recipient_state, ll.recipient_city, ll.count_comments
     FROM LimitedLetters ll
     JOIN letter_contents lc ON ll.id = lc.letter_id
     JOIN user_profiles up ON ll.user_id = up.user_id;
@@ -195,17 +201,17 @@ BEGIN
     RETURN QUERY
     WITH LimitedLetters AS (
         SELECT l.id, l.user_id, l.created_at, l.path,
-               l.score, l.likes, l.count_comments
+               l.sender_country, l.sender_state, l.sender_city,
+               l.sender_name, l.sign_off, l.recipient, l.score, l.likes, l.count_comments
         FROM letters l
-        JOIN letter_contents lc ON l.id = lc.letter_id
         WHERE
-            (search_keyword IS NULL OR lc.tsv @@ plainto_tsquery('english', search_keyword))
+            (search_keyword IS NULL OR l.tsv @@ plainto_tsquery('english', search_keyword))
         ORDER BY l.score DESC, l.created_at DESC
         LIMIT 10 OFFSET (page_number - 1) * 10
     )
     SELECT ll.id, ll.user_id, ll.created_at, lc.content, ll.score, ll.likes,
-           ll.path, lc.sender_country, lc.sender_state,
-           lc.sender_city, lc.sign_off, lc.sender_name, lc.recipient, ll.count_comments
+           ll.path, ll.sender_country, ll.sender_state,
+           ll.sender_city, ll.sign_off, ll.sender_name, ll.recipient, ll.count_comments
     FROM LimitedLetters ll
     JOIN letter_contents lc ON ll.id = lc.letter_id;
 END;
@@ -221,15 +227,13 @@ BEGIN
       coalesce(NEW.sender_state, '') || ' ' ||
       coalesce(NEW.sender_city, '') || ' ' ||
       coalesce(NEW.sign_off, '') || ' ' ||
-      coalesce(NEW.recipient, '') || ' ' ||
-      coalesce(NEW.content, '')
+      coalesce(NEW.recipient, '')
   );
   RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_update_letter_contents_tsv
-BEFORE INSERT OR UPDATE ON letter_contents
+CREATE TRIGGER trg_update_letters_tsv BEFORE INSERT OR UPDATE ON letters
 FOR EACH ROW EXECUTE FUNCTION letters_tsv_trigger();
 
 
@@ -252,11 +256,23 @@ BEGIN
     INSERT INTO "letters" (
         "user_id",
         "path",
+        "sender_country",
+        "sender_state",
+        "sender_city",
+        "sign_off",
+        "sender_name",
+        "recipient",
         "post_type"
     )
     VALUES (
         "userId",
         'root',
+        sender_country,
+        sender_state,
+        sender_city,
+        sign_off,
+        sender_name,
+        recipient,
         post_type
     )
     RETURNING "id", "created_at"
@@ -266,24 +282,12 @@ BEGIN
   INSERT INTO "letter_contents" (
     "letter_id",
     "content",
-    "user_id",
-    "sender_country",
-    "sender_state",
-    "sender_city",
-    "sign_off",
-    "sender_name",
-    "recipient"
+    "user_id"
   )
   VALUES (
     new_letter_id,
     "content",
-    "userId",
-    sender_country,
-    sender_state,
-    sender_city,
-    sign_off,
-    sender_name,
-    recipient
+    "userId"
   );
 
   RETURN NEXT;
@@ -301,12 +305,16 @@ RETURNS TABLE (
     score int,
     path ltree,
     count_comments int,
+    sender text,
     sender_country text,
     sender_state text,
     sender_city text,
     sign_off text,
     sender_name text,
-    recipient text
+    recipient text,
+    recipient_country text,
+    recipient_state text,
+    recipient_city text
 )
 LANGUAGE plpgsql
 AS $$
@@ -321,12 +329,16 @@ BEGIN
         p.score,
         p.path,
         p.count_comments,
-        pc.sender_country,
-        pc.sender_state,
-        pc.sender_city,
-        pc.sign_off,
-        pc.sender_name,
-        pc.recipient
+        p.sender,
+        p.sender_country,
+        p.sender_state,
+        p.sender_city,
+        p.sign_off,
+        p.sender_name,
+        p.recipient,
+        p.recipient_country,
+        p.recipient_state,
+        p.recipient_city
     FROM letters p
     JOIN letter_contents pc ON p.id = pc.letter_id
     JOIN user_profiles up ON p.user_id = up.user_id
@@ -342,7 +354,7 @@ BEGIN
       null,
       c.path,
       NULL as count_comments,  -- Comments do not have count_comments
-      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL -- NULL for additional fields
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL  -- NULL for additional fields
     FROM comments c
     JOIN user_profiles up ON c.user_id = up.user_id
     WHERE

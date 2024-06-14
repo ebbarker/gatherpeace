@@ -1,32 +1,36 @@
-import React from "react";
-import { createContext } from "react";
-import { createBrowserRouter, Outlet, RouterProvider, Routes,
-  Route,
+import React, { createContext, useEffect, useState, useContext } from 'react';
+import {
   BrowserRouter,
+  createBrowserRouter,
+  Outlet,
+  RouterProvider,
+  Routes,
+  Route,
   useLocation,
   useNavigationType,
   createRoutesFromChildren,
-  matchRoutes, } from "react-router-dom";
-import { AllPosts } from "../AllPosts";
-import "./App.css";
-import Home from "./Home";
-import MessageBoard from "../MessageBoard";
-import NavBar from "./NavBar";
-import { PostView } from "../PostView";
-import PrivacyPolicy from "../PrivacyPolicy";
-import { SupashipUserInfo, useSession } from "./use-session";
-import { Welcome, welcomeLoader } from "./Welcome";
-import * as Sentry from "@sentry/react"
-import { VoteProvider } from "../contexts/VoteContext"
-import { LetterView } from "../LetterView"
-import PublicUserProfile from "../user-profile/PublicUserProfile.jsx";
-import PrivateUserProfile from "../user-profile/PrivateUserProfile.jsx";
-import NotFound from "../not-found/NotFound.jsx";
-
-
+  matchRoutes,
+  useNavigate,
+} from 'react-router-dom';
+import { AllPosts } from '../AllPosts';
+import './App.css';
+import Home from './Home';
+import MessageBoard from '../MessageBoard';
+import NavBar from './NavBar';
+import { PostView } from '../PostView';
+import PrivacyPolicy from '../PrivacyPolicy';
+import { SupashipUserInfo, useSession } from './use-session';
+import { Welcome, welcomeLoader } from './Welcome';
+import * as Sentry from '@sentry/react';
+import { VoteProvider } from '../contexts/VoteContext';
+import { LetterView } from '../LetterView';
+import PublicUserProfile from '../user-profile/PublicUserProfile.jsx';
+import PrivateUserProfile from '../user-profile/PrivateUserProfile.jsx';
+import NotFound from '../not-found/NotFound.jsx';
+import { supaClient } from "./supa-client";
 
 Sentry.init({
-  dsn: "https://5a282404b548c3304777f4db6615b992@o4505705490350080.ingest.sentry.io/4505705494478848",
+  dsn: 'https://5a282404b548c3304777f4db6615b992@o4505705490350080.ingest.sentry.io/4505705494478848',
   integrations: [
     new Sentry.BrowserTracing({
       routingInstrumentation: Sentry.reactRouterV6Instrumentation(
@@ -34,54 +38,49 @@ Sentry.init({
         useLocation,
         useNavigationType,
         createRoutesFromChildren,
-        matchRoutes
+        matchRoutes,
       ),
     }),
   ],
   tracesSampleRate: 1.0,
 });
 
-const sentryCreateBrowserRouter =
-  Sentry.wrapCreateBrowserRouter(createBrowserRouter);
-
-// const router = sentryCreateBrowserRouter([
-//   // ...
-// ]);
+const sentryCreateBrowserRouter = Sentry.wrapCreateBrowserRouter(createBrowserRouter);
 
 export const router = sentryCreateBrowserRouter([
   {
-    path: "/",
+    path: '/',
     element: <Layout />,
     children: [
-      { path: "", element: <Home /> },
+      { path: '', element: <Home /> },
       {
-        path: "peace-wall",
+        path: 'peace-wall',
         element: <MessageBoard />,
         children: [
           {
-            path: ":pageNumber",
+            path: ':pageNumber',
             element: <AllPosts />,
           },
           {
-            path: "post/:postId",
+            path: 'post/:postId',
             element: <PostView />,
           },
           {
-            path: "letter/:LetterId",
+            path: 'letter/:LetterId',
             element: <LetterView />,
           },
         ],
       },
       {
-        path: "welcome",
+        path: 'welcome',
         element: <Welcome />,
         loader: welcomeLoader,
       },
-      { path: "privacy-policy", element: <PrivacyPolicy /> },
-      { path: "profile", element: <PrivateUserProfile /> },
+      { path: 'privacy-policy', element: <PrivacyPolicy /> },
+      { path: 'profile', element: <PrivateUserProfile /> },
       {
-        path: "*", // Use a wildcard to capture all other routes
-        element: <CatchAllRoutes />
+        path: '*', // Use a wildcard to capture all other routes
+        element: <CatchAllRoutes />,
       },
     ],
   },
@@ -104,12 +103,28 @@ export const UserContext = createContext<SupashipUserInfo>({
   updateProfile: () => {},
 });
 
-function App() {
-  return <RouterProvider router={router} />;
-}
-
 function Layout() {
-  const { session, profile, updateProfile } = useSession(); // Assuming useSession now also provides a method to update the userInfo
+  const { session, profile, updateProfile } = useSession();
+  const { setUser } = useContext(UserContext);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const { data: authListener } = supaClient.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        setUser(session.user);
+        const returnPath = localStorage.getItem('returnPath') || '/';
+        navigate(returnPath);
+        localStorage.removeItem('returnPath');
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
+  }, [setUser, navigate]);
 
   return (
     <UserContext.Provider value={{ session, profile, updateProfile }}>
@@ -119,6 +134,10 @@ function Layout() {
       </VoteProvider>
     </UserContext.Provider>
   );
+}
+
+function App() {
+  return <RouterProvider router={router} />;
 }
 
 export default App;

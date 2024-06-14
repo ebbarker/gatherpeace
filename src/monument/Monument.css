@@ -9,30 +9,69 @@
   -webkit-text-fill-color: transparent;
 } */
 
+.mlk-quote-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 5px 0 5px;
+  max-width: 800px;
+  width: 100%;
+  background: #00553d;
+  color: white;
+  border-radius: 8px;
+  margin: 10px auto;
+}
+.mlk-name {
+  align-self: flex-end;
+  padding-right: 20px;
+}
+.mlk-quote {
+  font-style: italic;
+}
+
 .monument-container {
+
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
 
-  padding: 5px 10px 5px 10px;
+  padding: 5px 10px 2px 10px;
   /* margin: 1em auto auto auto; */
 
   width: 100%
 }
 
 .monument-peace-container {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   /* background: linear-gradient(135deg, #0d260d, #164116, #1f5b1f, #286628); */
-  padding: 5px 10px 5px 10px;
+  padding: 5px 10px 2px 10px;
   /* margin: 1em auto auto auto; */
   border-radius: 8px;
-  width: 400px;
+  width: 100%;
+  max-width: 400px;
   border: solid 2px;
   border-color: black;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.border-interrupt-text {
+  position: absolute;
+  top: -10px; /* Adjust this value to position the text over the border */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--body_background); /* Match the background color to cover the border */
+  padding: 0 5px;
+  font-size: 12px; /* Adjust the font size as needed */
+}
+
+.translation-container {
+  padding: 10px 0 10px;
 }
 
 @media screen and (min-width: 800px) {
@@ -58,10 +97,99 @@
   .peace-translation.peace,
   .peace-translation.language {
     font-size: 1.5em; /* Standard size for other translations */
+    text-align: center;
   }
+
+  .main-image {
+    border-radius: 8px;
+  }
+
+
 }
 
 .monument-details-container {
   display: flex;
   flex-direction: column;
+}
+
+
+
+.art-container {
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+
+}
+
+.image-wrapper {
+  position: relative; /* Ensure the links are positioned relative to this container */
+
+}
+
+
+
+
+.main-image {
+  display: block;
+
+  width: 100%;
+  max-width: 800px;
+}
+
+.bottom-left-link, .bottom-right-link {
+  position: absolute;
+  bottom: 10px; /* Adjust as needed */
+  font-size: 12px; /* Adjust text size as needed */
+  color: white; /* Adjust text color as needed */
+  text-decoration: none; /* Remove underline from links */
+  background-color: rgba(0, 0, 0, 0.5); /* Optional: Background for better visibility */
+  padding: 5px; /* Optional: Padding for better click area */
+  border-radius: 3px; /* Optional: Rounded corners */
+}
+
+.bottom-left-link {
+  left: 10px; /* Adjust the positioning from the left */
+}
+
+.bottom-right-link {
+  right: 10px; /* Adjust the positioning from the right */
+}
+
+@media screen and (max-width: 799px) {
+  .main-image {
+    border-radius: none;
+  }
+
+  .bottom-left-link, .bottom-right-link {
+    position: absolute;
+    bottom: 3px; /* Adjust as needed */
+    font-size: 8px; /* Adjust text size as needed */
+    color: white; /* Adjust text color as needed */
+    text-decoration: none; /* Remove underline from links */
+    background-color: rgba(0, 0, 0, 0.5); /* Optional: Background for better visibility */
+    padding: 3px; /* Optional: Padding for better click area */
+    border-radius: 3px; /* Optional: Rounded corners */
+  }
+
+  .bottom-left-link {
+    left: 3px; /* Adjust the positioning from the left */
+  }
+
+  .bottom-right-link {
+    right: 3px; /* Adjust the positioning from the right */
+  }
+
+  .translation-details-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .peace-translation.peace,
+.peace-translation.language {
+
+  text-align: center; /* Ensure text is centered */
+}
 }

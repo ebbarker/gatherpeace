@@ -36,28 +36,35 @@ useEffect(() => {
 
   return (
     <>
+      <div className="mlk-quote-container">
+        <div className="mlk-quote">“Those who love peace must learn to organize as effectively as those who love war.”</div>
+        <div className="mlk-name">-Martin Luther King Jr.</div>
+      </div>
+      <div className="art-container">
+        <div className="image-wrapper">
+          <img src="../../public/peace..png" alt="Peace Art" className="main-image"/>
+          <a href="#" className="bottom-left-link">Art by: Ethan Barker</a>
+          <a href="#" className="bottom-right-link">Your Art Here</a>
+        </div>
+      </div>
 
       <div className="monument-container">
-        <div className="mlk-quote-container">
-          <div className="mlk-quote">“Those who love peace must learn to organize as effectively as those who love war.”</div>
-          <div className="mlk-name">-Martin Luther King Jr.</div>
-        </div>
-        <div className="monument-peace-container">
-          <h2 className="text-center monument-header">Peace.</h2>
-          <div className="translation-container">
-          {/* <div className="peace-translation peace">{peace}.</div> */}
 
+        <div className="monument-peace-container">
+
+          <div className="translation-container">
+          <div className="border-interrupt-text">Peace.</div>
             <div className="translation-details-container">
               <div className="peace-translation peace">"{peace}."</div>
               <div className="peace-translation language">{`(${language})`}</div>
             </div>
           </div>
+
         </div>
         <div className="monument-details-container">
           <div className="monument-statistics container">
             {numberNames} people from {numberCountries} countries have gathered here.
           </div>
-          <button className="add-your-name action-button">Add Your Name</button>
         </div>
       </div>
       {/* <QuoteSlider /> */}

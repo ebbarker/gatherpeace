@@ -58,6 +58,10 @@
   --navbar_color: #CCE4D7;
   --call_to_action_background: #129E9E;
   --call_to_action_text: #ffffff;
+  --cancel_background: #e0f7fa;
+  --cancel_background_hover: #c2e2e6;
+  --cancel_text: #000000;
+  --cancel_border: border: 1px solid #a9a9a9;
 }
 
 /* [data-theme="dark"] {
@@ -631,26 +635,65 @@ body.active-modal {
 }
 
 .call-to-action-container {
-  padding: 20px 0 20px 0;
+  padding: 20px 0;
   background-color: var(--greeting_background);
-  justify-content: center;
   display: flex;
+  justify-content: center;
+  flex-wrap: wrap; /* Allow wrapping to stack on smaller screens */
+  gap: 10px; /* Add gap between buttons */
 }
 
 .action-button {
   display: flex;
-  height: 45px;
   justify-content: center;
   align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
+  height: 45px;
   border-radius: 15px;
   background-color: var(--call_to_action_background);
   color: var(--call_to_action_text);
   border: none;
+  flex: 1; /* Make buttons take equal space */
+  max-width: 200px; /* Optional: Limit the maximum width */
+  padding: 0 10px; /* Optional: Add padding for text inside buttons */
+  box-sizing: border-box; /* Include padding and border in element's total width and height */
 }
 
-.write-a-message {
-  width: 804px;
-  padding: 7px 89px;
+.cancel-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 45px;
+  border-radius: 4px;
+  background-color: var(--cancel_background);
+  color: var(--cancel_text);
+  border: var(--cancel_border);
+  flex: 1; /* Make buttons take equal space */
+  max-width: 200px; /* Optional: Limit the maximum width */
+  padding: 0 10px; /* Optional: Add padding for text inside buttons */
+  box-sizing: border-box; /* Include padding and border in element's total width and height */
 }
+
+.cancel-button:hover {
+  background-color: var(--cancel_background_hover);
+}
+
+.action-button span {
+  text-align: center; /* Ensure text is centered */
+  width: 100%; /* Ensure text spans full width of button */
+}
+
+/* Media query for small screens */
+@media (max-width: 450px) {
+  .call-to-action-container {
+    align-items: center;
+    flex-direction: column; /* Stack buttons vertically on small screens */
+  }
+
+  .action-button {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    width: 100%; /* Make buttons take full width on small screens */
+    margin: 5px 0; /* Add vertical margin between buttons */
+  }
+}
+

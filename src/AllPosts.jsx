@@ -5,7 +5,7 @@ import { CreateLetter } from "./CreateLetter";
 import { supaClient } from "./layout/supa-client";
 import { timeAgo } from "./layout/time-ago";
 import { UpVote } from "./UpVote";
-
+import { AddYourName } from "./addYourName/AddYourName";
 import { LetterView } from "./LetterView"
 import { VoteContext } from "./contexts/VoteContext";
 import { Stepform } from "./createPostForm/Stepform";
@@ -25,12 +25,18 @@ export function AllPosts() {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchFilter, setSearchFilter] = useState('both');
   const [writingMessage, setWritingMessage] = useState(false);
+  const [addingName, setAddingName] = useState(false);
   const { myContextVotes, setMyContextVotes } = useContext(VoteContext);
   const location = useLocation();
 
   const showMessageDialog = (e) => {
     e.preventDefault();
     setWritingMessage(true);
+  }
+
+  const showAddNameDialog = (e) => {
+    e.preventDefault();
+    setAddingName(true);
   }
 
   // const handleSearch = (e) => {
@@ -90,10 +96,17 @@ export function AllPosts() {
   return (
     <>
       {/* {session && <Createletter letters={letters} setLetters={setLetters}/>} */}
-      {!writingMessage &&
-        <div className="call-to-action-container">
-          <button className="write-a-message action-button" onClick={showMessageDialog}>Write a Peace Message</button>
+      {!writingMessage && !addingName &&
+        <div className="call-to-action-container" onClick={showAddNameDialog}>
+            <button className="add-your-name action-button">
+              <span>Add Your Name</span>
+            </button>
+            <button className="write-a-message action-button" onClick={showMessageDialog}>
+              <span>Write a Peace Message</span>
+            </button>
+
         </div>}
+      {addingName && <AddYourName letters={letters} setLetters={setLetters} setAddingName={setAddingName}/> }
       {writingMessage && <Stepform letters={letters} setLetters={setLetters}/> }
 
       <SearchBar
