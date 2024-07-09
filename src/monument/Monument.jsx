@@ -42,7 +42,7 @@ useEffect(() => {
       </div>
       <div className="art-container">
         <div className="image-wrapper">
-          <img src="../../public/peace..png" alt="Peace Art" className="main-image"/>
+          <img src="../peace..png" alt="Peace Art" className="main-image"/>
           <a href="#" className="bottom-left-link">Art by: Ethan Barker</a>
           <a href="#" className="bottom-right-link">Your Art Here</a>
         </div>

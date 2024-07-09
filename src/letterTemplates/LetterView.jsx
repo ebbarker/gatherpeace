@@ -1,13 +1,13 @@
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useLoaderData, useParams } from "react-router-dom";
-import { castLetterVote } from "./AllPosts";
-import { UserContext } from "./layout/App";
-import { supaClient } from "./layout/supa-client";
-import { timeAgo } from "./layout/time-ago";
-import { UpVote } from "./UpVote";
-import CommentDetails from "./CommentDetails";
+import { castLetterVote } from "../AllPosts";
+import { UserContext } from "../layout/App";
+import { supaClient } from "../layout/supa-client";
+import { timeAgo } from "../layout/time-ago";
+import { UpVote } from "../UpVote";
+import CommentDetails from "../CommentDetails";
 import LetterDetails from "./LetterDetails";
-import ReplyDetails from "./ReplyDetails";
+import ReplyDetails from "../ReplyDetails";
 //import { SupashipUserInfo } from "./layout/use-session";
 
 
@@ -253,6 +253,7 @@ export function LetterView({ letterData = null,  myVotes = null, onVoteSuccess =
             />
           </div>
         <div className="create-comments-container">
+          <div>LETTER VIEW</div>
           {userContext.session  && (
             <CreateComment
               parent={letterData ? letterData : letterDetailData.letter}
@@ -503,7 +504,7 @@ function CreateComment({
         }}
       >
         {parent?.path === 'root' ? <h4>Add a New Comment</h4> : <h3>Add a New Reply</h3>}
-        
+
         <textarea autoFocus
           ref={textareaRef}
           name="comment"

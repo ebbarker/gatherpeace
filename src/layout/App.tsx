@@ -23,11 +23,12 @@ import { SupashipUserInfo, useSession } from './use-session';
 import { Welcome, welcomeLoader } from './Welcome';
 import * as Sentry from '@sentry/react';
 import { VoteProvider } from '../contexts/VoteContext';
-import { LetterView } from '../LetterView';
+import { LetterView } from '../letterTemplates/LetterView';
 import PublicUserProfile from '../user-profile/PublicUserProfile.jsx';
 import PrivateUserProfile from '../user-profile/PrivateUserProfile.jsx';
 import NotFound from '../not-found/NotFound.jsx';
 import { supaClient } from "./supa-client";
+import { ListOfNames } from "../listOfNames/ListOfNames";
 
 Sentry.init({
   dsn: 'https://5a282404b548c3304777f4db6615b992@o4505705490350080.ingest.sentry.io/4505705494478848',
@@ -78,6 +79,7 @@ export const router = sentryCreateBrowserRouter([
       },
       { path: 'privacy-policy', element: <PrivacyPolicy /> },
       { path: 'profile', element: <PrivateUserProfile /> },
+      { path: 'signatories', element: <ListOfNames /> },
       {
         path: '*', // Use a wildcard to capture all other routes
         element: <CatchAllRoutes />,
@@ -101,11 +103,12 @@ export const UserContext = createContext<SupashipUserInfo>({
   session: null,
   profile: null,
   updateProfile: () => {},
+  setUser: ()=> {}
 });
 
 function Layout() {
   const { session, profile, updateProfile } = useSession();
-  const { setUser } = useContext(UserContext);
+  const [user, setUser] = useState(null)
   const location = useLocation();
   const navigate = useNavigate();
 

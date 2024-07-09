@@ -23,7 +23,7 @@ export function UpVote({
 
         data-e2e={`${direction}vote`}
         data-filled={filled}
-        Icon={filled ? FaHandPeace : FaRegHandPeace }
+        icon={filled ? FaHandPeace : FaRegHandPeace }
         >
 
           <i className="like-icon-container like-filled">
@@ -38,7 +38,7 @@ export function UpVote({
 
         data-e2e={`${direction}vote`}
         data-filled={filled}
-        Icon={filled ? FaHandPeace : FaRegHandPeace }
+        icon={filled ? FaHandPeace : FaRegHandPeace }
         >
           <i className="like-icon-container like-unfilled">
             <FaRegHandPeace />

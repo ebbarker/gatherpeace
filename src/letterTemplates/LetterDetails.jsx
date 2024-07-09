@@ -1,21 +1,21 @@
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLoaderData, useParams } from "react-router-dom";
-import { castLetterVote } from "./AllPosts";
-import { UserContext } from "./layout/App";
-import { supaClient } from "./layout/supa-client";
-import { timeAgo } from "./layout/time-ago";
-import { UpVote } from "./UpVote";
-import { VoteContext } from "./contexts/VoteContext";
+import { castLetterVote } from "../AllPosts";
+import { UserContext } from "../layout/App";
+import { supaClient } from "../layout/supa-client";
+import { timeAgo } from "../layout/time-ago";
+import { UpVote } from "../UpVote";
+import { VoteContext } from "../contexts/VoteContext";
 import { BiCommentDetail } from "react-icons/bi"
 import { PiLinkBold } from "react-icons/pi";
 import { FunctionsHttpError, FunctionsRelayError, FunctionsFetchError } from '@supabase/supabase-js';
-import  LinkPreview  from "./link-preview/LinkPreview";
+import  LinkPreview  from "../link-preview/LinkPreview";
 
 
 
 
 export default function LetterDetails({
-  key,
+  id,
   letter,
   myVotes,
   onVoteSuccess = () => {},
@@ -45,7 +45,7 @@ export default function LetterDetails({
 
 
   useEffect(() => {
-    letter?.content.length ? getOgContent(letter?.content) : null;
+    letter?.content?.length ? getOgContent(letter?.content) : null;
 
   }, [letter.content]);
 
@@ -54,7 +54,7 @@ export default function LetterDetails({
 
     const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
     const arr = text.match(urlRegex);
-    const url = arr.length ? arr[0] : null;
+    const url = arr?.length ? arr[0] : null;
     console.log ('url', url);
     if (url) {
 
@@ -192,7 +192,7 @@ export default function LetterDetails({
 <>
 
   <div className="details-container">
-    <div className="head flex justify-between" key={key}>
+    <div className="head flex justify-between" key={id}>
 
       <div className="head-left flex flex-col">
 

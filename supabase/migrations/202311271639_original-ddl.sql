@@ -173,7 +173,8 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION get_letters_with_tsv(
     page_number INT,
-    search_keyword TEXT DEFAULT NULL
+    search_keyword TEXT DEFAULT NULL,
+    page_filter TEXT DEFAULT NULL
 )
 RETURNS TABLE (
     id uuid,
@@ -189,23 +190,25 @@ RETURNS TABLE (
     sign_off text,
     sender_name text,
     recipient text,
-    count_comments INT
+    count_comments INT,
+    post_type text
 ) AS $$
 BEGIN
     RETURN QUERY
     WITH LimitedLetters AS (
         SELECT l.id, l.user_id, l.created_at, l.path,
-               l.score, l.likes, l.count_comments
+               l.score, l.likes, l.count_comments, l.post_type
         FROM letters l
         JOIN letter_contents lc ON l.id = lc.letter_id
         WHERE
-            (search_keyword IS NULL OR lc.tsv @@ plainto_tsquery('english', search_keyword))
+            (search_keyword IS NULL OR lc.tsv @@ plainto_tsquery('english', search_keyword)) AND
+            (page_filter IS NULL OR l.post_type = page_filter)
         ORDER BY l.score DESC, l.created_at DESC
         LIMIT 10 OFFSET (page_number - 1) * 10
     )
     SELECT ll.id, ll.user_id, ll.created_at, lc.content, ll.score, ll.likes,
            ll.path, lc.sender_country, lc.sender_state,
-           lc.sender_city, lc.sign_off, lc.sender_name, lc.recipient, ll.count_comments
+           lc.sender_city, lc.sign_off, lc.sender_name, lc.recipient, ll.count_comments, ll.post_type
     FROM LimitedLetters ll
     JOIN letter_contents lc ON ll.id = lc.letter_id;
 END;

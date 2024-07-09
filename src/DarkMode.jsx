@@ -46,7 +46,7 @@ const DarkMode = () => {
                     id='darkmode-toggle'
                     onChange={changeTheme}
                 />
-                <label className='dark_mode_label' for='darkmode-toggle' >
+                <label className='dark_mode_label' htmlFor='darkmode-toggle' >
                     <Sun />
                     <Moon />
                 </label>

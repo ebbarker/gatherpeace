@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { router, UserContext } from "../layout/App";
 import { supaClient } from "../layout/supa-client";
 
-export function Stepform ({ newPostCreated = () => {}, letters, setLetters }) {
+export function Stepform ({ newPostCreated = () => {}, letters, setLetters, setWritingMessage }) {
   const user = useContext(UserContext);
 
   const handleKeyDown = (e) => {
@@ -71,7 +71,7 @@ export function Stepform ({ newPostCreated = () => {}, letters, setLetters }) {
     <YourNameForm {...formData} updateFields={updateFields} />,
   ]);
 
-  function appendLetter(userId, content, newId, created_at, sender, senderCountry, senderState, senderCity, signOff, senderName,
+  function appendLetter(userId, content, newId, created_at, senderCountry, senderState, senderCity, signOff, senderName,
     recipient,
     recipientCountry,
     recipientState,
@@ -91,10 +91,12 @@ export function Stepform ({ newPostCreated = () => {}, letters, setLetters }) {
       sign_off: signOff,
       sender_name: senderName,
       recipient,
+      post_type: 'letter'
     }
     setLetters([newLetter, ...letters]);
     console.log(letters);
   }
+
 
 
   function createLetter (event) {
@@ -134,31 +136,35 @@ export function Stepform ({ newPostCreated = () => {}, letters, setLetters }) {
       });
   }
 
-
+  function cancelForm (e) {
+    e.preventDefault();
+    setFormData(formFields);
+    setWritingMessage(false)
+  }
 
 
   return (
     <>
 
             <div className="create-post-step-container">
-            <div className="create-post-form-container">
-              <form className="create-post-stepform">
-                <div className="stepform-page-counter">
-                  {currentStepIndex + 1} / {steps.length}
-                </div>
-                {step}
-                <div className="create-post-stepform-controls">
-                  {!isFirstStep && <button className="form-button" onClick={back}>Back</button>}
-                  {
-                    isLastStep ?
-                    <button className="form-button" id="submit-button" type="submit" onClick={createLetter}>Submit</button>  :
-                    <button id="next" className="form-button" onClick={next}>Next</button>
-                  }
-                </div>
+              <div className="create-post-form-container">
+                <form className="create-post-stepform">
+                  <div className="stepform-page-counter">
+                    {currentStepIndex + 1} / {steps.length}
+                  </div>
+                  {step}
+                  <div className="create-post-stepform-controls">
+                    {!isFirstStep && <button className="form-button" onClick={back}>Back</button>}
+                    {
+                      isLastStep ?
+                      <button className="form-button" id="submit-button" type="submit" onClick={createLetter}>Submit</button>  :
+                      <button id="next" className="form-button" onClick={next}>Next</button>
+                    }
+                  </div>
 
-              </form>
-            </div>
-
+                </form>
+              </div>
+              <button className="form-button cancel-button form-cancel-button" onClick={cancelForm}>Cancel</button>
 
           </div>
 

@@ -1,15 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { router, UserContext } from "../layout/App";
+import { supaClient } from "../layout/supa-client";
 import "./AddYourName.css";
 
-export function AddYourName({letters, setLetters, setAddingName}) {
-  const [formData, setFormData] = useState({
+export function AddYourName({ letters, setLetters, setAddingName }) {
+  const user = useContext(UserContext);
+  const formFields = {
     name: '',
     peaceTranslation: '',
     country: '',
     state: '',
     city: '',
-    message: ''
-  });
+    letterContent: ''
+  }
+
+  const [formData, setFormData] = useState(formFields);
+
+
 
   // Error state
   const [errors, setErrors] = useState({});
@@ -32,19 +39,20 @@ export function AddYourName({letters, setLetters, setAddingName}) {
     submitForm(formData);
 
     // Clear form
-    setFormData({
-      name: '',
-      peaceTranslation: '',
-      country: '',
-      state: '',
-      city: ''
-    });
+    // setFormData({
+    //   name: '',
+    //   peaceTranslation: '',
+    //   country: '',
+    //   state: '',
+    //   city: '',
+    //   message: ''
+    // });
   };
 
   const handleCancel = (event) => {
     event.preventDefault();
     setAddingName(false);
-  }
+  };
 
   // Validate form data
   const validateForm = (data) => {
@@ -61,9 +69,68 @@ export function AddYourName({letters, setLetters, setAddingName}) {
     setFormData({ ...formData, [name]: value });
   };
 
-  // Form submission function (empty for now)
-  const submitForm = (data) => {
-    console.log('Form submitted:', data);
+
+  function appendLetter(userId, content, newId, created_at, senderCountry, senderState, senderCity, peaceTranslation, senderName,
+    recipient,
+    recipientCountry,
+    recipientState,
+    recipientCity) {
+    let newLetter = {
+      id: newId,
+      content,
+      score: 0,
+      likes: 0,
+      username: user?.profile?.username,
+      user_id: userId,
+      created_at,
+      count_comments: 0,
+      sender_country: senderCountry,
+      sender_state: senderState,
+      sender_city: senderCity,
+      sign_off: peaceTranslation,
+      sender_name: senderName,
+      recipient: 'me',
+      post_type: 'name'
+    }
+    console.log('new letter: ' + JSON.stringify(newLetter))
+    setLetters([newLetter, ...letters]);
+    console.log(letters);
+  }
+
+  const submitForm = () => {
+
+    supaClient
+      .rpc("create_new_letter", {
+        userId: user?.session?.user?.id,
+        content: formData.letterContent,
+        sender_country: formData.country,
+        sender_state: formData.state,
+        sender_city: formData.city,
+        sign_off: formData.peaceTranslation,
+        sender_name: formData.name,
+        recipient: null,
+        post_type: 'name'
+      })
+      .then(({ data, error }) => {
+        if (error) {
+          console.log(error);
+        } else {
+          appendLetter(
+            user.session?.user.id,
+            formData.letterContent,
+            data[0].new_letter_id,
+            data[0].creation_time,
+            formData.senderCountry,
+            formData.senderState,
+            formData.senderCity,
+            formData.peaceTranslation,
+            formData.name,
+            formData.recipient,
+          );
+          setFormData(formFields);
+          setAddingName(false);
+        }
+      });
   };
 
   return (
@@ -134,8 +201,8 @@ export function AddYourName({letters, setLetters, setAddingName}) {
           <label htmlFor="message">Message (optional, up to 2000 characters):</label>
           <textarea
             id="message"
-            name="message"
-            value={formData.message}
+            name="letterContent"
+            value={formData.letterContent}
             onChange={handleChange}
             maxLength="2000"
             rows="5"

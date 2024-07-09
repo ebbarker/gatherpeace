@@ -24,7 +24,7 @@
 .search-button {
   height: 46px;
   width: 46px;
-  background: var(--call_to_action_background);
+  background: var(--body_main);
   border: none;
 }
 

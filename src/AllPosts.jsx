@@ -1,113 +1,151 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
-import { Link, useLoaderData, useParams, useNavigate, useLocation } from "react-router-dom";
+import React, { useContext, useEffect, useState } from "react";
+import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import { UserContext } from "./layout/App";
 import { CreateLetter } from "./CreateLetter";
 import { supaClient } from "./layout/supa-client";
-import { timeAgo } from "./layout/time-ago";
-import { UpVote } from "./UpVote";
 import { AddYourName } from "./addYourName/AddYourName";
-import { LetterView } from "./LetterView"
 import { VoteContext } from "./contexts/VoteContext";
 import { Stepform } from "./createPostForm/Stepform";
-import { Letter } from "./Letter"
+//import { Letter } from "./Letter"
 import { SearchBar } from "./search-bar/SearchBar"
+import { NewsFeed } from "./newsFeed/NewsFeed";
 
-
-export function AllPosts() {
+export function AllPosts({ parent }) {
   const { session } = useContext(UserContext);
   const { pageNumber } = useParams();
-  //const [bumper, setBumper] = useState(0);
   const [letters, setLetters] = useState([]);
-  //const [voteBumper, setVoteBumper] = useState(0);
   const [myVotes, setMyVotes] = useState({});
   const [totalPages, setTotalPages] = useState(0);
-
-  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchKeyword, setSearchKeyword] = useState(null);
   const [searchFilter, setSearchFilter] = useState('both');
   const [writingMessage, setWritingMessage] = useState(false);
   const [addingName, setAddingName] = useState(false);
   const { myContextVotes, setMyContextVotes } = useContext(VoteContext);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const showMessageDialog = (e) => {
+    console.log('clicked show MESSAGE');
     e.preventDefault();
     setWritingMessage(true);
   }
 
   const showAddNameDialog = (e) => {
+    console.log ('clicked show NAME')
     e.preventDefault();
     setAddingName(true);
   }
 
-  // const handleSearch = (e) => {
-  //   e.preventDefault();
-  //   getLetters();
-  // };
-
-  const navigate = useNavigate();
-
   const handleSearch = (e) => {
     e.preventDefault();
-    // Update the URL with the search keyword while retaining the page number
-    navigate(`/peace-wall/${pageNumber}?query=${encodeURIComponent(searchKeyword)}`);
+    navigate(`/peace-wall/${pageNumber || 1}?query=${encodeURIComponent(searchKeyword)}`);
     getLetters();
   };
 
-
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    console.log('search params: ' + JSON.stringify(searchParams));
     const query = searchParams.get('query');
-    console.log('query:' + query);
     if (query !== null) {
       setSearchKeyword(decodeURIComponent(query));
     } else {
       setSearchKeyword('');
     }
-    console.log('keyword: ' + searchKeyword);
     getLetters();
-    // Add location.search to the dependency array to re-run the effect when the search parameters change
+    console.log('got letters...');
   }, [pageNumber, location.search]);
+
+  useEffect(() => {
+    fetchTotalPages();
+
+  }, []);
 
   async function getLetters() {
     const queryPageNumber = pageNumber ? +pageNumber : 1;
-    let searchCondition = searchKeyword.length > 0 ? { search_keyword: searchKeyword } : {};
+    //let searchCondition = searchKeyword.length > 0 ? { search_keyword: searchKeyword } : {};
 
-    Promise.all([
-      supaClient
+    try {
+      console.log('page_number:', queryPageNumber);
+      console.log('search_keyword:', searchKeyword);
+      console.log('page_filter:', parent);
+      const { data: lettersData, error: lettersError } = await supaClient
         .rpc("get_letters_with_tsv", {
           page_number: queryPageNumber,
-          ...searchCondition,
+          search_keyword: searchKeyword,
+          page_filter: parent,
         })
-        .select("*")
-        .then(({ data }) => {
-          setLetters(data ? data : []);
-        }),
-      supaClient
-        .from("letters")
-        .select("*", { count: "exact", head: true })
-        .then(({ count }) => {
-          setTotalPages(count ? Math.ceil(count / 10) : 0);
-        }),
-    ]).catch(error => console.error("Error fetching letters:", error));
+        .select("*");
+
+      if (lettersError) {
+        throw lettersError;
+      }
+      console.log("Fetched letters data:", lettersData);
+      console.log ('page_number: ' + queryPageNumber);
+      console.log('search_keyword: ' + searchKeyword);
+      console.log('page_filter: ' + parent);
+
+      setLetters(lettersData ? lettersData : []);
+    } catch (error) {
+      console.error("Error fetching letters:", error);
+    }
   }
 
+  async function fetchTotalPages() {
+    console.log(parent);
+    try {
+      let countQuery = supaClient.from("letters").select("*", { count: "exact", head: true });
+
+      if (parent === "list-of-names") {
+        countQuery = countQuery.eq('post_type', 'signature');
+      }
+
+      const { count: totalCount, error: countError } = await countQuery;
+
+      if (countError) {
+        throw ('count error: ' + JSON.stringify(countError));
+      }
+
+      setTotalPages(totalCount ? Math.ceil(totalCount / 10) : 0);
+    } catch (error) {
+      console.error("Error fetching total pages:", error);
+    }
+  }
+
+  const handleVoteSuccess = (id, direction) => {
+    setLetters(letters => {
+      return letters.map((current) => {
+        if (current.id === id) {
+          if (direction === 'delete') {
+            return {
+              ...current,
+              likes: current.likes - 1
+            };
+          }
+          if (direction === 'up') {
+            return {
+              ...current,
+              likes: current.likes + 1
+            };
+          }
+        } else {
+          return current;
+        }
+      });
+    });
+  };
 
   return (
     <>
-      {/* {session && <Createletter letters={letters} setLetters={setLetters}/>} */}
       {!writingMessage && !addingName &&
-        <div className="call-to-action-container" onClick={showAddNameDialog}>
-            <button className="add-your-name action-button">
-              <span>Add Your Name</span>
-            </button>
-            <button className="write-a-message action-button" onClick={showMessageDialog}>
-              <span>Write a Peace Message</span>
-            </button>
-
+        <div className="call-to-action-container" >
+          <button className="add-your-name action-button" onClick={showAddNameDialog}>
+            <span>Add Your Name</span>
+          </button>
+          <button className="write-a-message action-button" onClick={showMessageDialog}>
+            <span>Write a Peace Message</span>
+          </button>
         </div>}
-      {addingName && <AddYourName letters={letters} setLetters={setLetters} setAddingName={setAddingName}/> }
-      {writingMessage && <Stepform letters={letters} setLetters={setLetters}/> }
+      {addingName && <AddYourName letters={letters} setLetters={setLetters} setAddingName={setAddingName} />}
+      {writingMessage && <Stepform letters={letters} setLetters={setLetters} setWritingMessage={setWritingMessage}/>}
 
       <SearchBar
         searchFilter={searchFilter}
@@ -118,48 +156,12 @@ export function AllPosts() {
         getLetters={getLetters}
       />
 
-      <div id="news-feed" className="news-feed-container">
+      <NewsFeed
+        letters={letters}
+        setLetters={setLetters}
+        onVoteSuccess={handleVoteSuccess}
+      />
 
-        {letters?.map((letter, i) => {
-          letter.path = 'root';
-          return (
-          <Letter
-            key={letter?.id}
-            letters={letters}
-            index={i}
-            letterData={letter}
-            parentIsTimeline={true}
-            onVoteSuccess={(id, direction) => {
-
-                setLetters(letters => {
-                  return letters.map((current) => {
-                  if (current.id == id) {
-                    if (direction === 'delete') {
-                      return {
-                        ...current,
-                        likes: current.likes - 1
-                      }
-                    }
-                    if (direction === 'up') {
-                      return {
-                        ...current,
-                        likes: current.likes + 1
-                      }
-                    }
-                  } else {
-
-
-                    return current;
-                  }
-                })});
-
-              //};
-            }}
-          />
-          )
-          // <letterView letterId={letter.id} key={i}/>
-          })}
-      </div>
       <Pagination
         totalPages={totalPages}
         currentPage={pageNumber ? +pageNumber : 0}

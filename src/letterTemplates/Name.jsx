@@ -1,14 +1,14 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, useLoaderData, useParams } from "react-router-dom";
-import { UserContext } from "./layout/App";
+import { UserContext } from "../layout/App";
 
-import { supaClient } from "./layout/supa-client";
-import { timeAgo } from "./layout/time-ago";
-import { UpVote } from "./UpVote";
+import { supaClient } from "../layout/supa-client";
+import { timeAgo } from "../layout/time-ago";
+import { UpVote } from "../UpVote";
 import { LetterView } from "./LetterView"
 import LetterDetails from "./LetterDetails"
 import LetterToFromDetails from "./LetterToFromDetails";
-import { castLetterVote } from "./AllPosts";
+import { castLetterVote } from "../AllPosts";
 // import ReactModal from 'react-modal';
 // import ReactDOM from 'react-dom';
 // import Modal from 'react-bootstrap/Modal'
@@ -16,9 +16,9 @@ import { Modal } from "react-bootstrap"
 import { IoArrowBackCircleSharp } from "react-icons/io5";
 
 
-export function Letter({
+export function Name({
   index,
-  key,
+
   letterData,
   myVotes,
   onVoteSuccess,
@@ -49,7 +49,7 @@ export function Letter({
     <>
       <div className="flex-none grid grid-cols-1 place-content-center letter-container text-white">
         <LetterDetails
-          key={letterData?.id}
+         id={letterData?.id}
           letter={letterData}
           myVotes={myVotes}
           onVoteSuccess={onVoteSuccess}
