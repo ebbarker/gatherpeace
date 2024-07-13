@@ -214,6 +214,7 @@ export default function UserProfile() {
   const [selectedAvatar, setSelectedAvatar] = useState(null);
 
   useEffect(() => {
+    CONSOLE.log('TRIGGERED PROFILE 1 effect');
     let ignore = false;
     async function getProfile() {
       setLoading(true);

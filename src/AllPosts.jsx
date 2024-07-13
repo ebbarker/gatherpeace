@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
+import { Link, useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { UserContext } from "./layout/App";
 import { CreateLetter } from "./CreateLetter";
 import { supaClient } from "./layout/supa-client";
@@ -12,15 +12,16 @@ import { NewsFeed } from "./newsFeed/NewsFeed";
 
 export function AllPosts({ parent }) {
   const { session } = useContext(UserContext);
-  const { pageNumber } = useParams();
+  const { pageNumber } = useParams(1);
   const [letters, setLetters] = useState([]);
   const [myVotes, setMyVotes] = useState({});
   const [totalPages, setTotalPages] = useState(0);
   const [searchKeyword, setSearchKeyword] = useState(null);
-  const [searchFilter, setSearchFilter] = useState('both');
   const [writingMessage, setWritingMessage] = useState(false);
   const [addingName, setAddingName] = useState(false);
   const { myContextVotes, setMyContextVotes } = useContext(VoteContext);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const term = searchParams.get("query");
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -37,12 +38,25 @@ export function AllPosts({ parent }) {
   }
 
   const handleSearch = (e) => {
+    console.log('REROUTING');
     e.preventDefault();
     navigate(`/peace-wall/${pageNumber || 1}?query=${encodeURIComponent(searchKeyword)}`);
-    getLetters();
+    //getLetters(searchKeyword);
   };
 
+  // useEffect(() => {
+  //   const searchParams = new URLSearchParams(location.search);
+  //   const query = searchParams.get('query');
+  //   if (query !== null) {
+  //     setSearchKeyword(decodeURIComponent(query));
+  //   } else {
+  //     setSearchKeyword('');
+  //   }
+  // }, [location.search]);
+
+
   useEffect(() => {
+
     const searchParams = new URLSearchParams(location.search);
     const query = searchParams.get('query');
     if (query !== null) {
@@ -50,14 +64,14 @@ export function AllPosts({ parent }) {
     } else {
       setSearchKeyword('');
     }
+
     getLetters();
-    console.log('got letters...');
-  }, [pageNumber, location.search]);
+  }, [pageNumber, term]);
 
   useEffect(() => {
     fetchTotalPages();
 
-  }, []);
+  }, [term]);
 
   async function getLetters() {
     const queryPageNumber = pageNumber ? +pageNumber : 1;
@@ -65,12 +79,13 @@ export function AllPosts({ parent }) {
 
     try {
       console.log('page_number:', queryPageNumber);
-      console.log('search_keyword:', searchKeyword);
+      console.log('search_keyword from get letters:', searchKeyword);
       console.log('page_filter:', parent);
+      console.log('term before querying letters: ' + term);
       const { data: lettersData, error: lettersError } = await supaClient
         .rpc("get_letters_with_tsv", {
           page_number: queryPageNumber,
-          search_keyword: searchKeyword,
+          search_keyword: term,
           page_filter: parent,
         })
         .select("*");
@@ -82,6 +97,7 @@ export function AllPosts({ parent }) {
       console.log ('page_number: ' + queryPageNumber);
       console.log('search_keyword: ' + searchKeyword);
       console.log('page_filter: ' + parent);
+      console.log('term: ' + term);
 
       setLetters(lettersData ? lettersData : []);
     } catch (error) {
@@ -89,10 +105,16 @@ export function AllPosts({ parent }) {
     }
   }
 
+
+
   async function fetchTotalPages() {
     console.log(parent);
     try {
       let countQuery = supaClient.from("letters").select("*", { count: "exact", head: true });
+
+      if (term && term.length) {
+        countQuery = countQuery.filter("tsv", "plainto_tsquery", term);
+      }
 
       if (parent === "list-of-names") {
         countQuery = countQuery.eq('post_type', 'signature');
@@ -109,6 +131,12 @@ export function AllPosts({ parent }) {
       console.error("Error fetching total pages:", error);
     }
   }
+
+  const deleteLetter = (id) => {
+    console.log('id received: ' + id);
+    // let temp = [...letters]
+    setLetters(letters => letters.filter(letter => letter.id !== id));
+  };
 
   const handleVoteSuccess = (id, direction) => {
     setLetters(letters => {
@@ -148,9 +176,7 @@ export function AllPosts({ parent }) {
       {writingMessage && <Stepform letters={letters} setLetters={setLetters} setWritingMessage={setWritingMessage}/>}
 
       <SearchBar
-        searchFilter={searchFilter}
         searchKeyword={searchKeyword}
-        setSearchFilter={setSearchFilter}
         setSearchKeyword={setSearchKeyword}
         handleSearch={handleSearch}
         getLetters={getLetters}
@@ -160,6 +186,7 @@ export function AllPosts({ parent }) {
         letters={letters}
         setLetters={setLetters}
         onVoteSuccess={handleVoteSuccess}
+        deleteLetter={deleteLetter}
       />
 
       <Pagination
@@ -269,7 +296,7 @@ function Pagination({
         <Link
           data-e2e={`page-1`}
           className={notSelectedStyles}
-          to={`/peace-wall/${pageNumber}?query=${encodeURIComponent(searchKeyword)}`}
+          to={searchKeyword ? `/peace-wall/${pageNumber}?query=${encodeURIComponent(searchKeyword)}` : `/peace-wall/${pageNumber}`}
           key={1}
         >
           1
@@ -285,7 +312,7 @@ function Pagination({
           className={
             currentPage === pageNumbers ? selectedStyles : notSelectedStyles
           }
-          to={`/peace-wall/${pageNumbers}?query=${encodeURIComponent(searchKeyword)}`}
+          to={searchKeyword ? `/peace-wall/${pageNumbers}?query=${encodeURIComponent(searchKeyword)}` : `/peace-wall/${pageNumbers}`}
         >
           {pageNumbers}
         </Link>
@@ -299,7 +326,7 @@ function Pagination({
         <Link
           data-e2e={`page-${totalPages}`}
           className={notSelectedStyles}
-          to={`/peace-wall/${pageNumber}?query=${encodeURIComponent(searchKeyword)}`}
+          to={searchKeyword ? `/peace-wall/${pageNumber}?query=${encodeURIComponent(searchKeyword)}` : `/peace-wall/${pageNumber}`}
           key={totalPages}
         >
           {totalPages}

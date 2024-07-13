@@ -8,10 +8,11 @@ import { UpVote } from "../UpVote";
 import CommentDetails from "../CommentDetails";
 import LetterDetails from "./LetterDetails";
 import ReplyDetails from "../ReplyDetails";
+import { NameDetails } from "./NameDetails";
 //import { SupashipUserInfo } from "./layout/use-session";
 
 
-export function LetterView({ letterData = null,  myVotes = null, onVoteSuccess = null}) {
+export function LetterView({ letterData = null,  myVotes = null, onVoteSuccess = null, deleteLetter = null}) {
   const userContext = useContext(UserContext);
 
   const params = useParams();
@@ -162,16 +163,29 @@ export function LetterView({ letterData = null,  myVotes = null, onVoteSuccess =
 
 
   function onLetterVoteSuccess (id, direction)  {
+
     if (id === letterId) {
+
+      console.log('letterDetailData, ' + JSON.stringify(letterDetailData))
       let newData = {...letterDetailData};
-      direction == 'delete' ? newData.letter.score-- : newData.letter.score++;
+
+      if (direction === 'delete') {
+        newData.letter.score--;
+        newData.letter.likes--;
+      } else {
+        newData.letter.score++;
+        newData.letter.likes++;
+      }
+
+      console.log('newLetterDetailData, ' + JSON.stringify(newData));
       setletterDetailData(newData);
     }
-
+  console.log('letter vote success');
     function recursiveCommentMapper (current) {
 
       if (current.id == id) {
         if (direction === 'delete') {
+          console.log('deleting inside mapper')
           return {
             ...current,
             score: current.score - 1
@@ -244,16 +258,26 @@ export function LetterView({ letterData = null,  myVotes = null, onVoteSuccess =
             <div>{pageError.message}</div>
           </>
         }
-            <LetterDetails
-              key={letterDetailData?.letter?.id}
-              letter={letterData ? letterData : letterDetailData.letter}
-              onVoteSuccess={onVoteSuccess ? onVoteSuccess : onLetterVoteSuccess}
-              getDepth={getDepth}
-              repliesCount={letterDetailData.comments.length}
-            />
+            {letterDetailData?.letter?.post_type === 'letter' &&
+              <LetterDetails
+                key={letterDetailData?.letter?.id}
+                letter={letterData ? letterData : letterDetailData.letter}
+                onVoteSuccess={onVoteSuccess ? onVoteSuccess : onLetterVoteSuccess}
+                getDepth={getDepth}
+                repliesCount={letterDetailData.comments.length}
+              />
+            }
+            {letterDetailData?.letter?.post_type === 'name' &&
+              <NameDetails
+                key={letterDetailData?.letter?.id}
+                letter={letterData ? letterData : letterDetailData.letter}
+                onVoteSuccess={onVoteSuccess ? onVoteSuccess : onLetterVoteSuccess}
+                getDepth={getDepth}
+                repliesCount={letterDetailData.comments.length}
+              />
+            }
           </div>
         <div className="create-comments-container">
-          <div>LETTER VIEW</div>
           {userContext.session  && (
             <CreateComment
               parent={letterData ? letterData : letterDetailData.letter}

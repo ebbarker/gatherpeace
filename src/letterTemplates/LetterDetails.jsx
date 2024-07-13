@@ -1,5 +1,5 @@
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useLoaderData, useParams } from "react-router-dom";
+// import { Link, useLoaderData, useParams } from "react-router-dom";
 import { castLetterVote } from "../AllPosts";
 import { UserContext } from "../layout/App";
 import { supaClient } from "../layout/supa-client";
@@ -7,10 +7,14 @@ import { timeAgo } from "../layout/time-ago";
 import { UpVote } from "../UpVote";
 import { VoteContext } from "../contexts/VoteContext";
 import { BiCommentDetail } from "react-icons/bi"
+import { FiMoreVertical, FiTrash  } from "react-icons/fi"; // Importing the icon for the vertical dots
 import { PiLinkBold } from "react-icons/pi";
 import { FunctionsHttpError, FunctionsRelayError, FunctionsFetchError } from '@supabase/supabase-js';
 import  LinkPreview  from "../link-preview/LinkPreview";
-
+import { MessageContent } from "./MessageContent";
+import { Modal, Button } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 
 
 
@@ -31,7 +35,7 @@ export default function LetterDetails({
   showModal,
   arrLength,
   replyIndex,
-  parentIsTimeline
+  deleteMessage = () => {}
 }) {
   const userContext = useContext(UserContext);
   // const { session } = useContext(UserContext);
@@ -41,13 +45,18 @@ export default function LetterDetails({
   const [copied, setCopied] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
   const [ogPreview, setOgPreview] = useState(null);
+  const [noOgPreview, setNoOgPreview] = useState(false)
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const dropdownRef = useRef(null);
 
 
 
   useEffect(() => {
-    letter?.content?.length ? getOgContent(letter?.content) : null;
-
-  }, [letter.content]);
+    if (letter?.content?.length && !noOgPreview) {
+      getOgContent(letter.content);
+    }
+  }, [letter]);
 
   // Function to find URLs in a text
  async function getOgContent(text) {
@@ -89,6 +98,8 @@ export default function LetterDetails({
           setOgPreview(ogPreviewObject);
         }
 
+    } else {
+      setNoOgPreview(true);
     }
 
   return url;
@@ -188,6 +199,44 @@ export default function LetterDetails({
     navigator.clipboard.writeText(`${host}/peace-wall/letter/${letter?.id}`);
     setCopied(true);
   }
+
+  function handleDropdownToggle() {
+    console.log("Dropdown toggle clicked"); // Add this log to verify the function is called
+    setShowDropdown((prev) => !prev);
+  }
+
+  function handleDelete() {
+    setShowDeleteModal(true);
+    setShowDropdown(false);
+  }
+
+  function confirmDelete() {
+    console.log('Delete post ' + id);
+    deleteMessage(id);
+
+    setShowDeleteModal(false);
+    // Add your delete logic here
+  }
+
+  // Function to close the modal
+  function closeModal() {
+    setShowDeleteModal(false);
+  }
+
+
+  // Close the dropdown if clicked outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [dropdownRef]);
+
   return (
 <>
 
@@ -207,16 +256,20 @@ export default function LetterDetails({
         <div className="date">
           {letter && `${timeAgo(letter?.created_at)} ago`}
         </div>
+        <div className="vert-dots-container" ref={dropdownRef}>
+              <button className="vert-dots" onClick={handleDropdownToggle}>
+                <FiMoreVertical />
+              </button>
+              {showDropdown && userContext.session?.user?.id === letter.user_id && (
+                <div className="special-options-menu">
+                  <button className="special-option" onClick={handleDelete}><FiTrash className="delete-icon" />Delete</button>
+                </div>
+              )}
+          </div>
       </div>
     </div>
 
-    <div className="flex-auto letter-content-container">
-      <div ref={contentContainerRef} className="post-content-container">
-        {letter?.content?.split("\n").map((paragraph, index) => (
-          <p key={index} className="text-left">{paragraph}</p>
-        ))}
-      </div>
-    </div>
+    <MessageContent content={letter.content}/>
 
 
     <div className="letter-sender-details">
@@ -264,6 +317,11 @@ export default function LetterDetails({
         {copied ? <div className="copy-link-text">Copied!</div> : <div className="copy-link-text">Copy Link</div>}
       </button>
     </div>
+    <ConfirmDeleteModal
+      show={showDeleteModal}
+      onClose={closeModal}
+      onConfirm={confirmDelete}
+    />
   </div>
 </>
   );

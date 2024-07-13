@@ -14,16 +14,16 @@ import { castLetterVote } from "../AllPosts";
 // import Modal from 'react-bootstrap/Modal'
 import { Modal } from "react-bootstrap"
 import { IoArrowBackCircleSharp } from "react-icons/io5";
+import { NameDetails } from "./NameDetails";
 
 
 export function Letter({
   index,
-
   letterData,
   myVotes,
   onVoteSuccess,
   letters,
-  path
+  deleteLetter
 
 }) {
   const { session } = useContext(UserContext);
@@ -48,6 +48,7 @@ export function Letter({
   return (
     <>
       <div className="flex-none grid grid-cols-1 place-content-center letter-container text-white">
+        {letterData?.post_type === 'letter' &&
         <LetterDetails
          id={letterData?.id}
           letter={letterData}
@@ -56,9 +57,23 @@ export function Letter({
           index={index}
           toggleModal={toggleModal}
           showModal={showModal}
-          path={path}
-          parentIsTimeline
+          deleteMessage={deleteLetter}
+
         />
+        }
+        {letterData?.post_type === 'name' &&
+          <NameDetails
+          id={letterData?.id}
+            letter={letterData}
+            myVotes={myVotes}
+            onVoteSuccess={onVoteSuccess}
+            index={index}
+            toggleModal={toggleModal}
+            showModal={showModal}
+            deleteMessage={deleteLetter}
+
+          />
+        }
       </div>
 
 

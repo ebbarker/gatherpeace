@@ -3,6 +3,7 @@ import './SearchBar.css';
 import { FaSearch } from "react-icons/fa";
 
 export function SearchBar ({searchFilter, searchKeyword, setSearchFilter, setSearchKeyword, handleSearch, getLetters}) {
+  
 return (
   <>
   <form className="search-letters" onSubmit={handleSearch}>

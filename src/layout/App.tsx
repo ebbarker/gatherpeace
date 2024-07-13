@@ -112,22 +112,24 @@ function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const { data: authListener } = supaClient.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        setUser(session.user);
-        const returnPath = localStorage.getItem('returnPath') || '/';
-        navigate(returnPath);
-        localStorage.removeItem('returnPath');
-      } else {
-        setUser(null);
-      }
-    });
+  // useEffect(() => {
 
-    return () => {
-      authListener?.subscription.unsubscribe();
-    };
-  }, [setUser, navigate]);
+  //   const { data: authListener } = supaClient.auth.onAuthStateChange((event, session) => {
+  //     if (session) {
+  //       console.log ('running user effect');
+  //       setUser(session.user);
+  //       const returnPath = localStorage.getItem('returnPath') || '/';
+  //       navigate(returnPath);
+  //       localStorage.removeItem('returnPath');
+  //     } else {
+  //       setUser(null);
+  //     }
+  //   });
+
+  //   return () => {
+  //     authListener?.subscription.unsubscribe();
+  //   };
+  // }, [setUser, navigate]);
 
   return (
     <UserContext.Provider value={{ session, profile, updateProfile }}>

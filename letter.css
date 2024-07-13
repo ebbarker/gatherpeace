@@ -1,0 +1,297 @@
+.details-container {
+  background: var(--container_background);
+  color: var(--text_color) !important;
+  padding: 5px 10px 5px 10px;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.head {
+  color: var(--text_color) !important;
+  width: 100%;
+  height: fit-content;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.head-left {
+  flex-direction: center;
+}
+
+.head-right {
+  display: flex;
+  align-items: center;
+}
+
+.date {
+  color: var(--secondary_text_color);
+  font-size: 14px;
+  margin-right: 10px; /* Adjust this margin as needed */
+}
+
+.letter-content-container {
+  flex: 1 1 auto;
+}
+
+.post-content-container {
+  overflow-wrap: break-word;
+  color: var(--text_color) !important;
+  border-top: var(--section_divider_top_border);
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+}
+
+.sender-location-details {
+  display: flex;
+  align-items: center; /* Align items vertically in the center */
+  justify-content: start; /* Align items to the start of the container */
+  flex-wrap: nowrap; /* Prevent wrapping to a new line */
+}
+
+.sender-signoff,
+.sender-name,
+.sender-description,
+.sender-country,
+.sender-state,
+.sender-city,
+.recipient-description {
+  white-space: nowrap; /* Prevent text wrapping inside each div */
+  font-size: 14px;
+}
+
+.recipient-country,
+.recipient-state,
+.recipient-city {
+  white-space: nowrap; /* Prevent text wrapping inside each div */
+  font-size: 14px;
+}
+
+.post-controls-container {
+  display: flex;
+  align-items: center;
+}
+
+.post-votes-container {
+  display: flex;
+  align-items: center;
+  border: none;
+  background: none;
+}
+
+.post-control-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.comment-icon-container {
+  display: flex;
+}
+
+.count-root-comments {
+  display: flex;
+  align-items: center;
+}
+
+.copy-link-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.link-icon-container {
+  display: flex;
+}
+
+.copy-link-text {
+  display: flex;
+  align-items: center;
+}
+
+.see-more-button,
+.see-less-button {
+  background-color: transparent;
+  border: none;
+  color: blue;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+@media screen and (min-width: 800px) {
+  .details-container {
+    border-radius: 0.5rem !important;
+  }
+}
+
+@media screen and (max-width: 799px) {
+  .details-container {
+    border-radius: 0 !important;
+  }
+}
+
+body.active-modal {
+  overflow-y: hidden;
+}
+
+.btn-modal {
+  padding: 10px 20px;
+  display: block;
+  margin: 100px auto 0;
+  font-size: 18px;
+}
+
+.search-letters {
+  width: 800px;
+  left: 50%;
+  transform: translate(-50%);
+  position: relative;
+}
+
+.call-to-action-container {
+  padding: 20px 0;
+  background-color: var(--greeting_background);
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap; /* Allow wrapping to stack on smaller screens */
+  gap: 10px; /* Add gap between buttons */
+}
+
+.action-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 45px;
+  border-radius: 15px;
+  background-color: var(--call_to_action_background);
+  color: var(--call_to_action_text);
+  border: none;
+  flex: 1; /* Make buttons take equal space */
+  max-width: 200px; /* Optional: Limit the maximum width */
+  padding: 0 10px; /* Optional: Add padding for text inside buttons */
+  box-sizing: border-box; /* Include padding and border in element's total width and height */
+}
+
+.cancel-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 45px;
+  border-radius: 4px;
+  background-color: var(--cancel_background);
+  color: var(--cancel_text);
+  border: var(--cancel_border);
+  flex: 1; /* Make buttons take equal space */
+  max-width: 200px; /* Optional: Limit the maximum width */
+  padding: 0 10px; /* Optional: Add padding for text inside buttons */
+  box-sizing: border-box; /* Include padding and border in element's total width and height */
+}
+
+.cancel-button:hover {
+  background-color: var(--cancel_background_hover);
+}
+
+.action-button span {
+  text-align: center; /* Ensure text is centered */
+  width: 100%; /* Ensure text spans full width of button */
+}
+
+/* Media query for small screens */
+@media (max-width: 450px) {
+  .call-to-action-container {
+    align-items: center;
+    flex-direction: column; /* Stack buttons vertically on small screens */
+  }
+
+  .action-button {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    width: 100%; /* Make buttons take full width on small screens */
+    margin: 5px 0; /* Add vertical margin between buttons */
+  }
+}
+
+.see-more-button {
+  background-color: none;
+  border: none;
+  color: rgb(58, 57, 57);
+}
+
+.vert-dots-container {
+  position: relative;
+}
+
+.vert-dots {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin-left: 10px; /* Adjust this margin as needed */
+}
+
+.special-options-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: #FFFFFF;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: block; /* Ensure it's not hidden */
+  padding: 10px; /* Add some padding for visibility */
+}
+
+.special-option {
+  padding: 10px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  text-align: left;
+  color: black;
+  border-radius: 4px;
+  border: none;
+  background: #FFFFFF;
+}
+
+.special-option:hover {
+  background: #f1f1f1;
+}
+
+.delete-icon {
+  margin-right: 8px;
+  font-size: 16px; /* Adjust the size as needed */
+}
+
+.custom-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: none;
+  display: inline-block;
+  text-align: center;
+}
+
+.custom-button.secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.custom-button.secondary:hover {
+  background-color: #5a6268;
+}
+
+.custom-button.danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.custom-button.danger:hover {
+  background-color: #c82333;
+}
+

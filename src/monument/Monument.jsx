@@ -36,10 +36,10 @@ useEffect(() => {
 
   return (
     <>
-      <div className="mlk-quote-container">
+      {/* <div className="mlk-quote-container">
         <div className="mlk-quote">“Those who love peace must learn to organize as effectively as those who love war.”</div>
         <div className="mlk-name">-Martin Luther King Jr.</div>
-      </div>
+      </div> */}
       <div className="art-container">
         <div className="image-wrapper">
           <img src="../peace..png" alt="Peace Art" className="main-image"/>

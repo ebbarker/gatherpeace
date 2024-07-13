@@ -210,7 +210,8 @@ BEGIN
            ll.path, lc.sender_country, lc.sender_state,
            lc.sender_city, lc.sign_off, lc.sender_name, lc.recipient, ll.count_comments, ll.post_type
     FROM LimitedLetters ll
-    JOIN letter_contents lc ON ll.id = lc.letter_id;
+    JOIN letter_contents lc ON ll.id = lc.letter_id
+    ORDER BY ll.score DESC, ll.created_at DESC;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -292,6 +293,73 @@ BEGIN
   RETURN NEXT;
 END; $$;
 
+CREATE OR REPLACE FUNCTION create_new_name(
+    "userId" uuid,
+    "content" text,
+    sender_country text,
+    sender_state text,
+    sender_city text,
+    sign_off text,
+    sender_name text,
+    recipient text
+)
+RETURNS TABLE(new_letter_id UUID, creation_time TIMESTAMP WITH TIME ZONE)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Check if the user already has a signature
+    IF EXISTS (
+        SELECT 1
+        FROM "letters"
+        WHERE "user_id" = "userId" AND "post_type" = 'name'
+    ) THEN
+        -- If the user already has a signature, raise an exception
+        RAISE EXCEPTION 'You have already added your name';
+    ELSE
+        -- If the user does not have a signature, proceed with the insertion
+        WITH "inserted_letter" AS (
+            INSERT INTO "letters" (
+                "user_id",
+                "path",
+                "post_type"
+            )
+            VALUES (
+                "userId",
+                'root',
+                'name'
+            )
+            RETURNING "id", "created_at"
+        )
+        SELECT "id", "created_at" INTO new_letter_id, creation_time FROM "inserted_letter";
+
+        INSERT INTO "letter_contents" (
+            "letter_id",
+            "content",
+            "user_id",
+            "sender_country",
+            "sender_state",
+            "sender_city",
+            "sign_off",
+            "sender_name",
+            "recipient"
+        )
+        VALUES (
+            new_letter_id,
+            "content",
+            "userId",
+            sender_country,
+            sender_state,
+            sender_city,
+            sign_off,
+            sender_name,
+            recipient
+        );
+
+        RETURN QUERY
+        SELECT new_letter_id, creation_time;
+    END IF;
+END; $$;
+
 
 
 CREATE OR REPLACE FUNCTION get_single_letter_with_comments(letter_id uuid)
@@ -333,25 +401,29 @@ BEGIN
     FROM letters p
     JOIN letter_contents pc ON p.id = pc.letter_id
     JOIN user_profiles up ON p.user_id = up.user_id
-    WHERE
-      p.id = get_single_letter_with_comments.letter_id
+    WHERE p.id = get_single_letter_with_comments.letter_id
     UNION ALL
     SELECT
-      c.id,
-      up.username as username,
-      c.created_at,
-      c.content,
-      c.score,
-      null,
-      c.path,
-      NULL as count_comments,  -- Comments do not have count_comments
-      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL -- NULL for additional fields
+        c.id,
+        up.username,
+        c.created_at,
+        c.content,
+        NULL as likes,  -- Comments do not have likes
+        c.score,
+        c.path,
+        NULL as count_comments,  -- Comments do not have count_comments
+        NULL as sender_country,
+        NULL as sender_state,
+        NULL as sender_city,
+        NULL as sign_off,
+        NULL as sender_name,
+        NULL as recipient
     FROM comments c
     JOIN user_profiles up ON c.user_id = up.user_id
-    WHERE
-      c.path <@ text2ltree(concat('root.', replace(concat(get_single_letter_with_comments.letter_id::text, ''), '-', '_')));
+    WHERE c.path <@ text2ltree(concat('root.', replace(get_single_letter_with_comments.letter_id::text, '-', '_')));
 END;
 $$;
+
 
 
 CREATE OR REPLACE FUNCTION create_new_letter_comment("user_id" UUID, content TEXT, comment_path LTREE)

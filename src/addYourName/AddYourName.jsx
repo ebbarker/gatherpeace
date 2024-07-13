@@ -5,6 +5,7 @@ import "./AddYourName.css";
 
 export function AddYourName({ letters, setLetters, setAddingName }) {
   const user = useContext(UserContext);
+  const [addingNameError, setAddingNameError] = useState(null);
   const formFields = {
     name: '',
     peaceTranslation: '',
@@ -100,7 +101,7 @@ export function AddYourName({ letters, setLetters, setAddingName }) {
   const submitForm = () => {
 
     supaClient
-      .rpc("create_new_letter", {
+      .rpc("create_new_name", {
         userId: user?.session?.user?.id,
         content: formData.letterContent,
         sender_country: formData.country,
@@ -109,11 +110,12 @@ export function AddYourName({ letters, setLetters, setAddingName }) {
         sign_off: formData.peaceTranslation,
         sender_name: formData.name,
         recipient: null,
-        post_type: 'name'
       })
       .then(({ data, error }) => {
         if (error) {
+          setAddingNameError(error);
           console.log(error);
+          console.log('adding name error: ' + addingNameError);
         } else {
           appendLetter(
             user.session?.user.id,
@@ -210,11 +212,14 @@ export function AddYourName({ letters, setLetters, setAddingName }) {
           />
           {errors.message && <span className="error-message">{errors.message}</span>}
         </div>
-
-        <div className="button-container">
+        {addingNameError && (addingNameError.message = "You have already added your name" ?
+         <div>You have already added your name to the peace wall. You can only add your name once, but you can write on the Peace Wall as many times as you would like.</div> :
+         <div>{addingNameError.message}</div>)
+        }
+        {!addingNameError && (<div className="button-container">
           <button type="submit" className="submit-button action-button" onClick={handleSubmit}>Submit</button>
           <button type="button" className="cancel-button cancel-button" onClick={handleCancel}>Cancel</button>
-        </div>
+        </div>)}
       </form>
     </div>
   );
