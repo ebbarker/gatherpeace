@@ -1,11 +1,11 @@
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLoaderData, useParams } from "react-router-dom";
-import { castPostVote } from "./AllPosts";
-import { UserContext } from "./layout/App";
-import { supaClient } from "./layout/supa-client";
-import { timeAgo } from "./layout/time-ago";
-import { UpVote } from "./UpVote";
-import { VoteContext } from "./contexts/VoteContext";
+import { castPostVote } from "../AllPosts";
+import { UserContext } from "../layout/App";
+import { supaClient } from "../layout/supa-client";
+import { timeAgo } from "../layout/time-ago";
+import { UpVote } from "../UpVote";
+import { VoteContext } from "../contexts/VoteContext";
 import { BiCommentDetail } from "react-icons/bi"
 import { PiLinkBold } from "react-icons/pi";
 
@@ -140,7 +140,7 @@ export default function CommentDetails({
                 isClicked={isClicked}
 
               />
-              {' ' + comment?.score}
+              {' ' + comment?.likes}
             </span>
           </div>
         </button>

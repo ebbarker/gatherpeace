@@ -7,12 +7,12 @@ import { timeAgo } from "../layout/time-ago";
 import { UpVote } from "../UpVote";
 import CommentDetails from "../CommentDetails";
 import LetterDetails from "./LetterDetails";
-import ReplyDetails from "../ReplyDetails";
+import ReplyDetails from "./ReplyDetails";
 import { NameDetails } from "./NameDetails";
 //import { SupashipUserInfo } from "./layout/use-session";
 
 
-export function LetterView({ letterData = null,  myVotes = null, onVoteSuccess = null, deleteLetter = null}) {
+export function LetterView({ id = null, letterData = null,  myVotes = null, onVoteSuccess = null, deleteMessage = null}) {
   const userContext = useContext(UserContext);
 
   const params = useParams();
@@ -143,12 +143,13 @@ export function LetterView({ letterData = null,  myVotes = null, onVoteSuccess =
     }, {});
     const letter = letterMap[letterId];
     const comments = data.filter((x) => x.id !== letterId);
+    console.log('comments: ' + comments);
 
     return { letter, comments };
   }
 
   useEffect(() => {
-
+    console.log('letter detail loader hit');
     letterDetailLoader({
       params: letterId ? { letterId } : params,
       userContext,
@@ -159,7 +160,7 @@ export function LetterView({ letterData = null,  myVotes = null, onVoteSuccess =
         setletterDetailData(sortedDetails);
       }
     });
-  }, [userContext, params, bumper]);
+  }, []);
 
 
   function onLetterVoteSuccess (id, direction)  {
@@ -180,7 +181,7 @@ export function LetterView({ letterData = null,  myVotes = null, onVoteSuccess =
       console.log('newLetterDetailData, ' + JSON.stringify(newData));
       setletterDetailData(newData);
     }
-  console.log('letter vote success');
+    console.log('letter vote success');
     function recursiveCommentMapper (current) {
 
       if (current.id == id) {
@@ -188,13 +189,15 @@ export function LetterView({ letterData = null,  myVotes = null, onVoteSuccess =
           console.log('deleting inside mapper')
           return {
             ...current,
-            score: current.score - 1
+            score: current.score - 1,
+            likes: current.likes - 1
           }
         }
         if (direction === 'up') {
           return {
             ...current,
-            score: current.score + 1
+            score: current.score + 1,
+            likes: current.likes + 1
           }
         }
       } else if (current.comments.length > 0) {
@@ -213,21 +216,26 @@ export function LetterView({ letterData = null,  myVotes = null, onVoteSuccess =
   }
 
   function onCommentVoteSuccess(id, direction)  {
-
+   console.log('onCommentVoteSuccess: ' + direction);
 
     function recursiveCommentMapper (current) {
 
+
       if (current.id == id) {
         if (direction === 'delete') {
+          console.log('recursiveCommentMapper');
           return {
             ...current,
-            score: current.score - 1
+            score: current.score - 1,
+            likes: current.likes - 1
           }
         }
         if (direction === 'up') {
+          console.log('recursiveCommentMapper');
           return {
             ...current,
-            score: current.score + 1
+            score: current.score + 1,
+            likes: current.likes + 1
           }
         }
       } else if (current.comments.length > 0) {
@@ -260,20 +268,24 @@ export function LetterView({ letterData = null,  myVotes = null, onVoteSuccess =
         }
             {letterDetailData?.letter?.post_type === 'letter' &&
               <LetterDetails
-                key={letterDetailData?.letter?.id}
+                id={id}
+                // key={letterDetailData?.letter?.id}
                 letter={letterData ? letterData : letterDetailData.letter}
                 onVoteSuccess={onVoteSuccess ? onVoteSuccess : onLetterVoteSuccess}
                 getDepth={getDepth}
                 repliesCount={letterDetailData.comments.length}
+                deleteMessage={deleteMessage}
               />
             }
             {letterDetailData?.letter?.post_type === 'name' &&
               <NameDetails
-                key={letterDetailData?.letter?.id}
+                id={id}
+                // key={letterDetailData?.letter?.id}
                 letter={letterData ? letterData : letterDetailData.letter}
                 onVoteSuccess={onVoteSuccess ? onVoteSuccess : onLetterVoteSuccess}
                 getDepth={getDepth}
                 repliesCount={letterDetailData.comments.length}
+                deleteMessage={deleteMessage}
               />
             }
           </div>
@@ -309,7 +321,7 @@ export function LetterView({ letterData = null,  myVotes = null, onVoteSuccess =
 };
 
 function CommentView({
-  key,
+  // key,
   comment,
   myVotes,
   getDepth,
@@ -332,7 +344,7 @@ function CommentView({
 
 
             <ReplyDetails
-              key={comment.id}
+              // key={comment.id}
               comment={comment}
               myVotes={myVotes}
               onVoteSuccess={onVoteSuccess}
@@ -406,7 +418,7 @@ function CommentView({
                   <>
 
                     <CommentView
-                      key={reply.id}
+                      key={index}
                       comment={reply}
                       myVotes={myVotes}
                       onVoteSuccess={onVoteSuccess}
@@ -479,12 +491,17 @@ function CreateComment({
         className="p-4 flex flex-col justify-start mobile-full-width create-reply"
         data-e2e="create-comment-form"
         onSubmit={(event) => {
+
           event.preventDefault();
+
+
           let actualPath = `${parent?.path}.${parent.id.replaceAll("-", "_")}`;
           let parentDepth = getDepth(parent?.path);
+
           if (parentDepth >= 2) {
             actualPath = parent?.path;
           }
+          console.log(actualPath);
           supaClient
             .rpc("create_new_comment", {
               user_id: user.session?.user.id,
@@ -502,6 +519,7 @@ function CreateComment({
                   created_at: data[0].creation_time,
                   content: comment,
                   score: 0,
+                  likes: 0,
                   path: data[0].returned_path,
                   depth: commentDepth,
                   comments: [],

@@ -46,7 +46,7 @@ update post_score
         return new;
 end;$set_post_score$
 
-replace trigger set_post_score 
+replace trigger set_post_score
     after insert or update
     on post_votes
     for each row execute procedure set_post_score();

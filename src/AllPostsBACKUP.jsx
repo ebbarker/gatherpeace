@@ -52,7 +52,7 @@ export function AllPosts() {
         currentPage={pageNumber ? +pageNumber : 0}
       />
       <div id="news-feed" className="news-feed-container">
-        
+
         {posts?.map((post, i) => {
           post.path = 'root';
           return (

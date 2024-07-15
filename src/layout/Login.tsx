@@ -93,7 +93,7 @@ export default function Login({inline = false}) {
               }}
               view={authMode}
             />
-            <button onClick={() => setShowModal(false)}>Close</button>
+            <button onClick={() => setShowModal(false) }>Close</button>
           </>
         }
       />

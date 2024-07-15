@@ -46,6 +46,8 @@ Sentry.init({
   tracesSampleRate: 1.0,
 });
 
+
+
 const sentryCreateBrowserRouter = Sentry.wrapCreateBrowserRouter(createBrowserRouter);
 
 export const router = sentryCreateBrowserRouter([
@@ -112,24 +114,24 @@ function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // useEffect(() => {
+  useEffect(() => {
 
-  //   const { data: authListener } = supaClient.auth.onAuthStateChange((event, session) => {
-  //     if (session) {
-  //       console.log ('running user effect');
-  //       setUser(session.user);
-  //       const returnPath = localStorage.getItem('returnPath') || '/';
-  //       navigate(returnPath);
-  //       localStorage.removeItem('returnPath');
-  //     } else {
-  //       setUser(null);
-  //     }
-  //   });
+    const { data: authListener } = supaClient.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        console.log ('running user effect');
+        setUser(session.user);
+        // const returnPath = localStorage.getItem('returnPath') || '/';
+      //  navigate(returnPath);
+        localStorage.removeItem('returnPath');
+      } else {
+        setUser(null);
+      }
+    });
 
-  //   return () => {
-  //     authListener?.subscription.unsubscribe();
-  //   };
-  // }, [setUser, navigate]);
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
+  }, [setUser]);
 
   return (
     <UserContext.Provider value={{ session, profile, updateProfile }}>

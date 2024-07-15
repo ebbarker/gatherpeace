@@ -26,6 +26,7 @@ export default function LetterDetails({
   index,
   onSinglePageVoteSuccess = () => {},
   commenting,
+  path,
   setCommenting,
   repliesCount,
   setShowReplies,

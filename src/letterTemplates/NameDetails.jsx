@@ -23,6 +23,7 @@ export function NameDetails({
   commenting,
   setCommenting,
   repliesCount,
+  path,
   setShowReplies,
   showReplies,
   leftBorderLine,
@@ -104,6 +105,7 @@ export function NameDetails({
           if (voteType === "up") {
             myContextVotes[letter.id] = "up";
           }
+          console.log('context votes ' + JSON.stringify(myContextVotes));
           return myContextVotes;
         });
         setIsClicked(true);
@@ -120,6 +122,9 @@ export function NameDetails({
 
   function handleDropdownToggle() {
     console.log("Dropdown toggle clicked"); // Add this log to verify the function is called
+    console.log(userContext.session?.user?.id);
+    console.log(letter.user_id);
+
     setShowDropdown((prev) => !prev);
   }
 

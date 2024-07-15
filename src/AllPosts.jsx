@@ -16,7 +16,7 @@ export function AllPosts({ parent }) {
   const [letters, setLetters] = useState([]);
   const [myVotes, setMyVotes] = useState({});
   const [totalPages, setTotalPages] = useState(0);
-  const [searchKeyword, setSearchKeyword] = useState(null);
+  const [searchKeyword, setSearchKeyword] = useState('');
   const [writingMessage, setWritingMessage] = useState(false);
   const [addingName, setAddingName] = useState(false);
   const { myContextVotes, setMyContextVotes } = useContext(VoteContext);
@@ -132,13 +132,25 @@ export function AllPosts({ parent }) {
     }
   }
 
-  const deleteLetter = (id) => {
-    console.log('id received: ' + id);
+  const deleteLetter = async (id) => {
+console.log('delete this: ' + id);
+    try {
+      const { data, error } = await supaClient.rpc('delete_letter_and_comments', { letter_id: id });
+
+      if (error) {
+        console.error('Error deleting letter and comments:', error.message);
+      } else {
+        setLetters(letters => letters.filter(letter => letter.id !== id));
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+    }
     // let temp = [...letters]
-    setLetters(letters => letters.filter(letter => letter.id !== id));
+
   };
 
   const handleVoteSuccess = (id, direction) => {
+
     setLetters(letters => {
       return letters.map((current) => {
         if (current.id === id) {
@@ -218,16 +230,17 @@ export async function castLetterVote({
       })
     .then(({ data, error }) => {
       if (error) {
-        console.error(error.message);
+        console.error('error upvoting: ' + error.message);
       } else {
         onSuccess();
+        console.log('votedUp');
       }
     });
   } else if (voteType === "delete") {
     await supaClient.rpc("delete_letter_vote", { p_user_id: userId, p_letter_id: letterId })
     .then(({ data, error }) => {
       if (error) {
-        console.error(error.message);
+        console.error('error deleting: ' + error.message);
       } else {
         onSuccess();
       }
@@ -252,22 +265,42 @@ export async function castPostVote({
   userId,
   voteType,
   onSuccess = () => {},
+  onError = (error) => console.log('error!!!')
 }) {
+  try {
+    if (voteType === "up") {
+      console.log('up voting from post_votes');
+      const { data, error } = await supaClient
+        .from("post_votes")
+        .upsert(
+          {
+            comment_id: postId,
+            user_id: userId,
+            vote_type: voteType,
+          },
+          { onConflict: ["comment_id", "user_id"] }
+        );
 
-  if (voteType === "up") {
-    await supaClient.from("post_votes").upsert(
-      {
-        post_id: postId,
-        user_id: userId,
-        vote_type: voteType,
-      },
-      { onConflict: "post_id,user_id" }
-    ).then(onSuccess());
+      if (error) {
+        console.error('Error upserting vote:', error);
+        onError(error);
+      } else {
+        onSuccess(data);
+      }
+    } else if (voteType === "delete") {
+      const { data, error } = await supaClient
+        .rpc("delete_post_vote", { p_user_id: userId, p_comment_id: postId });
 
-  } else if (voteType === "delete") {
-   const res = await supaClient
-        .rpc("delete_post_vote", { p_user_id: userId, p_post_id: postId })
-        .then(onSuccess());
+      if (error) {
+        console.error('Error deleting vote:', error);
+        onError(error);
+      } else {
+        onSuccess(data);
+      }
+    }
+  } catch (error) {
+    console.error('Unexpected error:', error);
+    onError(error);
   }
 
 }

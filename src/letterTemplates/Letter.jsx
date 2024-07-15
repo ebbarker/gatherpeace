@@ -23,7 +23,8 @@ export function Letter({
   myVotes,
   onVoteSuccess,
   letters,
-  deleteLetter
+  deleteLetter,
+  path
 
 }) {
   const { session } = useContext(UserContext);
@@ -45,6 +46,12 @@ export function Letter({
     setShowModal(true);
   }
 
+  function deleteModalLetter(id) {
+    console.log('delete modal post: ' + id);
+    deleteLetter(id);
+    toggleModal();
+  }
+
   return (
     <>
       <div className="flex-none grid grid-cols-1 place-content-center letter-container text-white">
@@ -58,7 +65,7 @@ export function Letter({
           toggleModal={toggleModal}
           showModal={showModal}
           deleteMessage={deleteLetter}
-
+          path={path}
         />
         }
         {letterData?.post_type === 'name' &&
@@ -71,7 +78,7 @@ export function Letter({
             toggleModal={toggleModal}
             showModal={showModal}
             deleteMessage={deleteLetter}
-
+            path={path}
           />
         }
       </div>
@@ -84,12 +91,14 @@ export function Letter({
         show={showModal}
         onHide={() => setShowModal(false)}
         letterId={letterData?.id}
+        id={letterData?.id}
         myVotes={myVotes}
         onVoteSuccess={onVoteSuccess}
         letters={letters}
         letterData={letterData}
         toggleModal={toggleModal}
         path={path}
+        deleteMessage={deleteModalLetter}
 
       />
       )}
@@ -113,117 +122,15 @@ function MyVerticallyCenteredModal(props) {
             <IoArrowBackCircleSharp onClick={props.toggleModal}/>
         </button>
         <LetterView
+          id={props.id}
           letterId={props.letterId}
           onVoteSuccess={props.onVoteSuccess}
           myVotes={props.myVotes}
           letterData={props.letterData}
+          deleteMessage={props.deleteMessage}
+
         />
 
     </Modal>
   );
 }
-
-
-
-
-
-     {/* {showModal && (
-        <div className="modal-container">
-          <div onClick={toggleModal} className="overlay"></div>
-          <div className="modal-weird-content">
-            <div className="modal-back-button">
-              <IoArrowBackCircleSharp onClick={toggleModal}/>
-            </div>
-
-            <letterView
-              letterId={letterData?.Id}
-              onVoteSuccess={onVoteSuccess}
-              letterData={letterData}
-              setShowModal={toggleModal}
-
-            />
-          </div>
-        </div>)
-      } */}
-
-
-
-
-      // function MyVerticallyCenteredModal(props) {
-      //   const setShowModal = props.setShowModal;
-      //   return (
-
-      //       // size="lg"
-      //       // aria-labelledby="contained-modal-title-vcenter"
-      //       // centered
-
-
-      //       <div className="letter-modal">
-      //         <div onClick={setShowModal(!props.showModal)} className="overlay"></div>
-      //         <div className="modal-content">
-
-
-      //           <letterView
-      //             letterId={props.letterId}
-      //             onVoteSuccess={props.onVoteSuccess}
-      //             letterData={props.letterData}
-      //             setShowModal={setShowModal}
-
-      //           />
-      //         </div>
-      //       </div>
-
-
-      //   );
-      // }
-
-
-
-
-
-      // import { useContext, useEffect, useMemo, useState } from "react";
-      // import { Link, useLoaderData, useParams } from "react-router-dom";
-      // import { UserContext } from "./layout/App";
-      // import { Createletter } from "./Createletter";
-      // import { supaClient } from "./layout/supa-client";
-      // import { timeAgo } from "./layout/time-ago";
-      // import { UpVote } from "./UpVote";
-      // import { letterView } from "./letterView"
-      // import CommentDetails from "./CommentDetails"
-      // import { castVote } from "./Allletters";
-      // // import ReactModal from 'react-modal';
-      // // import ReactDOM from 'react-dom';
-      // // import Modal from 'react-bootstrap/Modal'
-      // import { Modal } from "react-bootstrap"
-
-      // export function letter({
-      //   index,
-      //   key,
-      //   letterData,
-      //   myVotes,
-      //   onVoteSuccess,
-      //   letters,
-      //   parentIsTimeline
-      // }) {
-      //   const { session } = useContext(UserContext);
-      //   //const [isModalOpen, setModalOpen] = useState(false);
-      //   const [showModal, setShowModal] = useState(false);
-
-      //   // function handleRequestClose (){
-      //   //   setModalOpen(false);
-      //   // }
-
-      //   return (
-      //     <>
-      //       <div className="flex-none grid grid-cols-1 place-content-center letter-container text-white">
-
-      //           <CommentDetails
-      //             key={letterData?.id}
-      //             comment={letterData}
-      //             myVotes={myVotes}
-      //             onVoteSuccess={onVoteSuccess}
-      //             index={index}
-      //             setShowModal={setShowModal}
-      //             showModal={showModal}
-      //           />
-      //       </div>

@@ -1,20 +1,18 @@
 CREATE TABLE letters (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
-    user_id uuid REFERENCES auth.users (id) NOT NULL,
+    user_id uuid REFERENCES auth.users (id) ON DELETE CASCADE NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     path ltree NOT NULL,
     score int DEFAULT 0 NOT NULL,
     count_comments INT DEFAULT 0 NOT NULL,
     likes int DEFAULT 0 NOT NULL,
     post_type text
-
 );
-
 
 CREATE TABLE letter_contents (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
-    user_id uuid REFERENCES auth.users (id) NOT NULL,
-    letter_id uuid REFERENCES letters (id) NOT NULL,
+    user_id uuid REFERENCES auth.users (id) ON DELETE CASCADE NOT NULL,
+    letter_id uuid REFERENCES letters (id) ON DELETE CASCADE NOT NULL,
     content text,
     sender_country text,
     sender_state text,
@@ -28,20 +26,21 @@ CREATE TABLE letter_contents (
 
 CREATE TABLE letter_votes (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
-    letter_id uuid REFERENCES letters (id) NOT NULL,
-    user_id uuid REFERENCES auth.users (id) NOT NULL,
+    letter_id uuid REFERENCES letters (id) ON DELETE CASCADE NOT NULL,
+    user_id uuid REFERENCES auth.users (id) ON DELETE CASCADE NOT NULL,
     vote_type text NOT NULL CHECK (vote_type IN ('up', 'down')),
     UNIQUE (letter_id, user_id)
 );
 
-CREATE TABLE letter_comments (
-    id uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
-    user_id uuid REFERENCES auth.users (id) NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    path ltree NOT NULL,
-    score int DEFAULT 0 NOT NULL,
-    content text NOT NULL
-);
+-- CREATE TABLE letter_comments (
+--     id uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+--     user_id uuid REFERENCES auth.users (id) NOT NULL,
+--     created_at timestamp with time zone DEFAULT now() NOT NULL,
+--     path ltree NOT NULL,
+--     score int DEFAULT 0 NOT NULL,
+--     likes int DEFAU
+--     content text NOT NULL
+-- );
 
 
 CREATE OR REPLACE FUNCTION update_letter_score()
@@ -377,12 +376,14 @@ RETURNS TABLE (
     sender_city text,
     sign_off text,
     sender_name text,
-    recipient text
+    recipient text,
+    post_type text
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
     RETURN QUERY
+    -- Select the main letter details
     SELECT
         p.id,
         up.username,
@@ -397,18 +398,22 @@ BEGIN
         pc.sender_city,
         pc.sign_off,
         pc.sender_name,
-        pc.recipient
+        pc.recipient,
+        'letter' as post_type
     FROM letters p
     JOIN letter_contents pc ON p.id = pc.letter_id
     JOIN user_profiles up ON p.user_id = up.user_id
-    WHERE p.id = get_single_letter_with_comments.letter_id
+    WHERE p.id = letter_id
+
     UNION ALL
+
+    -- Select the comments for the letter
     SELECT
         c.id,
-        up.username,
+        up2.username,
         c.created_at,
         c.content,
-        NULL as likes,  -- Comments do not have likes
+        c.likes,
         c.score,
         c.path,
         NULL as count_comments,  -- Comments do not have count_comments
@@ -417,30 +422,33 @@ BEGIN
         NULL as sender_city,
         NULL as sign_off,
         NULL as sender_name,
-        NULL as recipient
+        NULL as recipient,
+        'comment' as post_type
     FROM comments c
-    JOIN user_profiles up ON c.user_id = up.user_id
-    WHERE c.path <@ text2ltree(concat('root.', replace(get_single_letter_with_comments.letter_id::text, '-', '_')));
+    JOIN user_profiles up2 ON c.user_id = up2.user_id
+    WHERE c.path <@ text2ltree(concat('root.', replace(letter_id::text, '-', '_')));
 END;
 $$;
 
 
 
-CREATE OR REPLACE FUNCTION create_new_letter_comment("user_id" UUID, content TEXT, comment_path LTREE)
-RETURNS TABLE(comment_id UUID, creation_time TIMESTAMP WITH TIME ZONE, returned_path LTREE)
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  WITH "inserted_comment" AS (
-    INSERT INTO "comments" ("user_id", "path", "content")
-    VALUES ($1, $3, $2)
-    RETURNING "id", "created_at", "path"
-  )
-  SELECT "id", "created_at", "path" INTO comment_id, creation_time, returned_path FROM "inserted_comment";
 
-  RETURN NEXT; -- returns the row of comment_id and creation_time
-END;
-$$;
+
+-- CREATE OR REPLACE FUNCTION create_new_letter_comment("user_id" UUID, content TEXT, comment_path LTREE)
+-- RETURNS TABLE(comment_id UUID, creation_time TIMESTAMP WITH TIME ZONE, returned_path LTREE)
+-- LANGUAGE plpgsql
+-- AS $$
+-- BEGIN
+--   WITH "inserted_comment" AS (
+--     INSERT INTO "comments" ("user_id", "path", "content")
+--     VALUES ($1, $3, $2)
+--     RETURNING "id", "created_at", "path"
+--   )
+--   SELECT "id", "created_at", "path" INTO comment_id, creation_time, returned_path FROM "inserted_comment";
+
+--   RETURN NEXT; -- returns the row of comment_id and creation_time
+-- END;
+-- $$;
 
 CREATE OR REPLACE FUNCTION get_comments_by_letter_id(letter_id uuid)
 RETURNS TABLE (
@@ -449,6 +457,7 @@ RETURNS TABLE (
     created_at timestamp with time zone,
     content text,
     score int,
+    likes int,
     path ltree
 )
 LANGUAGE plpgsql
@@ -461,6 +470,7 @@ BEGIN
         c.created_at,
         c.content,
         c.score,
+        c.likes,
         c.path
     FROM comments c
     JOIN user_profiles up ON c.user_id = up.user_id
@@ -468,49 +478,52 @@ BEGIN
 END;
 $$;
 
+
+
+
 -- Trigger function to increment count_comments on a new comment
-CREATE OR REPLACE FUNCTION increment_letter_comment_count()
-RETURNS TRIGGER LANGUAGE plpgsql
-AS $$
-BEGIN
-    UPDATE letters
-    SET count_comments = count_comments + 1,
-        score = score + 2
-    WHERE id = (
-        SELECT REPLACE((REGEXP_MATCHES(NEW.path::TEXT, 'root\.([0-9a-fA-F_]+)\.?'))[1], '_', '-')::UUID
-    );
+-- CREATE OR REPLACE FUNCTION increment_letter_comment_count()
+-- RETURNS TRIGGER LANGUAGE plpgsql
+-- AS $$
+-- BEGIN
+--     UPDATE letters
+--     SET count_comments = count_comments + 1,
+--         score = score + 2
+--     WHERE id = (
+--         SELECT REPLACE((REGEXP_MATCHES(NEW.path::TEXT, 'root\.([0-9a-fA-F_]+)\.?'))[1], '_', '-')::UUID
+--     );
 
-    RETURN NEW;
-END;
-$$;
+--     RETURN NEW;
+-- END;
+-- $$;
 
-CREATE OR REPLACE FUNCTION decrement_letter_comment_count()
-RETURNS TRIGGER LANGUAGE plpgsql
-AS $$
-BEGIN
-    UPDATE letters
-    SET count_comments = count_comments - 1,
-        score = score - 2
-    WHERE id = (
-        SELECT REPLACE((REGEXP_MATCHES(OLD.path::TEXT, 'root\.([0-9a-fA-F_]+)\.?'))[1], '_', '-')::UUID
-    );
+-- CREATE OR REPLACE FUNCTION decrement_letter_comment_count()
+-- RETURNS TRIGGER LANGUAGE plpgsql
+-- AS $$
+-- BEGIN
+--     UPDATE letters
+--     SET count_comments = count_comments - 1,
+--         score = score - 2
+--     WHERE id = (
+--         SELECT REPLACE((REGEXP_MATCHES(OLD.path::TEXT, 'root\.([0-9a-fA-F_]+)\.?'))[1], '_', '-')::UUID
+--     );
 
-    RETURN OLD;
-END;
-$$;
+--     RETURN OLD;
+-- END;
+-- $$;
 
 
 
--- Attach the trigger functions to the comments table
-CREATE TRIGGER trigger_increment_letter_comment_count
-AFTER INSERT ON comments
-FOR EACH ROW
-EXECUTE FUNCTION increment_letter_comment_count();
+-- -- Attach the trigger functions to the comments table
+-- CREATE TRIGGER trigger_increment_letter_comment_count
+-- AFTER INSERT ON comments
+-- FOR EACH ROW
+-- EXECUTE FUNCTION increment_letter_comment_count();
 
-CREATE TRIGGER trigger_decrement_letter_comment_count
-AFTER DELETE ON comments
-FOR EACH ROW
-EXECUTE FUNCTION decrement_letter_comment_count();
+-- CREATE TRIGGER trigger_decrement_letter_comment_count
+-- AFTER DELETE ON comments
+-- FOR EACH ROW
+-- EXECUTE FUNCTION decrement_letter_comment_count();
 
 
 create extension http with schema extensions;
