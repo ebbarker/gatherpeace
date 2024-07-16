@@ -78,6 +78,22 @@ CREATE TABLE comments (
     content text NOT NULL
 );
 
+CREATE OR REPLACE FUNCTION delete_comment_and_replies(p_comment_id uuid)
+RETURNS VOID AS $$
+DECLARE
+    comment_path ltree;
+BEGIN
+    -- Get the path of the comment to be deleted
+    SELECT path INTO comment_path FROM comments WHERE id = p_comment_id;
+
+    -- Delete all comments associated with the comment, including the comment itself
+    DELETE FROM comments WHERE path <@ text2ltree(concat(comment_path::text, '.', REPLACE(p_comment_id::text, '-', '_')));
+
+    -- Delete the comment itself
+    DELETE FROM comments WHERE id = p_comment_id;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION delete_letter_and_comments(letter_id uuid)
 RETURNS VOID AS $$
 BEGIN

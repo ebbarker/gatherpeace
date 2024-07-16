@@ -107,63 +107,7 @@ export default function LetterDetails({
 
   }
 
-  // useEffect(() => {
-
-  //   async function getOg() {
-
-
-
-
-  //     // const { data, error } = await supaClient.functions.invoke('hello', {
-  //     //   headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  //     //   body: JSON.stringify({ foo: 'bar' }),
-  //     // })
-
-
-
-  //     // try {
-  //     //   const response = await supaClient.functions.invoke('hello', {
-  //     //     method: 'POST',
-  //     //     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  //     //     body: JSON.stringify({ name: 'Functions' }),
-  //     //   });
-
-
-  //     //   console.log("Raw response:", JSON.stringify(data));
-
-  //     //   if (response.error) {
-  //     //     setOgpreview('OG ERROR: ' + response.error.message);
-  //     //   } else {
-  //     //     console.log('OG DATA:', response.data);
-  //     //     setOgpreview(response.data);
-  //     //   }
-  //     // } catch (error) {
-  //     //   console.error('Error fetching data:', error);
-  //     //   // Handle additional error scenarios
-  //     // }
-
-  //       // const response = await supaClient.functions.invoke('hello', {
-  //       //   method: 'POST',
-  //       //   headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  //       //   data: JSON.stringify({ name: 'Functions' }),
-  //       // });
-  //       // console.log('resp ', JSON.stringify(response));
-  //   }
-
-  //   getOg();
-  // }, []);
-
-
-
-
-  // useEffect(() => {
-  //   // Ensure both elements are present
-  //   if (borderLineRef.current && contentContainerRef.current) {
-  //     // Set the height of left-border-line based on post-content-container
-  //     const contentHeight = contentContainerRef.current.offsetHeight;
-  //     borderLineRef.current.style.height = `${contentHeight + 150}px`;
-  //   }
-  // }, [letter, arrLength]); // Dependency array: re-run effect if letter changes
+  
   async function onVoteClick () {
 
       if (!letter) {
@@ -203,6 +147,9 @@ export default function LetterDetails({
 
   function handleDropdownToggle() {
     console.log("Dropdown toggle clicked"); // Add this log to verify the function is called
+    console.log("Dropdown toggle clickeddddd"); // Add this log to verify the function is called
+    console.log('userId:' + userContext.session?.user?.id);
+    console.log('letterUserId:' + JSON.stringify(letter));
     setShowDropdown((prev) => !prev);
   }
 

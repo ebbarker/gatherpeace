@@ -361,9 +361,10 @@ END; $$;
 
 
 
-CREATE OR REPLACE FUNCTION get_single_letter_with_comments(letter_id uuid)
+CREATE OR REPLACE FUNCTION get_single_letter_with_comments(p_letter_id uuid)
 RETURNS TABLE (
     id uuid,
+    user_id uuid,
     username text,
     created_at timestamp with time zone,
     content text,
@@ -386,6 +387,7 @@ BEGIN
     -- Select the main letter details
     SELECT
         p.id,
+        p.user_id,
         up.username,
         p.created_at,
         pc.content,
@@ -399,36 +401,38 @@ BEGIN
         pc.sign_off,
         pc.sender_name,
         pc.recipient,
-        'letter' as post_type
+        p.post_type  -- Get the actual post_type from the letters table
     FROM letters p
     JOIN letter_contents pc ON p.id = pc.letter_id
     JOIN user_profiles up ON p.user_id = up.user_id
-    WHERE p.id = letter_id
+    WHERE p.id = p_letter_id
 
     UNION ALL
 
     -- Select the comments for the letter
     SELECT
         c.id,
+        c.user_id,
         up2.username,
         c.created_at,
         c.content,
         c.likes,
         c.score,
         c.path,
-        NULL as count_comments,  -- Comments do not have count_comments
+        c.count_comments,  -- Comments now have count_comments
         NULL as sender_country,
         NULL as sender_state,
         NULL as sender_city,
         NULL as sign_off,
         NULL as sender_name,
         NULL as recipient,
-        'comment' as post_type
+        'comment'  -- Comments have post_type as 'comment'
     FROM comments c
     JOIN user_profiles up2 ON c.user_id = up2.user_id
-    WHERE c.path <@ text2ltree(concat('root.', replace(letter_id::text, '-', '_')));
+    WHERE c.path <@ text2ltree(concat('root.', replace(p_letter_id::text, '-', '_')));
 END;
 $$;
+
 
 
 
@@ -453,6 +457,7 @@ $$;
 CREATE OR REPLACE FUNCTION get_comments_by_letter_id(letter_id uuid)
 RETURNS TABLE (
     id uuid,
+    user_id uuid,
     username text,
     created_at timestamp with time zone,
     content text,
@@ -466,6 +471,7 @@ BEGIN
     RETURN QUERY
     SELECT
         c.id,
+        c.user_id,
         up.username AS username,
         c.created_at,
         c.content,

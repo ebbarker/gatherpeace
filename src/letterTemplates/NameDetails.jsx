@@ -121,9 +121,9 @@ export function NameDetails({
   }
 
   function handleDropdownToggle() {
-    console.log("Dropdown toggle clicked"); // Add this log to verify the function is called
-    console.log(userContext.session?.user?.id);
-    console.log(letter.user_id);
+    console.log("Dropdown toggle clickeddddd"); // Add this log to verify the function is called
+    console.log('userId:' + userContext.session?.user?.id);
+    console.log('letterUserId:' + letter.user_id);
 
     setShowDropdown((prev) => !prev);
   }

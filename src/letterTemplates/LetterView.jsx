@@ -9,11 +9,13 @@ import CommentDetails from "../CommentDetails";
 import LetterDetails from "./LetterDetails";
 import ReplyDetails from "./ReplyDetails";
 import { NameDetails } from "./NameDetails";
+import { useNavigate } from 'react-router-dom';
 //import { SupashipUserInfo } from "./layout/use-session";
 
 
 export function LetterView({ id = null, letterData = null,  myVotes = null, onVoteSuccess = null, deleteMessage = null}) {
   const userContext = useContext(UserContext);
+  const navigate = useNavigate();
 
   const params = useParams();
   const letterId = letterData ? letterData.id : params.LetterId;
@@ -28,9 +30,26 @@ export function LetterView({ id = null, letterData = null,  myVotes = null, onVo
   function getDepth(path) {
     const rootless = path.slice(5);
     return rootless.split(".").filter((x) => !!x).length;
-  }
+  };
 
+  const defaultDeleteMessage = async (id) => {
+    console.log('delete default id: ' + id);
+    try {
+      const { data, error } = await supaClient.rpc('delete_letter_and_comments', { letter_id: id });
 
+      if (error) {
+        console.error('Error deleting letter and comments:', error.message);
+      } else {
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+    }
+
+  };
+
+  // Use the provided deleteMessage or the default one
+  const handleDeleteMessage = deleteMessage || defaultDeleteMessage;
 
   function convertToUuid(path) {
     return path.replaceAll("_", "-");
@@ -93,6 +112,8 @@ export function LetterView({ id = null, letterData = null,  myVotes = null, onVo
     return result;
   }
 
+
+
   async function letterDetailLoader({ params, userContext }) {
 
 
@@ -100,7 +121,7 @@ export function LetterView({ id = null, letterData = null,  myVotes = null, onVo
       if (!letterData) {
         console.log('getting letter and comments together ' + letterId);
           ({ data, error } = await supaClient
-          .rpc("get_single_letter_with_comments", { letter_id: letterId })
+          .rpc("get_single_letter_with_comments", { p_letter_id: letterId })
           .select("*"));
         if (error ) {
           setPageError(error);
@@ -120,10 +141,6 @@ export function LetterView({ id = null, letterData = null,  myVotes = null, onVo
           setPageError(error);
           throw new Error(JSON.stringify(error));
         }
-        // if (!data || data.length === 0) {
-        //   setPageError({message: 'letter not found'});
-        //   throw new Error('letter not found');
-        // }
 
         letterData.path = 'root';
         if (!data) {
@@ -133,8 +150,6 @@ export function LetterView({ id = null, letterData = null,  myVotes = null, onVo
         }
 
       }
-
-
 
 
     const letterMap = data.reduce((acc, letter) => {
@@ -268,24 +283,24 @@ export function LetterView({ id = null, letterData = null,  myVotes = null, onVo
         }
             {letterDetailData?.letter?.post_type === 'letter' &&
               <LetterDetails
-                id={id}
+                id={id ? id : letterId}
                 // key={letterDetailData?.letter?.id}
                 letter={letterData ? letterData : letterDetailData.letter}
                 onVoteSuccess={onVoteSuccess ? onVoteSuccess : onLetterVoteSuccess}
                 getDepth={getDepth}
                 repliesCount={letterDetailData.comments.length}
-                deleteMessage={deleteMessage}
+                deleteMessage={handleDeleteMessage}
               />
             }
             {letterDetailData?.letter?.post_type === 'name' &&
               <NameDetails
-                id={id}
+                id={id ? id : letterId}
                 // key={letterDetailData?.letter?.id}
                 letter={letterData ? letterData : letterDetailData.letter}
                 onVoteSuccess={onVoteSuccess ? onVoteSuccess : onLetterVoteSuccess}
                 getDepth={getDepth}
                 repliesCount={letterDetailData.comments.length}
-                deleteMessage={deleteMessage}
+                deleteMessage={handleDeleteMessage}
               />
             }
           </div>
@@ -350,6 +365,8 @@ function CommentView({
               onVoteSuccess={onVoteSuccess}
               getDepth={getDepth}
               commenting={commenting}
+              letterDetailData={letterDetailData}
+              setletterDetailData={setletterDetailData}
               setCommenting={setCommenting}
               repliesCount={repliesCount}
               showReplies={showReplies}
@@ -515,6 +532,7 @@ function CreateComment({
                 let commentDepth = getDepth(data[0].returned_path);
                 let newComment = {
                   id: data[0].comment_id,
+                  user_id: user.session.user.id,
                   username: user.profile.username,
                   created_at: data[0].creation_time,
                   content: comment,

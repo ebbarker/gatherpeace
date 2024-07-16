@@ -133,7 +133,6 @@ export function AllPosts({ parent }) {
   }
 
   const deleteLetter = async (id) => {
-console.log('delete this: ' + id);
     try {
       const { data, error } = await supaClient.rpc('delete_letter_and_comments', { letter_id: id });
 
