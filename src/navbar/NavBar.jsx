@@ -1,13 +1,28 @@
-import { useContext } from "react";
+import { useContext, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { UserContext } from "./App";
-import Login from "./Login";
+import { UserContext } from "../layout/App";
+import Login from "../layout/Login";
 import twitterPeace from "../img/twitterpeace2.png";
-import { supaClient } from "./supa-client";
+import { supaClient } from "../layout/supa-client";
 import DarkMode from "../DarkMode";
+import { IoNotificationsSharp } from "react-icons/io5";
+import "./NavBar.css";
+import { NotificationsContext } from '../notifications/NotificationsContext';
+
 
 export default function NavBar() {
   const { session, profile } = useContext(UserContext);
+  const { notifications } = useContext(NotificationsContext);
+  const [unreadCount, setUnreadCount] = useState('');
+
+  useEffect(() => {
+    let count = 0;
+    for (let i = 0; i < notifications.length; i++) {
+      count += notifications[i].unread_count;
+    }
+    setUnreadCount(count);
+  }, [notifications]);
+
 
   return (
     <>
@@ -60,6 +75,17 @@ export default function NavBar() {
                   Peace Wall
                 </Link>
               </li>
+              <li className="nav-item">
+                <Link className="nav-home-link nav-link" to="/notifications">
+                  <div className="notification-container">
+                    <div className="notification-icon">
+                      <IoNotificationsSharp />
+                      {unreadCount ? <div className="notification-badge">{unreadCount}</div> : null}
+                    </div>
+                  </div>
+
+                </Link>
+              </li>
 
               <li className="navbar-login-container nav-item">
                 {session?.user ? (
@@ -76,6 +102,10 @@ export default function NavBar() {
                       {profile?.username || "Welcome"}
                     </a>
                     <ul className="dropdown-menu dropdown-menu-right">
+                      <a className="dropdown-item" href="/profile">
+                        My Profile
+                      </a>
+                      <div className="dropdown-divider"></div>
                       <a
                         className="dropdown-item"
                         href="#"
@@ -83,10 +113,8 @@ export default function NavBar() {
                       >
                         Logout
                       </a>
-                      <div className="dropdown-divider"></div>
-                      <a className="dropdown-item" href="#">
-                        Something else here
-                      </a>
+
+
                     </ul>
                   </>
                 ) : (

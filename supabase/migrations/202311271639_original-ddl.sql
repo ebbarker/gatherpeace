@@ -32,6 +32,8 @@ CREATE TABLE letter_votes (
     UNIQUE (letter_id, user_id)
 );
 
+
+
 -- CREATE TABLE letter_comments (
 --     id uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
 --     user_id uuid REFERENCES auth.users (id) NOT NULL,
@@ -436,24 +438,6 @@ $$;
 
 
 
-
-
--- CREATE OR REPLACE FUNCTION create_new_letter_comment("user_id" UUID, content TEXT, comment_path LTREE)
--- RETURNS TABLE(comment_id UUID, creation_time TIMESTAMP WITH TIME ZONE, returned_path LTREE)
--- LANGUAGE plpgsql
--- AS $$
--- BEGIN
---   WITH "inserted_comment" AS (
---     INSERT INTO "comments" ("user_id", "path", "content")
---     VALUES ($1, $3, $2)
---     RETURNING "id", "created_at", "path"
---   )
---   SELECT "id", "created_at", "path" INTO comment_id, creation_time, returned_path FROM "inserted_comment";
-
---   RETURN NEXT; -- returns the row of comment_id and creation_time
--- END;
--- $$;
-
 CREATE OR REPLACE FUNCTION get_comments_by_letter_id(letter_id uuid)
 RETURNS TABLE (
     id uuid,
@@ -487,49 +471,6 @@ $$;
 
 
 
--- Trigger function to increment count_comments on a new comment
--- CREATE OR REPLACE FUNCTION increment_letter_comment_count()
--- RETURNS TRIGGER LANGUAGE plpgsql
--- AS $$
--- BEGIN
---     UPDATE letters
---     SET count_comments = count_comments + 1,
---         score = score + 2
---     WHERE id = (
---         SELECT REPLACE((REGEXP_MATCHES(NEW.path::TEXT, 'root\.([0-9a-fA-F_]+)\.?'))[1], '_', '-')::UUID
---     );
-
---     RETURN NEW;
--- END;
--- $$;
-
--- CREATE OR REPLACE FUNCTION decrement_letter_comment_count()
--- RETURNS TRIGGER LANGUAGE plpgsql
--- AS $$
--- BEGIN
---     UPDATE letters
---     SET count_comments = count_comments - 1,
---         score = score - 2
---     WHERE id = (
---         SELECT REPLACE((REGEXP_MATCHES(OLD.path::TEXT, 'root\.([0-9a-fA-F_]+)\.?'))[1], '_', '-')::UUID
---     );
-
---     RETURN OLD;
--- END;
--- $$;
-
-
-
--- -- Attach the trigger functions to the comments table
--- CREATE TRIGGER trigger_increment_letter_comment_count
--- AFTER INSERT ON comments
--- FOR EACH ROW
--- EXECUTE FUNCTION increment_letter_comment_count();
-
--- CREATE TRIGGER trigger_decrement_letter_comment_count
--- AFTER DELETE ON comments
--- FOR EACH ROW
--- EXECUTE FUNCTION decrement_letter_comment_count();
 
 
 create extension http with schema extensions;

@@ -10,6 +10,7 @@ import { BiCommentDetail } from "react-icons/bi"
 import { PiLinkBold } from "react-icons/pi";
 import { FiMoreVertical, FiTrash  } from "react-icons/fi"; // Importing the icon for the vertical dots
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
+import { UseScrollToHash } from "./UseScrollToHash";
 
 
 
@@ -32,7 +33,8 @@ export default function CommentDetails({
   replyIndex,
   parentIsTimeline,
   letterDetailData,
-  setletterDetailData
+  setletterDetailData,
+  hash
 }) {
   const userContext = useContext(UserContext);
   const { session } = useContext(UserContext);
@@ -44,6 +46,8 @@ export default function CommentDetails({
   const [showDropdown, setShowDropdown] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const dropdownRef = useRef(null);
+
+  // UseScrollToHash();
 
   // useEffect(() => {
   //   // Ensure both elements are present
@@ -149,6 +153,7 @@ export default function CommentDetails({
 
       await castPostVote({
         postId: comment?.id,
+        postPath: comment?.path,
         userId: userContext.session?.user?.id,
         voteType: voteType,
         onSuccess: () => {
@@ -177,7 +182,7 @@ export default function CommentDetails({
 
   return (
     <>
-      <div className="details-container">
+      <div className="details-container" id={comment?.id}>
       <div className="head flex justify-between" >
         <div className="head-left flex flex-col">
           <div className="flex items-center">

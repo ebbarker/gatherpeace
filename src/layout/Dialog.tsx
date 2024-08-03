@@ -29,7 +29,7 @@ export default function Dialog({
 
   return showModal ? (
     <>
-      
+
       <div
         onClick={({ target }) => {
           if (!allowClose || dialog.current?.contains(target as any)) {

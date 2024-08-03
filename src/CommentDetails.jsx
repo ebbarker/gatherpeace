@@ -51,6 +51,7 @@ export default function CommentDetails({
 
       await castPostVote({
         postId: comment?.id,
+        postPath: comment?.path,
         userId: userContext.session?.user?.id,
         voteType: voteType,
         onSuccess: () => {
@@ -68,6 +69,7 @@ export default function CommentDetails({
           setIsClicked(true);
           setTimeout(() => setIsClicked(false), 300); // Reset after animation duration
         },
+        comment
       });
   }
 

@@ -46,6 +46,13 @@ create policy "Anyone can update their own avatar." on storage.objects
 create policy "User can delete own avatar" on storage.objects
   for delete using (auth.uid() = owner);
 
+  ----
+  insert into storage.buckets (id, name)
+  values ('default_avatars', 'default_avatars');
+
+create policy "Avatar images are publicly accessible." on storage.objects
+  for select using (bucket_id = 'default_avatars');
+
 
 
 
@@ -108,10 +115,100 @@ $$ LANGUAGE plpgsql;
 CREATE TABLE post_votes (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
     comment_id uuid REFERENCES comments(id) ON DELETE CASCADE,
+    comment_path ltree,
     user_id uuid REFERENCES auth.users (id) ON DELETE CASCADE NOT NULL,
     vote_type text NOT NULL CHECK (vote_type IN ('up', 'down')),
     UNIQUE (comment_id, user_id)
 );
+
+-- Trigger Function to create notifications for comment likes
+CREATE OR REPLACE FUNCTION notify_like()
+RETURNS TRIGGER AS $$
+DECLARE
+    target_letter_id uuid;
+    path_segments int;
+    notification_type text;
+BEGIN
+    -- Ensure the target ID is valid
+    target_letter_id := NEW.letter_id;
+
+    -- Count the number of segments in the path
+    path_segments := array_length(string_to_array(text2ltree(concat('root.', replace(target_letter_id::text, '-', '_'), '.', replace(NEW.letter_id::text, '-', '_')))::text, '.'), 1);
+
+    -- Determine the notification type based on the number of UUIDs in the path
+    IF path_segments = 2 THEN
+        notification_type := 'comment_like';
+    ELSIF path_segments = 3 THEN
+        notification_type := 'reply_like';
+    ELSE
+        RAISE EXCEPTION 'Unexpected path length';
+    END IF;
+
+    -- Insert notification for the letter author
+    INSERT INTO notifications (
+        id,
+        modified,
+        type,
+        target_id,
+        table_name,
+        user_id_creator,
+        user_id_receiver,
+        path
+    )
+    VALUES (
+        uuid_generate_v4(),
+        now(),
+        notification_type,
+        NEW.letter_id,
+        'letter_votes',
+        NEW.user_id,
+        (SELECT user_id FROM letters WHERE id = target_letter_id),
+        text2ltree(concat('root.', replace(target_letter_id::text, '-', '_'), '.', replace(NEW.letter_id::text, '-', '_')))
+    );
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Trigger to call the function after insert on post_votes
+CREATE TRIGGER trigger_notify_comment_like
+AFTER INSERT ON post_votes
+FOR EACH ROW
+WHEN (NEW.vote_type = 'up')
+EXECUTE FUNCTION notify_comment_like();
+
+CREATE OR REPLACE FUNCTION delete_like_notification()
+RETURNS TRIGGER AS $$
+DECLARE
+    target_comment_id uuid;
+BEGIN
+    -- Get the comment ID from the deleted like
+    target_comment_id := OLD.comment_id;
+
+    -- Ensure the comment ID is valid
+    IF target_comment_id IS NULL THEN
+        RAISE EXCEPTION 'Invalid comment ID for delete notification';
+    END IF;
+
+    -- Delete the notification for the comment like
+    DELETE FROM notifications
+    WHERE target_id = target_comment_id
+      AND table_name = 'post_votes'
+      AND type = 'comment_like'
+      AND user_id_creator = OLD.user_id;
+
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to call the function after delete on post_votes
+CREATE TRIGGER trigger_delete_like_notification
+AFTER DELETE ON post_votes
+FOR EACH ROW
+WHEN (OLD.vote_type = 'up')
+EXECUTE FUNCTION delete_like_notification();
+
 
 
 CREATE OR REPLACE FUNCTION update_comment_score()

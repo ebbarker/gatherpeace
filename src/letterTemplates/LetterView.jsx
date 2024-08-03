@@ -1,5 +1,5 @@
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { useLoaderData, useParams } from "react-router-dom";
+import { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useLoaderData, useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { castLetterVote } from "../AllPosts";
 import { UserContext } from "../layout/App";
 import { supaClient } from "../layout/supa-client";
@@ -9,7 +9,8 @@ import CommentDetails from "../CommentDetails";
 import LetterDetails from "./LetterDetails";
 import ReplyDetails from "./ReplyDetails";
 import { NameDetails } from "./NameDetails";
-import { useNavigate } from 'react-router-dom';
+import { UseScrollToHash } from "./UseScrollToHash";
+
 //import { SupashipUserInfo } from "./layout/use-session";
 
 
@@ -19,13 +20,21 @@ export function LetterView({ id = null, letterData = null,  myVotes = null, onVo
 
   const params = useParams();
   const letterId = letterData ? letterData.id : params.LetterId;
+
   // const [voteBumper, setVoteBumper] = useState(0);
   const [bumper, setBumper] = useState(0);
   const [letterDetailData, setletterDetailData] = useState({
     letter: null,
     comments: [],
   });
-  const [pageError, setPageError] = useState(null)
+  const [pageError, setPageError] = useState(null);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const term = searchParams.get("query");
+  const location = useLocation();
+  const hash = location.hash.slice(1);
+  // const searchParams = new URLSearchParams(location.search);
+  // const query = searchParams.get('query');
 
   function getDepth(path) {
     const rootless = path.slice(5);
@@ -116,7 +125,7 @@ export function LetterView({ id = null, letterData = null,  myVotes = null, onVo
 
   async function letterDetailLoader({ params, userContext }) {
 
-
+  console.log ('params: ' + JSON.stringify(params));
     let data, error;
       if (!letterData) {
         console.log('getting letter and comments together ' + letterId);
@@ -176,6 +185,8 @@ export function LetterView({ id = null, letterData = null,  myVotes = null, onVo
       }
     });
   }, []);
+
+
 
 
   function onLetterVoteSuccess (id, direction)  {
@@ -268,6 +279,22 @@ export function LetterView({ id = null, letterData = null,  myVotes = null, onVo
 
   }
 
+
+  // useLayoutEffect(() => {
+  //   const hash = location.hash.slice(1);
+  //   if (hash) {
+  //     setTimeout(() => {
+  //       const element = document.getElementById(`${hash}`);
+  //       console.log('hash: ' + hash);
+  //       console.log('element: ' + element);
+  //       if (element) {
+  //         element.scrollIntoView({ behavior: 'smooth' });
+  //         console.log('scrolled: ');
+  //       }
+  //     }, 500); // You can increase the timeout duration if necessary
+  //   }
+  // }, [location]);
+
   return (
     <>
 
@@ -327,6 +354,7 @@ export function LetterView({ id = null, letterData = null,  myVotes = null, onVo
               getDepth={getDepth}
               letterDetailData={letterDetailData}
               setletterDetailData={setletterDetailData}
+              hash={hash}
             />
           ))}
         </div>
@@ -345,12 +373,53 @@ function CommentView({
   letterDetailData,
   leftBorderLine,
   replyIndex,
-  arrLength
+  arrLength,
+  hash
 }) {
   const [commenting, setCommenting] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
   const { session } = useContext(UserContext);
   const repliesCount = comment.comments.length;
+  const location = useLocation();
+
+  // useEffect(() => {
+  //   if (hash === comment.id) {
+  //     setShowReplies(true);
+  //     const element = document.getElementById(`${hash}`);
+  //     if (element) {
+  //       element.scrollIntoView({ behavior: 'smooth' });
+  //     }
+  //   }
+  // }, [hash, comment.id]);
+
+
+  useEffect(() => {
+    console.log('COUNT!');
+    for (let i = 0; i < comment.comments.length; i++) {
+      console.log('REPLY IDs: ' + comment.comments[i].id);
+      if (comment.comments[i].id === hash) {
+        setShowReplies(true);
+      }
+    }
+  }, []);
+
+
+  UseScrollToHash();
+  // useEffect(() => {
+  //   const hash = location.hash.slice(1);
+  //   if (hash) {
+  //     const element = document.getElementById(`${hash}`);
+  //     console.log('hash: ' + hash);
+  //     console.log('element: ' + element);
+  //     if (element) {
+  //       element.scrollIntoView({ behavior: 'smooth' });
+  //       console.log('scrolled: ');
+  //     }
+  //   }
+
+
+
+  // }, [location]);
 
 
   return (
@@ -444,6 +513,7 @@ function CommentView({
                       letterDetailData={letterDetailData}
                       replyIndex={index}
                       arrLength={comment.comments.length}
+                      hash={hash}
                     />
                   </>
                 ))}

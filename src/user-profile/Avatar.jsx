@@ -10,8 +10,14 @@ export default function Avatar({ url, size, onUpload, deleteAvatar }) {
   }, [url])
 
   async function downloadImage(path) {
+    let bucketName = 'avatars';
+    if (path === '0.27244231307398037.jpg' ||
+        path === '0.6161512621186469.jpg' ||
+        path === '0.6879050797391486.jpg') {
+          bucketName = 'default_avatars'
+        }
     try {
-      const { data, error } = await supaClient.storage.from('avatars').download(path)
+      const { data, error } = await supaClient.storage.from(bucketName).download(path)
       if (error) {
         throw error
       }
@@ -23,6 +29,7 @@ export default function Avatar({ url, size, onUpload, deleteAvatar }) {
   }
 
   async function uploadAvatar(event) {
+    event.preventDefault();
     try {
       setUploading(true)
 

@@ -16,7 +16,7 @@ import { AllPosts } from '../AllPosts';
 import './App.css';
 import Home from './Home';
 import MessageBoard from '../MessageBoard';
-import NavBar from './NavBar';
+import NavBar from '../navbar/NavBar';
 import { PostView } from '../PostView';
 import PrivacyPolicy from '../PrivacyPolicy';
 import { SupashipUserInfo, useSession } from './use-session';
@@ -29,6 +29,8 @@ import PrivateUserProfile from '../user-profile/PrivateUserProfile.jsx';
 import NotFound from '../not-found/NotFound.jsx';
 import { supaClient } from "./supa-client";
 import { ListOfNames } from "../listOfNames/ListOfNames";
+import { Notifications } from "../notifications/Notifications";
+import { NotificationsProvider } from "../notifications/NotificationsContext";
 
 Sentry.init({
   dsn: 'https://5a282404b548c3304777f4db6615b992@o4505705490350080.ingest.sentry.io/4505705494478848',
@@ -72,7 +74,18 @@ export const router = sentryCreateBrowserRouter([
             path: 'letter/:LetterId',
             element: <LetterView />,
           },
+
         ],
+      },
+      {
+        path: 'notifications',
+        element: <Notifications />,
+        children: [
+          {
+            path: ':pageNumber',
+            element: <AllPosts />,
+          },
+        ]
       },
       {
         path: 'welcome',
@@ -114,30 +127,32 @@ function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  useEffect(() => {
+  // useEffect(() => {
 
-    const { data: authListener } = supaClient.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        console.log ('running user effect');
-        setUser(session.user);
-        // const returnPath = localStorage.getItem('returnPath') || '/';
-      //  navigate(returnPath);
-        localStorage.removeItem('returnPath');
-      } else {
-        setUser(null);
-      }
-    });
+  //   const { data: authListener } = supaClient.auth.onAuthStateChange((event, session) => {
+  //     if (session) {
+  //       // console.log ('running user effect');
+  //       // setUser(session.user);
+  //       // const returnPath = localStorage.getItem('returnPath') || '/';
+  //     //  navigate(returnPath);
+  //       // localStorage.removeItem('returnPath');
+  //     } else {
+  //       setUser(null);
+  //     }
+  //   });
 
-    return () => {
-      authListener?.subscription.unsubscribe();
-    };
-  }, [setUser]);
+  //   return () => {
+  //     authListener?.subscription.unsubscribe();
+  //   };
+  // }, [setUser]);
 
   return (
     <UserContext.Provider value={{ session, profile, updateProfile }}>
       <VoteProvider>
-        <NavBar />
-        <Outlet />
+        <NotificationsProvider>
+          <NavBar />
+          <Outlet />
+        </NotificationsProvider>
       </VoteProvider>
     </UserContext.Provider>
   );

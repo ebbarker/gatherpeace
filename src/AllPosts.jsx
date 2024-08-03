@@ -11,7 +11,7 @@ import { SearchBar } from "./search-bar/SearchBar"
 import { NewsFeed } from "./newsFeed/NewsFeed";
 
 export function AllPosts({ parent }) {
-  const { session } = useContext(UserContext);
+  const { session, profile } = useContext(UserContext);
   const { pageNumber } = useParams(1);
   const [letters, setLetters] = useState([]);
   const [myVotes, setMyVotes] = useState({});
@@ -21,6 +21,7 @@ export function AllPosts({ parent }) {
   const [addingName, setAddingName] = useState(false);
   const { myContextVotes, setMyContextVotes } = useContext(VoteContext);
   const [searchParams, setSearchParams] = useSearchParams();
+
   const term = searchParams.get("query");
   const location = useLocation();
   const navigate = useNavigate();
@@ -56,8 +57,7 @@ export function AllPosts({ parent }) {
 
 
   useEffect(() => {
-
-    const searchParams = new URLSearchParams(location.search);
+    // const searchParams = new URLSearchParams(location.search);
     const query = searchParams.get('query');
     if (query !== null) {
       setSearchKeyword(decodeURIComponent(query));
@@ -76,7 +76,8 @@ export function AllPosts({ parent }) {
   async function getLetters() {
     const queryPageNumber = pageNumber ? +pageNumber : 1;
     //let searchCondition = searchKeyword.length > 0 ? { search_keyword: searchKeyword } : {};
-
+  // console.log('USER SESSION: ' + JSON.stringify(session.user));
+  // console.log('PROFILE: ' + JSON.stringify(profile));
     try {
       console.log('page_number:', queryPageNumber);
       console.log('search_keyword from get letters:', searchKeyword);
@@ -218,7 +219,7 @@ export async function castLetterVote({
   onError = (error) => console.log('error!!!') // Optional: define an onError callback for handling errors
 }) {
 
-
+console.log('casting letter vote!');
 
   if (voteType === "up") {
     await supaClient.rpc("insert_letter_vote",
@@ -261,19 +262,24 @@ export async function castLetterVote({
 
 export async function castPostVote({
   postId,
+  postPath,
   userId,
   voteType,
   onSuccess = () => {},
-  onError = (error) => console.log('error!!!')
+  onError = (error) => console.log('error!!!'),
+  comment
 }) {
   try {
     if (voteType === "up") {
       console.log('up voting from post_votes');
+      console.log('path: ' + postPath);
+      console.log('comment: ' + JSON.stringify(comment));
       const { data, error } = await supaClient
         .from("post_votes")
         .upsert(
           {
             comment_id: postId,
+            comment_path: postPath,
             user_id: userId,
             vote_type: voteType,
           },

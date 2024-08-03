@@ -89,9 +89,6 @@ export function Welcome() {
                         if (error.message.indexOf('duplicate key') !== -1) {
                           setServerError(`Username "${userName}" is already taken`);
                           console.log(JSON.stringify(error));
-                        } else if (error.message.indexOf('duplicate key')) {
-                          setServerError(`Unknown error: ${error.message}`);
-                          console.log(JSON.stringify(error));
                         }  else {
                           setServerError(`Unknown error: ${error.message}`);
                           console.log(JSON.stringify(error));
