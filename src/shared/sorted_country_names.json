@@ -1,0 +1,1002 @@
+[
+  {
+    "commonName": "Afghanistan",
+    "nativeName": "افغانستان"
+  },
+  {
+    "commonName": "Albania",
+    "nativeName": "Shqipëria"
+  },
+  {
+    "commonName": "Algeria",
+    "nativeName": "الجزائر"
+  },
+  {
+    "commonName": "American Samoa",
+    "nativeName": "American Samoa"
+  },
+  {
+    "commonName": "Andorra",
+    "nativeName": "Andorra"
+  },
+  {
+    "commonName": "Angola",
+    "nativeName": "Angola"
+  },
+  {
+    "commonName": "Anguilla",
+    "nativeName": "Anguilla"
+  },
+  {
+    "commonName": "Antarctica",
+    "nativeName": "Antarctica"
+  },
+  {
+    "commonName": "Antigua and Barbuda",
+    "nativeName": "Antigua and Barbuda"
+  },
+  {
+    "commonName": "Argentina",
+    "nativeName": "Argentina"
+  },
+  {
+    "commonName": "Armenia",
+    "nativeName": "Հայաստան"
+  },
+  {
+    "commonName": "Aruba",
+    "nativeName": "Aruba"
+  },
+  {
+    "commonName": "Australia",
+    "nativeName": "Australia"
+  },
+  {
+    "commonName": "Austria",
+    "nativeName": "Österreich"
+  },
+  {
+    "commonName": "Azerbaijan",
+    "nativeName": "Azərbaycan"
+  },
+  {
+    "commonName": "Bahamas",
+    "nativeName": "Bahamas"
+  },
+  {
+    "commonName": "Bahrain",
+    "nativeName": "‏البحرين"
+  },
+  {
+    "commonName": "Bangladesh",
+    "nativeName": "বাংলাদেশ"
+  },
+  {
+    "commonName": "Barbados",
+    "nativeName": "Barbados"
+  },
+  {
+    "commonName": "Belarus",
+    "nativeName": "Белару́сь"
+  },
+  {
+    "commonName": "Belgium",
+    "nativeName": "Belgien"
+  },
+  {
+    "commonName": "Belize",
+    "nativeName": "Belize"
+  },
+  {
+    "commonName": "Benin",
+    "nativeName": "Bénin"
+  },
+  {
+    "commonName": "Bermuda",
+    "nativeName": "Bermuda"
+  },
+  {
+    "commonName": "Bhutan",
+    "nativeName": "འབྲུག་ཡུལ་"
+  },
+  {
+    "commonName": "Bolivia",
+    "nativeName": "Wuliwya"
+  },
+  {
+    "commonName": "Bosnia and Herzegovina",
+    "nativeName": "Bosna i Hercegovina"
+  },
+  {
+    "commonName": "Botswana",
+    "nativeName": "Botswana"
+  },
+  {
+    "commonName": "Bouvet Island",
+    "nativeName": "Bouvetøya"
+  },
+  {
+    "commonName": "Brazil",
+    "nativeName": "Brasil"
+  },
+  {
+    "commonName": "British Indian Ocean Territory",
+    "nativeName": "British Indian Ocean Territory"
+  },
+  {
+    "commonName": "British Virgin Islands",
+    "nativeName": "British Virgin Islands"
+  },
+  {
+    "commonName": "Brunei",
+    "nativeName": "Negara Brunei Darussalam"
+  },
+  {
+    "commonName": "Bulgaria",
+    "nativeName": "България"
+  },
+  {
+    "commonName": "Burkina Faso",
+    "nativeName": "Burkina Faso"
+  },
+  {
+    "commonName": "Burundi",
+    "nativeName": "Burundi"
+  },
+  {
+    "commonName": "Cambodia",
+    "nativeName": "Kâmpŭchéa"
+  },
+  {
+    "commonName": "Cameroon",
+    "nativeName": "Cameroon"
+  },
+  {
+    "commonName": "Canada",
+    "nativeName": "Canada"
+  },
+  {
+    "commonName": "Cape Verde",
+    "nativeName": "Cabo Verde"
+  },
+  {
+    "commonName": "Caribbean Netherlands",
+    "nativeName": "Caribisch Nederland"
+  },
+  {
+    "commonName": "Cayman Islands",
+    "nativeName": "Cayman Islands"
+  },
+  {
+    "commonName": "Central African Republic",
+    "nativeName": "République centrafricaine"
+  },
+  {
+    "commonName": "Chad",
+    "nativeName": "تشاد‎"
+  },
+  {
+    "commonName": "Chile",
+    "nativeName": "Chile"
+  },
+  {
+    "commonName": "China",
+    "nativeName": "中国"
+  },
+  {
+    "commonName": "Christmas Island",
+    "nativeName": "Christmas Island"
+  },
+  {
+    "commonName": "Cocos (Keeling) Islands",
+    "nativeName": "Cocos (Keeling) Islands"
+  },
+  {
+    "commonName": "Colombia",
+    "nativeName": "Colombia"
+  },
+  {
+    "commonName": "Comoros",
+    "nativeName": "القمر‎"
+  },
+  {
+    "commonName": "Cook Islands",
+    "nativeName": "Cook Islands"
+  },
+  {
+    "commonName": "Costa Rica",
+    "nativeName": "Costa Rica"
+  },
+  {
+    "commonName": "Croatia",
+    "nativeName": "Hrvatska"
+  },
+  {
+    "commonName": "Cuba",
+    "nativeName": "Cuba"
+  },
+  {
+    "commonName": "Curaçao",
+    "nativeName": "Curaçao"
+  },
+  {
+    "commonName": "Cyprus",
+    "nativeName": "Κύπρος"
+  },
+  {
+    "commonName": "Czechia",
+    "nativeName": "Česko"
+  },
+  {
+    "commonName": "DR Congo",
+    "nativeName": "RD Congo"
+  },
+  {
+    "commonName": "Denmark",
+    "nativeName": "Danmark"
+  },
+  {
+    "commonName": "Djibouti",
+    "nativeName": "جيبوتي‎"
+  },
+  {
+    "commonName": "Dominica",
+    "nativeName": "Dominica"
+  },
+  {
+    "commonName": "Dominican Republic",
+    "nativeName": "República Dominicana"
+  },
+  {
+    "commonName": "Ecuador",
+    "nativeName": "Ecuador"
+  },
+  {
+    "commonName": "Egypt",
+    "nativeName": "مصر"
+  },
+  {
+    "commonName": "El Salvador",
+    "nativeName": "El Salvador"
+  },
+  {
+    "commonName": "Equatorial Guinea",
+    "nativeName": "Guinée équatoriale"
+  },
+  {
+    "commonName": "Eritrea",
+    "nativeName": "إرتريا‎"
+  },
+  {
+    "commonName": "Estonia",
+    "nativeName": "Eesti"
+  },
+  {
+    "commonName": "Eswatini",
+    "nativeName": "Eswatini"
+  },
+  {
+    "commonName": "Ethiopia",
+    "nativeName": "ኢትዮጵያ"
+  },
+  {
+    "commonName": "Falkland Islands",
+    "nativeName": "Falkland Islands"
+  },
+  {
+    "commonName": "Faroe Islands",
+    "nativeName": "Færøerne"
+  },
+  {
+    "commonName": "Fiji",
+    "nativeName": "Fiji"
+  },
+  {
+    "commonName": "Finland",
+    "nativeName": "Suomi"
+  },
+  {
+    "commonName": "France",
+    "nativeName": "France"
+  },
+  {
+    "commonName": "French Guiana",
+    "nativeName": "Guyane française"
+  },
+  {
+    "commonName": "French Polynesia",
+    "nativeName": "Polynésie française"
+  },
+  {
+    "commonName": "French Southern and Antarctic Lands",
+    "nativeName": "Terres australes et antarctiques françaises"
+  },
+  {
+    "commonName": "Gabon",
+    "nativeName": "Gabon"
+  },
+  {
+    "commonName": "Gambia",
+    "nativeName": "Gambia"
+  },
+  {
+    "commonName": "Georgia",
+    "nativeName": "საქართველო"
+  },
+  {
+    "commonName": "Germany",
+    "nativeName": "Deutschland"
+  },
+  {
+    "commonName": "Ghana",
+    "nativeName": "Ghana"
+  },
+  {
+    "commonName": "Gibraltar",
+    "nativeName": "Gibraltar"
+  },
+  {
+    "commonName": "Greece",
+    "nativeName": "Ελλάδα"
+  },
+  {
+    "commonName": "Greenland",
+    "nativeName": "Kalaallit Nunaat"
+  },
+  {
+    "commonName": "Grenada",
+    "nativeName": "Grenada"
+  },
+  {
+    "commonName": "Guadeloupe",
+    "nativeName": "Guadeloupe"
+  },
+  {
+    "commonName": "Guam",
+    "nativeName": "Guåhån"
+  },
+  {
+    "commonName": "Guatemala",
+    "nativeName": "Guatemala"
+  },
+  {
+    "commonName": "Guernsey",
+    "nativeName": "Guernsey"
+  },
+  {
+    "commonName": "Guinea",
+    "nativeName": "Guinée"
+  },
+  {
+    "commonName": "Guinea-Bissau",
+    "nativeName": "Guiné-Bissau"
+  },
+  {
+    "commonName": "Guyana",
+    "nativeName": "Guyana"
+  },
+  {
+    "commonName": "Haiti",
+    "nativeName": "Haïti"
+  },
+  {
+    "commonName": "Heard Island and McDonald Islands",
+    "nativeName": "Heard Island and McDonald Islands"
+  },
+  {
+    "commonName": "Honduras",
+    "nativeName": "Honduras"
+  },
+  {
+    "commonName": "Hong Kong",
+    "nativeName": "Hong Kong"
+  },
+  {
+    "commonName": "Hungary",
+    "nativeName": "Magyarország"
+  },
+  {
+    "commonName": "Iceland",
+    "nativeName": "Ísland"
+  },
+  {
+    "commonName": "India",
+    "nativeName": "India"
+  },
+  {
+    "commonName": "Indonesia",
+    "nativeName": "Indonesia"
+  },
+  {
+    "commonName": "Iran",
+    "nativeName": "ایران"
+  },
+  {
+    "commonName": "Iraq",
+    "nativeName": "العراق"
+  },
+  {
+    "commonName": "Ireland",
+    "nativeName": "Ireland"
+  },
+  {
+    "commonName": "Isle of Man",
+    "nativeName": "Isle of Man"
+  },
+  {
+    "commonName": "Israel",
+    "nativeName": "إسرائيل"
+  },
+  {
+    "commonName": "Italy",
+    "nativeName": "Italia"
+  },
+  {
+    "commonName": "Ivory Coast",
+    "nativeName": "Côte d'Ivoire"
+  },
+  {
+    "commonName": "Jamaica",
+    "nativeName": "Jamaica"
+  },
+  {
+    "commonName": "Japan",
+    "nativeName": "日本"
+  },
+  {
+    "commonName": "Jersey",
+    "nativeName": "Jersey"
+  },
+  {
+    "commonName": "Jordan",
+    "nativeName": "الأردن"
+  },
+  {
+    "commonName": "Kazakhstan",
+    "nativeName": "Қазақстан"
+  },
+  {
+    "commonName": "Kenya",
+    "nativeName": "Kenya"
+  },
+  {
+    "commonName": "Kiribati",
+    "nativeName": "Kiribati"
+  },
+  {
+    "commonName": "Kosovo",
+    "nativeName": "Kosova"
+  },
+  {
+    "commonName": "Kuwait",
+    "nativeName": "الكويت"
+  },
+  {
+    "commonName": "Kyrgyzstan",
+    "nativeName": "Кыргызстан"
+  },
+  {
+    "commonName": "Laos",
+    "nativeName": "ສປປລາວ"
+  },
+  {
+    "commonName": "Latvia",
+    "nativeName": "Latvija"
+  },
+  {
+    "commonName": "Lebanon",
+    "nativeName": "لبنان"
+  },
+  {
+    "commonName": "Lesotho",
+    "nativeName": "Lesotho"
+  },
+  {
+    "commonName": "Liberia",
+    "nativeName": "Liberia"
+  },
+  {
+    "commonName": "Libya",
+    "nativeName": "‏ليبيا"
+  },
+  {
+    "commonName": "Liechtenstein",
+    "nativeName": "Liechtenstein"
+  },
+  {
+    "commonName": "Lithuania",
+    "nativeName": "Lietuva"
+  },
+  {
+    "commonName": "Luxembourg",
+    "nativeName": "Luxemburg"
+  },
+  {
+    "commonName": "Macau",
+    "nativeName": "Macau"
+  },
+  {
+    "commonName": "Madagascar",
+    "nativeName": "Madagascar"
+  },
+  {
+    "commonName": "Malawi",
+    "nativeName": "Malawi"
+  },
+  {
+    "commonName": "Malaysia",
+    "nativeName": "Malaysia"
+  },
+  {
+    "commonName": "Maldives",
+    "nativeName": "ދިވެހިރާއްޖޭގެ"
+  },
+  {
+    "commonName": "Mali",
+    "nativeName": "Mali"
+  },
+  {
+    "commonName": "Malta",
+    "nativeName": "Malta"
+  },
+  {
+    "commonName": "Marshall Islands",
+    "nativeName": "Marshall Islands"
+  },
+  {
+    "commonName": "Martinique",
+    "nativeName": "Martinique"
+  },
+  {
+    "commonName": "Mauritania",
+    "nativeName": "موريتانيا"
+  },
+  {
+    "commonName": "Mauritius",
+    "nativeName": "Mauritius"
+  },
+  {
+    "commonName": "Mayotte",
+    "nativeName": "Mayotte"
+  },
+  {
+    "commonName": "Mexico",
+    "nativeName": "México"
+  },
+  {
+    "commonName": "Micronesia",
+    "nativeName": "Micronesia"
+  },
+  {
+    "commonName": "Moldova",
+    "nativeName": "Moldova"
+  },
+  {
+    "commonName": "Monaco",
+    "nativeName": "Monaco"
+  },
+  {
+    "commonName": "Mongolia",
+    "nativeName": "Монгол улс"
+  },
+  {
+    "commonName": "Montenegro",
+    "nativeName": "Црна Гора"
+  },
+  {
+    "commonName": "Montserrat",
+    "nativeName": "Montserrat"
+  },
+  {
+    "commonName": "Morocco",
+    "nativeName": "المغرب"
+  },
+  {
+    "commonName": "Mozambique",
+    "nativeName": "Moçambique"
+  },
+  {
+    "commonName": "Myanmar",
+    "nativeName": "မြန်မာ"
+  },
+  {
+    "commonName": "Namibia",
+    "nativeName": "Namibië"
+  },
+  {
+    "commonName": "Nauru",
+    "nativeName": "Nauru"
+  },
+  {
+    "commonName": "Nepal",
+    "nativeName": "नेपाल"
+  },
+  {
+    "commonName": "Netherlands",
+    "nativeName": "Nederland"
+  },
+  {
+    "commonName": "New Caledonia",
+    "nativeName": "Nouvelle-Calédonie"
+  },
+  {
+    "commonName": "New Zealand",
+    "nativeName": "New Zealand"
+  },
+  {
+    "commonName": "Nicaragua",
+    "nativeName": "Nicaragua"
+  },
+  {
+    "commonName": "Niger",
+    "nativeName": "Niger"
+  },
+  {
+    "commonName": "Nigeria",
+    "nativeName": "Nigeria"
+  },
+  {
+    "commonName": "Niue",
+    "nativeName": "Niue"
+  },
+  {
+    "commonName": "Norfolk Island",
+    "nativeName": "Norfolk Island"
+  },
+  {
+    "commonName": "North Korea",
+    "nativeName": "조선"
+  },
+  {
+    "commonName": "North Macedonia",
+    "nativeName": "Македонија"
+  },
+  {
+    "commonName": "Northern Mariana Islands",
+    "nativeName": "Northern Mariana Islands"
+  },
+  {
+    "commonName": "Norway",
+    "nativeName": "Noreg"
+  },
+  {
+    "commonName": "Oman",
+    "nativeName": "عمان"
+  },
+  {
+    "commonName": "Pakistan",
+    "nativeName": "Pakistan"
+  },
+  {
+    "commonName": "Palau",
+    "nativeName": "Palau"
+  },
+  {
+    "commonName": "Palestine",
+    "nativeName": "فلسطين"
+  },
+  {
+    "commonName": "Panama",
+    "nativeName": "Panamá"
+  },
+  {
+    "commonName": "Papua New Guinea",
+    "nativeName": "Papua New Guinea"
+  },
+  {
+    "commonName": "Paraguay",
+    "nativeName": "Paraguái"
+  },
+  {
+    "commonName": "Peru",
+    "nativeName": "Piruw"
+  },
+  {
+    "commonName": "Philippines",
+    "nativeName": "Philippines"
+  },
+  {
+    "commonName": "Pitcairn Islands",
+    "nativeName": "Pitcairn Islands"
+  },
+  {
+    "commonName": "Poland",
+    "nativeName": "Polska"
+  },
+  {
+    "commonName": "Portugal",
+    "nativeName": "Portugal"
+  },
+  {
+    "commonName": "Puerto Rico",
+    "nativeName": "Puerto Rico"
+  },
+  {
+    "commonName": "Qatar",
+    "nativeName": "قطر"
+  },
+  {
+    "commonName": "Republic of the Congo",
+    "nativeName": "République du Congo"
+  },
+  {
+    "commonName": "Romania",
+    "nativeName": "România"
+  },
+  {
+    "commonName": "Russia",
+    "nativeName": "Россия"
+  },
+  {
+    "commonName": "Rwanda",
+    "nativeName": "Rwanda"
+  },
+  {
+    "commonName": "Réunion",
+    "nativeName": "La Réunion"
+  },
+  {
+    "commonName": "Saint Barthélemy",
+    "nativeName": "Saint-Barthélemy"
+  },
+  {
+    "commonName": "Saint Helena, Ascension and Tristan da Cunha",
+    "nativeName": "Saint Helena, Ascension and Tristan da Cunha"
+  },
+  {
+    "commonName": "Saint Kitts and Nevis",
+    "nativeName": "Saint Kitts and Nevis"
+  },
+  {
+    "commonName": "Saint Lucia",
+    "nativeName": "Saint Lucia"
+  },
+  {
+    "commonName": "Saint Martin",
+    "nativeName": "Saint-Martin"
+  },
+  {
+    "commonName": "Saint Pierre and Miquelon",
+    "nativeName": "Saint-Pierre-et-Miquelon"
+  },
+  {
+    "commonName": "Saint Vincent and the Grenadines",
+    "nativeName": "Saint Vincent and the Grenadines"
+  },
+  {
+    "commonName": "Samoa",
+    "nativeName": "Samoa"
+  },
+  {
+    "commonName": "San Marino",
+    "nativeName": "San Marino"
+  },
+  {
+    "commonName": "Saudi Arabia",
+    "nativeName": "العربية السعودية"
+  },
+  {
+    "commonName": "Senegal",
+    "nativeName": "Sénégal"
+  },
+  {
+    "commonName": "Serbia",
+    "nativeName": "Србија"
+  },
+  {
+    "commonName": "Seychelles",
+    "nativeName": "Sesel"
+  },
+  {
+    "commonName": "Sierra Leone",
+    "nativeName": "Sierra Leone"
+  },
+  {
+    "commonName": "Singapore",
+    "nativeName": "Singapore"
+  },
+  {
+    "commonName": "Sint Maarten",
+    "nativeName": "Sint Maarten"
+  },
+  {
+    "commonName": "Slovakia",
+    "nativeName": "Slovensko"
+  },
+  {
+    "commonName": "Slovenia",
+    "nativeName": "Slovenija"
+  },
+  {
+    "commonName": "Solomon Islands",
+    "nativeName": "Solomon Islands"
+  },
+  {
+    "commonName": "Somalia",
+    "nativeName": "الصومال‎‎"
+  },
+  {
+    "commonName": "South Africa",
+    "nativeName": "South Africa"
+  },
+  {
+    "commonName": "South Georgia",
+    "nativeName": "South Georgia"
+  },
+  {
+    "commonName": "South Korea",
+    "nativeName": "한국"
+  },
+  {
+    "commonName": "South Sudan",
+    "nativeName": "South Sudan"
+  },
+  {
+    "commonName": "Spain",
+    "nativeName": "España"
+  },
+  {
+    "commonName": "Sri Lanka",
+    "nativeName": "ශ්‍රී ලංකාව"
+  },
+  {
+    "commonName": "Sudan",
+    "nativeName": "السودان"
+  },
+  {
+    "commonName": "Suriname",
+    "nativeName": "Suriname"
+  },
+  {
+    "commonName": "Svalbard and Jan Mayen",
+    "nativeName": "Svalbard og Jan Mayen"
+  },
+  {
+    "commonName": "Sweden",
+    "nativeName": "Sverige"
+  },
+  {
+    "commonName": "Switzerland",
+    "nativeName": "Suisse"
+  },
+  {
+    "commonName": "Syria",
+    "nativeName": "سوريا"
+  },
+  {
+    "commonName": "São Tomé and Príncipe",
+    "nativeName": "São Tomé e Príncipe"
+  },
+  {
+    "commonName": "Taiwan",
+    "nativeName": "台灣"
+  },
+  {
+    "commonName": "Tajikistan",
+    "nativeName": "Таджикистан"
+  },
+  {
+    "commonName": "Tanzania",
+    "nativeName": "Tanzania"
+  },
+  {
+    "commonName": "Thailand",
+    "nativeName": "ประเทศไทย"
+  },
+  {
+    "commonName": "Timor-Leste",
+    "nativeName": "Timor-Leste"
+  },
+  {
+    "commonName": "Togo",
+    "nativeName": "Togo"
+  },
+  {
+    "commonName": "Tokelau",
+    "nativeName": "Tokelau"
+  },
+  {
+    "commonName": "Tonga",
+    "nativeName": "Tonga"
+  },
+  {
+    "commonName": "Trinidad and Tobago",
+    "nativeName": "Trinidad and Tobago"
+  },
+  {
+    "commonName": "Tunisia",
+    "nativeName": "تونس"
+  },
+  {
+    "commonName": "Turkey",
+    "nativeName": "Türkiye"
+  },
+  {
+    "commonName": "Turkmenistan",
+    "nativeName": "Туркмения"
+  },
+  {
+    "commonName": "Turks and Caicos Islands",
+    "nativeName": "Turks and Caicos Islands"
+  },
+  {
+    "commonName": "Tuvalu",
+    "nativeName": "Tuvalu"
+  },
+  {
+    "commonName": "Uganda",
+    "nativeName": "Uganda"
+  },
+  {
+    "commonName": "Ukraine",
+    "nativeName": "Україна"
+  },
+  {
+    "commonName": "United Arab Emirates",
+    "nativeName": "دولة الإمارات العربية المتحدة"
+  },
+  {
+    "commonName": "United Kingdom",
+    "nativeName": "United Kingdom"
+  },
+  {
+    "commonName": "United States",
+    "nativeName": "United States"
+  },
+  {
+    "commonName": "United States Minor Outlying Islands",
+    "nativeName": "United States Minor Outlying Islands"
+  },
+  {
+    "commonName": "United States Virgin Islands",
+    "nativeName": "United States Virgin Islands"
+  },
+  {
+    "commonName": "Uruguay",
+    "nativeName": "Uruguay"
+  },
+  {
+    "commonName": "Uzbekistan",
+    "nativeName": "Узбекистан"
+  },
+  {
+    "commonName": "Vanuatu",
+    "nativeName": "Vanuatu"
+  },
+  {
+    "commonName": "Vatican City",
+    "nativeName": "Vaticano"
+  },
+  {
+    "commonName": "Venezuela",
+    "nativeName": "Venezuela"
+  },
+  {
+    "commonName": "Vietnam",
+    "nativeName": "Việt Nam"
+  },
+  {
+    "commonName": "Wallis and Futuna",
+    "nativeName": "Wallis et Futuna"
+  },
+  {
+    "commonName": "Western Sahara",
+    "nativeName": "Western Sahara"
+  },
+  {
+    "commonName": "Yemen",
+    "nativeName": "اليَمَن"
+  },
+  {
+    "commonName": "Zambia",
+    "nativeName": "Zambia"
+  },
+  {
+    "commonName": "Zimbabwe",
+    "nativeName": "Zimbabwe"
+  },
+  {
+    "commonName": "Åland Islands",
+    "nativeName": "Åland"
+  }
+]

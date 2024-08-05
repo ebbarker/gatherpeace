@@ -14,6 +14,7 @@ export default defineConfig({
     svgr()
   ],
   server: {
+    host: '0.0.0.0',
     port: 1337,
   },
 });

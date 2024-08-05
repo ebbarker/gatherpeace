@@ -1,0 +1,137 @@
+.form-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-widget label {
+  font-weight: bold;
+}
+
+.form-widget input {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.default-avatar:hover {
+  border-color: #007bff;
+}
+
+.default-avatars {
+  text-align: center;
+}
+
+.settings-header {
+  margin-bottom: 10px;
+}
+
+.avatar-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.default-avatar {
+  cursor: pointer;
+  width: 75px;
+  height: 75px;
+  margin: 5px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  transition: border-color 0.3s ease;
+}
+
+.default-avatar:hover {
+  border-color: #007bff;
+}
+
+.upload-avatar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.upload-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #007bff !important;
+  color: #007bff;
+  font-size: 24px;
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.upload-avatar:hover {
+  border-color: #007bff;
+  border: 2px solid !important;
+  transition: all 0.3s ease;
+
+}
+
+.upload-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.upload-text {
+  font-size: 12px;
+  color: #007bff;
+  margin-top: 5px;
+}
+
+
+.button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+
+}
+
+.delete-avatar {
+  margin-top: 20px;
+}
+
+.primary {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.block {
+  display: block;
+  width: 100%;
+}
+
+.error {
+  color: red;
+}
+
+.error-text {
+  color: red;
+}
+
+.text-red-500 {
+  color: #f56565;
+}
+
+.text-xl {
+  font-size: 1.25rem;
+}
+
+.font-display {
+  font-family: sans-serif;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
