@@ -3,8 +3,6 @@ import { UserContext } from "../layout/App";
 import { supaClient } from "../layout/supa-client";
 import { Link } from "react-router-dom";
 
-
-
 export const NotificationsContext = createContext();
 
 export const NotificationsProvider = ({ children }) => {

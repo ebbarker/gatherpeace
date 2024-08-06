@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supaClient } from "../layout/supa-client";
 
-export default function Avatar({ url, size, onUpload, deleteAvatar }) {
+export default function Avatar({ url, size, onUpload, deleteAvatar, profileIsPublic = false }) {
   const [avatarUrl, setAvatarUrl] = useState(null)
   // const [uploading, setUploading] = useState(false)
 
@@ -30,33 +30,6 @@ export default function Avatar({ url, size, onUpload, deleteAvatar }) {
     }
   }
 
-  // async function uploadAvatar(event) {
-  //   event.preventDefault();
-  //   try {
-  //     setUploading(true)
-
-  //     if (!event.target.files || event.target.files.length === 0) {
-  //       throw new Error('You must select an image to upload.')
-  //     }
-
-  //     const file = event.target.files[0]
-  //     const fileExt = file.name.split('.').pop()
-  //     const fileName = `${Math.random()}.${fileExt}`
-  //     const filePath = `${fileName}`
-
-  //     const { error: uploadError } = await supaClient.storage.from('avatars').upload(filePath, file)
-
-  //     if (uploadError) {
-  //       throw uploadError
-  //     }
-
-  //     onUpload(event, filePath)
-  //   } catch (error) {
-  //     alert(error.message)
-  //   } finally {
-  //     setUploading(false)
-  //   }
-  // }
 
   return (
     <div>
@@ -71,8 +44,8 @@ export default function Avatar({ url, size, onUpload, deleteAvatar }) {
         <div className="avatar no-image" style={{ height: size, width: size }} />
       )}
 
-      {avatarUrl && url && <div>
-        <button className="button primary delete-avatar" onClick={deleteAvatar}>
+      {avatarUrl && url && !profileIsPublic && <div>
+        <button className="action-button delete-avatar width-125" onClick={deleteAvatar}>
           Delete
         </button>
       </div>}

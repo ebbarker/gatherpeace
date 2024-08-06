@@ -9,8 +9,9 @@ create table user_profiles (
   website text,
   country text,
   state_province text,
-  city text
-
+  city text,
+  bio text,
+  birthday date
 );
 
 -- alter table user_profiles

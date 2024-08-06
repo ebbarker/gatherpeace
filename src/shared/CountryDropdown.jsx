@@ -25,22 +25,24 @@ export function CountryDropdown ({selectedCountry, setSelectedCountry, city, set
 
   return (
     <div>
-      <label htmlFor="country-dropdown">Select a country:</label>
-      <select
-        id="country-dropdown"
-        value={selectedCountry}
-        onChange={handleCountryChange}
-      >
-        <option value="">--Select a country--</option>
-        {sortedCountryNames.map((country, index) => (
-          <option key={index} value={country.commonName}>
-            {country.commonName} {country.commonName !== country.nativeName ? `(${country.nativeName})` : null}
-          </option>
-        ))}
-        <option value="--Country Not Listed--">--Country Not Listed--</option>
-      </select>
+      <div className="input-container">
+        <label htmlFor="country-dropdown">Select a country:</label>
+        <select
+          id="country-dropdown"
+          value={selectedCountry}
+          onChange={handleCountryChange}
+        >
+          <option value="">--Select a country--</option>
+          {sortedCountryNames.map((country, index) => (
+            <option key={index} value={country.commonName}>
+              {country.commonName} {country.commonName !== country.nativeName ? `(${country.nativeName})` : null}
+            </option>
+          ))}
+          <option value="--Country Not Listed--">--Country Not Listed--</option>
+        </select>
+      </div>
       {selectedCountry === "--Country Not Listed--" &&
-        <div>
+        <div className="input-container">
           <label htmlFor="country-write-in">Write In Country:</label>
           <input
             id="country-write-in"
@@ -50,7 +52,7 @@ export function CountryDropdown ({selectedCountry, setSelectedCountry, city, set
           />
         </div>
       }
-      <div>
+      <div className="input-container">
         <label htmlFor="state-write-in">State/Province</label>
         <input
           id="state-write-in"
@@ -59,7 +61,7 @@ export function CountryDropdown ({selectedCountry, setSelectedCountry, city, set
           onChange={(e) => setState(e.target.value)}
         />
       </div>
-      <div>
+      <div className="input-container">
         <label htmlFor="city-write-in">City</label>
         <input
           id="city-write-in"

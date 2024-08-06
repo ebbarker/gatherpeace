@@ -1,81 +1,116 @@
-import { useState, useEffect, useContext } from 'react'
-import { supaClient } from "../layout/supa-client";
-import { UserContext } from "../layout/App";
+import React, { useEffect, useState } from 'react';
+import { supaClient } from '../layout/supa-client';
+import Avatar from './Avatar';
+import { CountryDropdown } from '../shared/CountryDropdown';
 
-export default function UserProfile({ profileName }) {
+export default function PublicUserProfile({ profileName }) {
   const [loading, setLoading] = useState(true);
-  const [username, setUsername] = useState(null);
-  const [website, setWebsite] = useState(null);
-  const [avatar_url, setAvatarUrl] = useState(null);
-  const { session, profile } = useContext(UserContext);
-  const [ pageError, setPageError ] = useState(null);
+  const [profileData, setProfileData] = useState(null);
+  const [pageError, setPageError] = useState(null);
 
   useEffect(() => {
-    let ignore = false
+    let ignore = false;
     async function getProfile() {
-      setLoading(true)
-     // const { username } = session
-
+      setLoading(true);
       const { data, error } = await supaClient
         .from('user_profiles')
-        .select(`username, website, avatar_url`)
+        .select('username, website, avatar_url, country, state_province, city, full_name, bio, birthday')
         .eq('username', profileName)
-        .single()
+        .single();
 
       if (!ignore) {
         if (error) {
-          console.warn(error);
           console.warn(error.message);
-          console.warn(error.details);
           setPageError(error.message);
         } else if (data) {
-          setUsername(data.username)
-          setWebsite(data.website)
-          setAvatarUrl(data.avatar_url)
+          console.log('profile Data: ' + JSON.stringify(data));
+          setProfileData(data);
         }
       }
-
       setLoading(false);
     }
 
-    getProfile()
-
-    return () => {
-      ignore = true
+    if (profileName) {
+      getProfile();
     }
-  }, [session, profileName])
 
+    return () => { ignore = true; };
+  }, [profileName]);
+
+  const calculateAge = (birthday) => {
+    if (!birthday) return null;
+    const birthDate = new Date(birthday);
+    const ageDifMs = Date.now() - birthDate.getTime();
+    const ageDate = new Date(ageDifMs);
+    return Math.abs(ageDate.getUTCFullYear() - 1970);
+  };
+
+  if (pageError) {
+    return <p>Sorry, unable to find user named {profileName}.</p>;
+  }
+
+  if (loading) {
+    return <p>Loading profile...</p>;
+  }
+
+  if (!profileData) {
+    return null;
+  }
+
+  const formatWebsiteUrl = (url) => {
+    if (!url) return '#';
+    return url.startsWith('http://') || url.startsWith('https://') ? url : `http://${url}`;
+  };
 
   return (
-    <>
-    { pageError && <p>Sorry, unable to find user named {profileName}.</p>}
+    <div className="public-profile">
+      <h2>{profileData.username}</h2>
+      <Avatar url={profileData.avatar_url} size={150} profileIsPublic={true}/>
+      {profileData.full_name && (
+        <div className="input-container">
+          <label>Full Name</label>
+          <p>{profileData.full_name}</p>
+        </div>
+      )}
+      {profileData.bio && (
+        <div className="input-container">
+          <label>Bio</label>
+          <p>{profileData.bio}</p>
+        </div>
+      )}
 
-
-    { (loading
-      && <p>Loading profile...</p>)
-    }
-    { (!loading && !pageError &&
-      <div className="public-profile">
-
-      <div>
-        <label htmlFor="username">User Name</label>
-        <div
-          id="username"
-          type="text"
-        >{username || ''}</div>
-      </div>
-
-      <div>
-        <label htmlFor="website">Website</label>
-        <div
-          id="website"
-          type="url"
-        > {website || ''}</div>
-      </div>
-
-      </div>
-
-  )}
-  </>
-  )
+      {profileData.country && (
+        <div className="input-container">
+          <label>Country</label>
+          <p>{profileData.country}</p>
+        </div>
+      )}
+      {profileData.state_province && (
+        <div className="input-container">
+          <label>State/Province</label>
+          <p>{profileData.state_province}</p>
+        </div>
+      )}
+      {profileData.city && (
+        <div className="input-container">
+          <label>City</label>
+          <p>{profileData.city}</p>
+        </div>
+      )}
+      {profileData.birthday && (
+        <div className="input-container">
+          <label>Age</label>
+          <p>{calculateAge(profileData.birthday)} years old</p>
+        </div>
+      )}
+      {profileData.website && (
+        <div className="input-container">
+          <label>Website</label>
+          <a href={formatWebsiteUrl(profileData.website)} target="_blank" rel="noopener noreferrer">
+            <p>{profileData.website || 'Not Specified'}</p>
+          </a>
+        </div>
+      )}
+    </div>
+  );
 }

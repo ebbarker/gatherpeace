@@ -164,7 +164,7 @@ body.active-modal {
   justify-content: center;
   align-items: center;
   height: 45px;
-  border-radius: 15px;
+  border-radius: 8px;
   background-color: var(--call_to_action_background);
   color: var(--call_to_action_text);
   border: none;
@@ -172,6 +172,7 @@ body.active-modal {
   max-width: 200px; /* Optional: Limit the maximum width */
   padding: 0 10px; /* Optional: Add padding for text inside buttons */
   box-sizing: border-box; /* Include padding and border in element's total width and height */
+  min-width: 125px;
 }
 
 .cancel-button {
