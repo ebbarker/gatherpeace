@@ -192,7 +192,9 @@ RETURNS TABLE (
     sender_name text,
     recipient text,
     count_comments INT,
-    post_type text
+    post_type text,
+    avatar_url text,
+    username text
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -209,9 +211,10 @@ BEGIN
     )
     SELECT ll.id, ll.user_id, ll.created_at, lc.content, ll.score, ll.likes,
            ll.path, lc.sender_country, lc.sender_state,
-           lc.sender_city, lc.sign_off, lc.sender_name, lc.recipient, ll.count_comments, ll.post_type
+           lc.sender_city, lc.sign_off, lc.sender_name, lc.recipient, ll.count_comments, ll.post_type, up.avatar_url, up.username
     FROM LimitedLetters ll
     JOIN letter_contents lc ON ll.id = lc.letter_id
+    LEFT JOIN user_profiles up ON ll.user_id = up.user_id
     ORDER BY ll.score DESC, ll.created_at DESC;
 END;
 $$ LANGUAGE plpgsql;
@@ -380,7 +383,8 @@ RETURNS TABLE (
     sign_off text,
     sender_name text,
     recipient text,
-    post_type text
+    post_type text,
+    avatar_url text
 )
 LANGUAGE plpgsql
 AS $$
@@ -403,7 +407,8 @@ BEGIN
         pc.sign_off,
         pc.sender_name,
         pc.recipient,
-        p.post_type  -- Get the actual post_type from the letters table
+        p.post_type,  -- Get the actual post_type from the letters table
+        up.avatar_url
     FROM letters p
     JOIN letter_contents pc ON p.id = pc.letter_id
     JOIN user_profiles up ON p.user_id = up.user_id
@@ -428,7 +433,8 @@ BEGIN
         NULL as sign_off,
         NULL as sender_name,
         NULL as recipient,
-        'comment'  -- Comments have post_type as 'comment'
+        'comment',  -- Comments have post_type as 'comment'
+        up2.avatar_url
     FROM comments c
     JOIN user_profiles up2 ON c.user_id = up2.user_id
     WHERE c.path <@ text2ltree(concat('root.', replace(p_letter_id::text, '-', '_')));
@@ -447,7 +453,8 @@ RETURNS TABLE (
     content text,
     score int,
     likes int,
-    path ltree
+    path ltree,
+    avatar_url text
 )
 LANGUAGE plpgsql
 AS $$
@@ -461,12 +468,14 @@ BEGIN
         c.content,
         c.score,
         c.likes,
-        c.path
+        c.path,
+        up.avatar_url
     FROM comments c
     JOIN user_profiles up ON c.user_id = up.user_id
     WHERE c.path <@ text2ltree(concat('root.', replace(letter_id::text, '-', '_')));
 END;
 $$;
+
 
 
 

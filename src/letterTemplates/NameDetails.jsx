@@ -13,6 +13,11 @@ import { MessageContent } from "./MessageContent";
 import { Modal, Button } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
+import { ProfilePicture } from "./ProfilePicture";
+import { Link, useLoaderData, useParams } from "react-router-dom";
+import { Header } from "./Header";
+import { GiFeather } from "react-icons/gi";
+
 
 export function NameDetails({
   id,
@@ -160,40 +165,33 @@ export function NameDetails({
     };
   }, [dropdownRef]);
 
+
   return (
     <>
-      <div className="details-container">
-        <div className="head flex justify-between" key={id}>
-          <div className="head-left flex flex-col">
-            <div className="letter-sender-details">
-              <div className="name-peace">"{letter?.sign_off}"</div>
-              <div className="sender-name">{`${letter?.sender_name}`}</div>
-              <div className="sender-location-details">
-                <div className="sender-city header-secondary">
-                  {letter?.sender_city ? `${letter.sender_city}, ` : null}
-                </div>
-                <div className="sender-state header-secondary">
-                  {letter?.sender_state ? `${letter.sender_state}, ` : null}
-                </div>
-                <div className="sender-country header-secondary">
-                  {letter?.sender_country}
-                </div>
-              </div>
+      <div className="details-container" key={id}>
+        <Header
+            id={id}
+            letter={letter}
+            userContext={userContext}
+            showDropdown={showDropdown}
+            handleDropdownToggle={handleDropdownToggle}
+            handleDelete={handleDelete}
+            dropdownRef={dropdownRef}
+            postLabel={'Signature'}
+            icon={<GiFeather />}
+          />
+        <div className="letter-sender-details">
+          <div className="name-peace">"{letter?.sign_off}"</div>
+          <div className="sender-name">{`${letter?.sender_name}`}</div>
+          <div className="sender-location-details">
+            <div className="sender-city header-secondary">
+              {letter?.sender_city ? `${letter.sender_city}, ` : null}
             </div>
-          </div>
-          <div className="head-right relative">
-            <div className="date">
-              {letter && `${timeAgo(letter?.created_at)} ago`}
+            <div className="sender-state header-secondary">
+              {letter?.sender_state ? `${letter.sender_state}, ` : null}
             </div>
-            <div className="vert-dots-container" ref={dropdownRef}>
-              <button className="vert-dots" onClick={handleDropdownToggle}>
-                <FiMoreVertical />
-              </button>
-              {showDropdown && userContext.session?.user?.id === letter.user_id && (
-                <div className="special-options-menu">
-                  <button className="special-option" onClick={handleDelete}><FiTrash className="delete-icon" />Delete</button>
-                </div>
-              )}
+            <div className="sender-country header-secondary">
+              {letter?.sender_country}
             </div>
           </div>
         </div>

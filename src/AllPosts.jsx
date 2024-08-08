@@ -94,11 +94,8 @@ export function AllPosts({ parent }) {
       if (lettersError) {
         throw lettersError;
       }
-      console.log("Fetched letters data:", lettersData);
-      console.log ('page_number: ' + queryPageNumber);
-      console.log('search_keyword: ' + searchKeyword);
-      console.log('page_filter: ' + parent);
-      console.log('term: ' + term);
+      console.log("Fetched letters data:", JSON.stringify(lettersData));
+
 
       setLetters(lettersData ? lettersData : []);
     } catch (error) {

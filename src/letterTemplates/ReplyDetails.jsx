@@ -11,6 +11,7 @@ import { PiLinkBold } from "react-icons/pi";
 import { FiMoreVertical, FiTrash  } from "react-icons/fi"; // Importing the icon for the vertical dots
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 import { UseScrollToHash } from "./UseScrollToHash";
+import { ProfilePicture } from "./ProfilePicture";
 
 
 
@@ -122,7 +123,8 @@ export default function CommentDetails({
   }
 
   function handleDropdownToggle() {
-
+    console.log('toggled');
+    console.log('comment: ' + JSON.stringify(comment));
     setShowDropdown((prev) => !prev);
   }
 
@@ -188,6 +190,9 @@ export default function CommentDetails({
           <div className="flex items-center">
             <div className="image"></div>
             <div className="name">
+            <Link to={`/@${comment?.username}`}>
+            <ProfilePicture avatar_url={comment?.avatar_url} />
+          </Link>
               <div className="username">
                 {`@${comment?.username}`}
               </div>
