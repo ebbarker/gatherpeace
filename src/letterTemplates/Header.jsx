@@ -2,7 +2,10 @@ import React from 'react';
 import { Link } from "react-router-dom";
 import { FiMoreVertical, FiTrash } from "react-icons/fi";
 import { timeAgo } from "../layout/time-ago";
-import { ProfilePicture } from "./ProfilePicture";
+import { ProfilePicture } from "../shared/ProfilePicture";
+import { FiAlertCircle } from "react-icons/fi";
+
+
 
 export function Header({
   id,
@@ -11,6 +14,7 @@ export function Header({
   showDropdown,
   handleDropdownToggle,
   handleDelete,
+  handleReport,
   dropdownRef,
   postLabel,
   icon
@@ -37,11 +41,16 @@ export function Header({
             <button className="vert-dots" onClick={handleDropdownToggle}>
               <FiMoreVertical />
             </button>
-            {showDropdown && userContext.session?.user?.id === letter.user_id && (
+            {showDropdown &&  (
               <div className="special-options-menu">
+                {userContext.session?.user?.id !== letter.user_id &&
+                <button className="special-option" onClick={handleReport}>
+                  <FiAlertCircle className="special-icon" />Report
+                </button>}
+                {userContext.session?.user?.id === letter.user_id &&
                 <button className="special-option" onClick={handleDelete}>
-                  <FiTrash className="delete-icon" />Delete
-                </button>
+                  <FiTrash className="special-icon" />Delete
+                </button>}
               </div>
             )}
           </div>

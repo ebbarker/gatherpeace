@@ -11,7 +11,7 @@ import { PiLinkBold } from "react-icons/pi";
 import { FiMoreVertical, FiTrash  } from "react-icons/fi"; // Importing the icon for the vertical dots
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 import { UseScrollToHash } from "./UseScrollToHash";
-import { ProfilePicture } from "./ProfilePicture";
+import { ProfilePicture } from "../shared/ProfilePicture";
 
 
 
@@ -119,7 +119,6 @@ export default function CommentDetails({
     } catch (error) {
       console.error('Unexpected error:', error);
     }
-
   }
 
   function handleDropdownToggle() {
@@ -188,15 +187,14 @@ export default function CommentDetails({
       <div className="head flex justify-between" >
         <div className="head-left flex flex-col">
           <div className="flex items-center">
-            <div className="image"></div>
-            <div className="name">
-            <Link to={`/@${comment?.username}`}>
-            <ProfilePicture avatar_url={comment?.avatar_url} />
-          </Link>
+          <div className="reply-owner-info">
+            <Link to={`/@${comment?.username}`} className="profile-container">
+              <ProfilePicture avatar_url={comment?.avatar_url} mini={true}/>
               <div className="username">
                 {`@${comment?.username}`}
               </div>
-            </div>
+            </Link>
+          </div>
           </div>
         </div>
         <div className="head-right">

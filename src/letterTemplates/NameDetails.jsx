@@ -13,7 +13,8 @@ import { MessageContent } from "./MessageContent";
 import { Modal, Button } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
-import { ProfilePicture } from "./ProfilePicture";
+import { ConfirmReportModal } from "./ConfirmReportModal";
+import { ProfilePicture } from "../shared/ProfilePicture";
 import { Link, useLoaderData, useParams } from "react-router-dom";
 import { Header } from "./Header";
 import { GiFeather } from "react-icons/gi";
@@ -46,6 +47,7 @@ export function NameDetails({
   const [noOgPreview, setNoOgPreview] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -138,6 +140,11 @@ export function NameDetails({
     setShowDropdown(false);
   }
 
+  function handleReport() {
+    setShowReportModal(true);
+    setShowDropdown(false);
+  }
+
   function confirmDelete() {
     console.log('Delete post ' + id);
     deleteMessage(id);
@@ -146,9 +153,21 @@ export function NameDetails({
     // Add your delete logic here
   }
 
+  function confirmReport() {
+    console.log('Report post ' + id);
+    // deleteMessage(id);
+
+    setShowReportModal(false);
+    // Add your delete logic here
+  }
+
   // Function to close the modal
   function closeModal() {
     setShowDeleteModal(false);
+  }
+
+  function closeReportModal() {
+    setShowReportModal(false);
   }
 
 
@@ -176,6 +195,7 @@ export function NameDetails({
             showDropdown={showDropdown}
             handleDropdownToggle={handleDropdownToggle}
             handleDelete={handleDelete}
+            handleReport={handleReport}
             dropdownRef={dropdownRef}
             postLabel={'Signature'}
             icon={<GiFeather />}
@@ -229,6 +249,11 @@ export function NameDetails({
           show={showDeleteModal}
           onClose={closeModal}
           onConfirm={confirmDelete}
+       />
+        <ConfirmReportModal
+          show={showReportModal}
+          onClose={closeReportModal}
+          onConfirm={confirmReport}
        />
       </div>
     </>

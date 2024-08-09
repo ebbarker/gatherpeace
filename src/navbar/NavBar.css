@@ -34,3 +34,26 @@
   margin-top: 5px;
   text-align: center;
 }
+
+.navbar-login-container .profile-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px; /* Adds space between avatar and username */
+  padding: 0; /* Remove any extra padding */
+}
+
+.profile-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.username {
+  margin-left: 8px; /* Adjust space between profile picture and username */
+}
+
+.navbar-login-container .dropdown-toggle::after {
+  margin-left: 1px; /* Adds space between username and the down carrot */
+  display: inline-block;
+  vertical-align: middle; /* Ensures the carrot aligns with the text */
+}

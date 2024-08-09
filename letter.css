@@ -28,8 +28,8 @@
 }
 
 .header-username {
-  font-weight: bold;
-  color: black;
+  font-weight: 500;
+  color: var(--text_color);
 }
 
 .post-type {
@@ -154,6 +154,12 @@
 .user-avatar {
   width: 40px;
   height: 40px;
+  border-radius: 50%;
+}
+
+.mini-user-avatar {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
 }
 
@@ -288,10 +294,11 @@ body.active-modal {
   background: #f1f1f1;
 }
 
-.delete-icon {
+.special-icon {
   margin-right: 8px;
   font-size: 16px; /* Adjust the size as needed */
 }
+
 
 .custom-button {
   padding: 10px 20px;
@@ -324,4 +331,19 @@ body.active-modal {
 .post-type-icon {
   font-size: 16px;
   transform: translateY(-4px) translateX(2px);
+}
+
+.reply-owner-info {
+  display: flex;
+  align-items: center;
+}
+
+.reply-owner-info .username {
+  margin-left: 0px; /* Add some space between the avatar and the username */
+  color: black;
+}
+
+.profile-container {
+  display: flex;
+  align-items: center;
 }

@@ -542,6 +542,7 @@ function CreateComment({
   const textareaRef = useRef(null);
   const containerRef = useRef(null);
   const borderLineRef = useRef(null);
+  const { profile } = useContext(UserContext);
 
 
   useEffect(() => {
@@ -553,11 +554,11 @@ function CreateComment({
     }
 
 
-
   }, [comment]); // Depend on the comment state to update when the text changes
 
 
   const scrollIntoView = () => {
+
     if (containerRef.current && comment.length === 0) {
       const extraOffset = 15; // Adjust the offset as needed
       containerRef.current.scrollIntoView({
@@ -611,6 +612,7 @@ function CreateComment({
                   path: data[0].returned_path,
                   depth: commentDepth,
                   comments: [],
+                  avatar_url: profile.avatar_url,
                 };
 
                 onSuccess(newComment);
