@@ -32,7 +32,37 @@ CREATE TABLE letter_votes (
     UNIQUE (letter_id, user_id)
 );
 
+CREATE TABLE letter_reports (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,         -- Unique identifier for the report
+    report_reason text NOT NULL,                                      -- Reason for reporting (e.g., "Hate Speech", "Spam")
+    additional_info text,                                             -- Optional additional information provided by the user
+    reported_letter_id uuid REFERENCES letters(id) ON DELETE CASCADE, -- ID of the reported letter
+    reported_by_user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE, -- ID of the user who created the report
+    created_at timestamp with time zone DEFAULT now() NOT NULL,       -- Timestamp when the report was created
+    resolved_at timestamp with time zone,                             -- Timestamp when the report was resolved
+    status text DEFAULT 'Pending' NOT NULL,                           -- Status of the report (e.g., "Pending", "Resolved", "Dismissed")
+    admin_notes text,                                                 -- Notes added by admin during the resolution process
+);
 
+CREATE OR REPLACE FUNCTION handle_letter_report_downvote()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert a downvote into the letter_votes table, or update the vote_type if a vote already exists
+    INSERT INTO letter_votes (letter_id, user_id, vote_type)
+    VALUES (NEW.reported_letter_id, NEW.reported_by_user_id, 'down')
+    ON CONFLICT (letter_id, user_id)
+    DO UPDATE SET vote_type = EXCLUDED.vote_type;
+
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trigger_letter_report_downvote
+AFTER INSERT ON letter_reports
+FOR EACH ROW
+EXECUTE FUNCTION handle_letter_report_downvote();
 
 -- CREATE TABLE letter_comments (
 --     id uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
@@ -44,7 +74,46 @@ CREATE TABLE letter_votes (
 --     content text NOT NULL
 -- );
 
+--LAST WORKING 8/9/24
+-- CREATE OR REPLACE FUNCTION update_letter_score()
+-- RETURNS TRIGGER
+-- LANGUAGE plpgsql
+-- SECURITY DEFINER
+-- SET search_path = public
+-- AS $$
+-- DECLARE
+--     target_letter_id uuid;
+--     new_likes INT;
+--     comment_count INT;
+-- BEGIN
+--     -- Determine which record (OLD or NEW) to refer to based on the operation.
+--     IF TG_OP = 'DELETE' THEN
+--         target_letter_id := OLD.letter_id;
+--     ELSE
+--         target_letter_id := NEW.letter_id;
+--     END IF;
 
+--     -- Calculate new likes
+--     SELECT COALESCE(SUM(CASE WHEN vote_type = 'up' THEN 1 ELSE -1 END), 0)
+--     INTO new_likes
+--     FROM letter_votes
+--     WHERE letter_id = target_letter_id;
+
+--     -- Calculate comment count for the letter
+--     SELECT COUNT(*)
+--     INTO comment_count
+--     FROM comments
+--     WHERE path <@ text2ltree(concat('root.', replace(target_letter_id::text, '-', '_')));
+
+--     -- Update likes and score in the letters table
+--     UPDATE letters
+--     SET likes = new_likes,
+--         score = (comment_count * 2) + new_likes
+--     WHERE id = target_letter_id;
+
+--     RETURN null;
+-- END;
+-- $$;
 CREATE OR REPLACE FUNCTION update_letter_score()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -53,32 +122,41 @@ SET search_path = public
 AS $$
 DECLARE
     target_letter_id uuid;
-    new_likes INT;
-    comment_count INT;
+    vote_increment INT;
+    like_increment INT;
+    comment_increment INT := 0;
 BEGIN
     -- Determine which record (OLD or NEW) to refer to based on the operation.
     IF TG_OP = 'DELETE' THEN
         target_letter_id := OLD.letter_id;
+        -- Determine the vote and like increments for DELETE
+        vote_increment := CASE
+                            WHEN OLD.vote_type = 'up' THEN -1
+                            WHEN OLD.vote_type = 'down' THEN 5
+                            ELSE 0
+                          END;
+        like_increment := CASE
+                            WHEN OLD.vote_type = 'up' THEN -1
+                            ELSE 0
+                          END;
     ELSE
         target_letter_id := NEW.letter_id;
+        -- Determine the vote and like increments for INSERT or UPDATE
+        vote_increment := CASE
+                            WHEN NEW.vote_type = 'up' THEN 1
+                            WHEN NEW.vote_type = 'down' THEN -5
+                            ELSE 0
+                          END;
+        like_increment := CASE
+                            WHEN NEW.vote_type = 'up' THEN 1
+                            ELSE 0
+                          END;
     END IF;
 
-    -- Calculate new likes
-    SELECT COALESCE(SUM(CASE WHEN vote_type = 'up' THEN 1 ELSE -1 END), 0)
-    INTO new_likes
-    FROM letter_votes
-    WHERE letter_id = target_letter_id;
-
-    -- Calculate comment count for the letter
-    SELECT COUNT(*)
-    INTO comment_count
-    FROM comments
-    WHERE path <@ text2ltree(concat('root.', replace(target_letter_id::text, '-', '_')));
-
-    -- Update likes and score in the letters table
+    -- Increment the score based on the type of operation and vote
     UPDATE letters
-    SET likes = new_likes,
-        score = (comment_count * 2) + new_likes
+    SET likes = likes + like_increment,
+        score = score + vote_increment + (comment_increment * 2)
     WHERE id = target_letter_id;
 
     RETURN null;
@@ -218,6 +296,8 @@ BEGIN
     ORDER BY ll.score DESC, ll.created_at DESC;
 END;
 $$ LANGUAGE plpgsql;
+
+
 
 
 CREATE OR REPLACE FUNCTION letters_tsv_trigger() RETURNS trigger AS $$

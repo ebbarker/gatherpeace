@@ -153,12 +153,54 @@ export function NameDetails({
     // Add your delete logic here
   }
 
-  function confirmReport() {
+  async function confirmReport(selectedReason, additionalInfo) {
     console.log('Report post ' + id);
-    // deleteMessage(id);
+    const reportData = {
+      letterId: letter.id,
+      userId: userContext.session?.user?.id,
+      reason: selectedReason,
+      additionalInfo: additionalInfo
+    };
+
+  const { data, error } = await reportLetter(reportData);
+
+  if (error) {
+      // Handle the error
+      console.error('Error submitting report:', error.message);
+      alert('There was an issue submitting your report. Please try again.');
+  } else if (data) {
+      // Handle the success case
+      setMyContextVotes((myContextVotes) => {
+          myContextVotes[reportData.letterId] = "down";
+          console.log('Context votes:', JSON.stringify(myContextVotes));
+          return myContextVotes;
+      });
+
+  }
 
     setShowReportModal(false);
     // Add your delete logic here
+  }
+
+  async function reportLetter({ letterId, userId, reason, additionalInfo }) {
+    const { data, error } = await supaClient
+        .from('letter_reports')
+        .insert([
+            {
+                reported_letter_id: letterId,
+                reported_by_user_id: userId,
+                report_reason: reason,
+                additional_info: additionalInfo
+            }
+        ]);
+
+    if (error) {
+        console.error('Error submitting report:', error.message);
+        return null;
+    }
+
+    console.log('Report submitted successfully:', data);
+    return data;
   }
 
   // Function to close the modal

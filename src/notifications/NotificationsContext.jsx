@@ -53,6 +53,18 @@ export const NotificationsProvider = ({ children }) => {
   }
 
   useEffect(() => {
+    if (!session) {
+      // Reset notifications when session changes
+      setNotifications([]);
+      setOldNotifications([]);
+      setPage(1);
+      setHasMore(true);
+
+      //fetchNotifications();
+    }
+  }, [session]);
+
+  useEffect(() => {
     if (session?.user?.id) {
       fetchNotifications();
     }

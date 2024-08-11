@@ -1,6 +1,7 @@
 // NewsFeed.jsx
-import React from 'react';
+import React, { useContext } from 'react';
 import { Letter } from "../letterTemplates/Letter";
+import { VoteContext } from "../contexts/VoteContext";
 
 export function NewsFeed({
   letters,
@@ -8,11 +9,14 @@ export function NewsFeed({
   onVoteSuccess,
   deleteLetter
 }) {
+  const { myContextVotes, setMyContextVotes } = useContext(VoteContext);
   return (
     <div id="news-feed" className="news-feed-container">
       {letters?.map((letter, i) => {
         letter.path = 'root';
-
+        if (myContextVotes[letter.id] === 'down') {
+          return;
+        } else {
           return (
             <Letter
               key={letter?.id}
@@ -23,7 +27,9 @@ export function NewsFeed({
               deleteLetter={deleteLetter}
             />
           );
+        }
       })}
     </div>
   );
+
 }

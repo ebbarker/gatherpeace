@@ -1,90 +1,54 @@
 
-@import "../node_modules/bootstrap/scss/bootstrap";
+// @import "../node_modules/bootstrap/scss/bootstrap";
 
 
 
-.logo-container {
-  display: flex;
-  align-items: center;
-  height: 100%;
-}
-
-.logo-container img {
-  height: 100px;
-}
-
-.navbar {
-  background: var(--navbar_color);
-  display: flex;
-  align-items: center;
-}
-
-.navbar-toggler.collapsed {
-  color: black;
-}
-
-.collapse.navbar-collapse {
-  position: relative;
-  right: 0;
-}
 
 
-.navbar-menu-right {
-  display: flex;
-  align-items: center;
-  color: black;
-}
+// .nav-item-custom {
+//   margin-right: 15px;
+// }
+
+// $background-color: #29E4B4;
+
+// $theme-colors: (
+//   "primary": #29E4B4,
+//   "danger": #ff4136
+// );
 
 
-.login-buttons-container > #login, #sign-up {
-  display: flex;
-  align-items: center;
-}
+// .dropdown-menu {
+//   background-color: #29E4B4;
+// }
 
-.nav-item-custom {
-  margin-right: 15px;
-}
+// .dropdown-item {
+//   background-color: #CCE4D7;
+// }
 
-$background-color: #29E4B4;
+// .navbar,
+// .navbar a,
+// .navbar a.navbar-brand,
+// .navbar a.nav-link {
+//   color: #000000;
+// }
 
-$theme-colors: (
-  "primary": #29E4B4,
-  "danger": #ff4136
-);
+// .navbar-login-container >
+// .login-buttons-container >
+// .sign-up-button > .signup-btn {
+//   display: inline-block;
+//   border: 2px solid #000000;
+//   border-radius: 5px;
+//   background-color: #000000 !important;
+//   color: #48CFAD !important;
+//   padding: 10px 20px;
+//   text-decoration: none;
+//   transition: background-color 0.3s ease, color 0.3s ease;
 
-
-.dropdown-menu {
-  background-color: #29E4B4;
-}
-
-.dropdown-item {
-  background-color: #CCE4D7;
-}
-
-.navbar,
-.navbar a,
-.navbar a.navbar-brand,
-.navbar a.nav-link {
-  color: #000000;
-}
-
-.navbar-login-container >
-.login-buttons-container >
-.sign-up-button > .signup-btn {
-  display: inline-block;
-  border: 2px solid #000000;
-  border-radius: 5px;
-  background-color: #000000 !important;
-  color: #48CFAD !important;
-  padding: 10px 20px;
-  text-decoration: none;
-  transition: background-color 0.3s ease, color 0.3s ease;
-
-  &:hover {
-    background-color: #000000;
-    color: #ffffff;
-  }
-}
+//   &:hover {
+//     background-color: #000000;
+//     color: #ffffff;
+//   }
+// }
 
 
 

@@ -10,9 +10,10 @@ import { BiCommentDetail } from "react-icons/bi"
 import { PiLinkBold } from "react-icons/pi";
 import { FiMoreVertical, FiTrash  } from "react-icons/fi"; // Importing the icon for the vertical dots
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
+import { ConfirmReportModal } from "./ConfirmReportModal";
 import { UseScrollToHash } from "./UseScrollToHash";
 import { ProfilePicture } from "../shared/ProfilePicture";
-
+import { FiAlertCircle } from "react-icons/fi";
 
 
 export default function CommentDetails({
@@ -47,6 +48,7 @@ export default function CommentDetails({
   const [showDropdown, setShowDropdown] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const dropdownRef = useRef(null);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   // UseScrollToHash();
 
@@ -113,7 +115,7 @@ export default function CommentDetails({
           setletterDetailData(temp);
         }
 
-
+      // removeCommentFromLetterDetailData(id);
 
       console.log('Comment and replies deleted successfully:', data);
     } catch (error) {
@@ -142,6 +144,114 @@ export default function CommentDetails({
 
   function closeModal() {
     setShowDeleteModal(false);
+  }
+
+  function handleReport() {
+    setShowReportModal(true);
+    setShowDropdown(false);
+  }
+
+  async function confirmReport(selectedReason, additionalInfo) {
+    const reportData = {
+        commentId: comment.id,
+        userId: userContext.session?.user?.id,
+        reason: selectedReason,
+        additionalInfo: additionalInfo
+    };
+
+    try {
+        const { data, error } = await reportComment(reportData);
+
+        if (error) {
+            // Handle the error
+            console.error('Error submitting report:', error.message);
+            alert('There was an issue submitting your report. Please try again.');
+        } else {
+            // Handle the success case
+            setMyContextVotes((myContextVotes) => {
+                myContextVotes[reportData.commentId] = "down";
+                console.log('Context votes:', JSON.stringify(myContextVotes));
+                return myContextVotes;
+            });
+
+            let temp = { ...letterDetailData };
+
+        if (comment.path.length > 70) {
+          let parentId = comment.path.slice(-36).replace(/_/g, '-');
+          let commentsList = temp.comments;
+          temp.letter.score -= 2;
+          temp.letter.count_comments -= 1;
+          console.log('parent id: ' + parentId);
+
+          for (let i = 0; i < commentsList.length; i++) {
+            let current = commentsList[i];
+            let currentId = commentsList[i].id;
+            if (currentId === parentId) {
+              current.score -= 2;
+              current.count_comments -= 1;
+              console.log('comment.id: ' + comment.id);
+              let parentCommentsList = current.comments.filter(
+                c => c.id.replace(/_/g, '-') !== comment.id.replace(/_/g, '-')
+              );
+              temp.comments[i] = {
+                ...current,
+                comments: parentCommentsList
+              };
+              console.log('parentCommentsList: ' + JSON.stringify(parentCommentsList));
+              console.log('modified temp: ' + JSON.stringify(temp));
+              break;
+            }
+          }
+        } else {
+          console.log ('comment: ' + JSON.stringify(comment));
+          let commentIdToRemove = comment.id.replace(/_/g, '-');
+          let children = 1 + comment.comments.length;
+          temp.letter.score -= children * 2;
+          temp.letter.count_comments -= children;
+          temp.comments = temp.comments.filter(c => c.id.replace(/_/g, '-') !== commentIdToRemove);
+
+          }
+          setletterDetailData(temp);
+
+        }
+    } catch (error) {
+        console.error('Unexpected error submitting report:', error.message);
+        alert('An unexpected issue occurred. Please try again.');
+    } finally {
+        setShowReportModal(false);
+    }
+}
+
+
+async function reportComment({ commentId, userId, reason, additionalInfo }) {
+  try {
+      const { data, error } = await supaClient
+          .from('comment_reports')
+          .insert(
+              [{
+                  reported_comment_id: commentId,
+                  reported_by_user_id: userId,
+                  report_reason: reason,
+                  additional_info: additionalInfo
+              }],
+              { returning: 'representation' } // Request the inserted data to be returned
+          );
+
+      if (error) {
+          console.error('Error submitting report:', error.message);
+          return { error };
+      }
+
+      console.log('Report submitted successfully:', data);
+      return { data };
+  } catch (error) {
+      console.error('Unexpected error:', error.message);
+      return { error };
+  }
+}
+
+  function closeReportModal() {
+    setShowReportModal(false);
   }
 
   async function onVoteClick () {
@@ -197,20 +307,27 @@ export default function CommentDetails({
           </div>
           </div>
         </div>
-        <div className="head-right">
+        <div className="head-right flex items-center relative">
           <div className="date">
             {comment && `${timeAgo(comment?.created_at)} ago`}
           </div>
           <div className="vert-dots-container" ref={dropdownRef}>
-              <button className="vert-dots" onClick={handleDropdownToggle}>
-                <FiMoreVertical />
-              </button>
-              {showDropdown && userContext.session?.user?.id === comment.user_id && (
-                <div className="special-options-menu">
-                  <button className="special-option" onClick={handleDelete}><FiTrash className="delete-icon" />Delete</button>
-                </div>
-              )}
-            </div>
+            <button className="vert-dots" onClick={handleDropdownToggle}>
+              <FiMoreVertical />
+            </button>
+            {showDropdown &&  (
+              <div className="special-options-menu">
+                {userContext.session?.user?.id !== comment.user_id &&
+                <button className="special-option" onClick={handleReport}>
+                  <FiAlertCircle className="special-icon" />Report
+                </button>}
+                {userContext.session?.user?.id === comment.user_id &&
+                <button className="special-option" onClick={handleDelete}>
+                  <FiTrash className="special-icon" />Delete
+                </button>}
+              </div>
+            )}
+          </div>
         </div>
       </div>
           {/* {
@@ -287,6 +404,13 @@ export default function CommentDetails({
           onClose={closeModal}
           onConfirm={confirmDelete}
       />
-    </>
+      <ConfirmReportModal
+        show={showReportModal}
+        onClose={closeReportModal}
+        onConfirm={confirmReport}
+      />
+      </>
+
+
   );
 }

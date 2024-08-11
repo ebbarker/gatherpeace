@@ -86,6 +86,40 @@ CREATE TABLE comments (
     content text NOT NULL
 );
 
+CREATE TABLE comment_reports (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,         -- Unique identifier for the report
+    report_reason text NOT NULL,                                      -- Reason for reporting (e.g., "Hate Speech", "Spam")
+    additional_info text,                                             -- Optional additional information provided by the user
+    reported_comment_id uuid REFERENCES comments(id) ON DELETE CASCADE, -- ID of the reported comment
+    reported_by_user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE, -- ID of the user who created the report
+    created_at timestamp with time zone DEFAULT now() NOT NULL,       -- Timestamp when the report was created
+    resolved_at timestamp with time zone,                             -- Timestamp when the report was resolved
+    status text DEFAULT 'Pending' NOT NULL,                           -- Status of the report (e.g., "Pending", "Resolved", "Dismissed")
+    admin_notes text
+);
+
+CREATE OR REPLACE FUNCTION handle_comment_report_downvote()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Insert a downvote into the comment_votes table, or update the vote_type if a vote already exists
+    INSERT INTO post_votes (comment_id, user_id, vote_type)
+    VALUES (NEW.reported_comment_id, NEW.reported_by_user_id, 'down')
+    ON CONFLICT (comment_id, user_id)
+    DO UPDATE SET vote_type = EXCLUDED.vote_type;
+
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trigger_comment_report_downvote
+AFTER INSERT ON comment_reports
+FOR EACH ROW
+EXECUTE FUNCTION handle_comment_report_downvote();
+
+
+
 CREATE OR REPLACE FUNCTION delete_comment_and_replies(p_comment_id uuid)
 RETURNS VOID AS $$
 DECLARE
@@ -220,19 +254,28 @@ SET search_path = public
 AS $$
 DECLARE
     target_comment_id uuid;
+    vote_type text;
 BEGIN
     -- Determine which record (OLD or NEW) to refer to based on the operation.
     IF TG_OP = 'DELETE' THEN
         target_comment_id := OLD.comment_id;
+        vote_type := OLD.vote_type;
     ELSE
         target_comment_id := NEW.comment_id;
+        vote_type := NEW.vote_type;
     END IF;
 
-    -- Update likes and score in the comments table
-    UPDATE comments
-    SET likes = likes + CASE WHEN TG_OP = 'DELETE' THEN -1 ELSE 1 END,
-        score = score + CASE WHEN TG_OP = 'DELETE' THEN -1 ELSE 1 END
-    WHERE id = target_comment_id;
+    -- Update likes and score in the comments table based on the vote type
+    IF vote_type = 'up' THEN
+        UPDATE comments
+        SET likes = likes + CASE WHEN TG_OP = 'DELETE' THEN -1 ELSE 1 END,
+            score = score + CASE WHEN TG_OP = 'DELETE' THEN -1 ELSE 1 END
+        WHERE id = target_comment_id;
+    ELSIF vote_type = 'down' THEN
+        UPDATE comments
+        SET score = score + CASE WHEN TG_OP = 'DELETE' THEN 5 ELSE -5 END
+        WHERE id = target_comment_id;
+    END IF;
 
     RETURN null;
 END;

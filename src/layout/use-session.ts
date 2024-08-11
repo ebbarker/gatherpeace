@@ -295,7 +295,7 @@ export function useSession() {
     const { data: authListener } = supaClient.auth.onAuthStateChange((event, session) => {
       console.log('Auth state changed');
       setSession(session);
-    //  setProfile(null); // Clear profile on auth state change
+      if (!session) setProfile(null); 
     });
 
     return () => {

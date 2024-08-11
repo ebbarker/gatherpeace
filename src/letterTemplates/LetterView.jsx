@@ -5,17 +5,19 @@ import { UserContext } from "../layout/App";
 import { supaClient } from "../layout/supa-client";
 import { timeAgo } from "../layout/time-ago";
 import { UpVote } from "../UpVote";
-import CommentDetails from "../CommentDetails";
+// import CommentDetails from "../CommentDetails";
 import LetterDetails from "./LetterDetails";
 import ReplyDetails from "./ReplyDetails";
 import { NameDetails } from "./NameDetails";
 import { UseScrollToHash } from "./UseScrollToHash";
+import { VoteContext } from "../contexts/VoteContext";
 
 //import { SupashipUserInfo } from "./layout/use-session";
 
 
 export function LetterView({ id = null, letterData = null,  myVotes = null, onVoteSuccess = null, deleteMessage = null}) {
   const userContext = useContext(UserContext);
+  const { myContextVotes, setMyContextVotes } = useContext(VoteContext);
   const navigate = useNavigate();
 
   const params = useParams();
@@ -241,6 +243,8 @@ export function LetterView({ id = null, letterData = null,  myVotes = null, onVo
 
   }
 
+
+
   function onCommentVoteSuccess(id, direction)  {
    console.log('onCommentVoteSuccess: ' + direction);
 
@@ -381,7 +385,7 @@ function CommentView({
   const { session } = useContext(UserContext);
   const repliesCount = comment.comments.length;
   const location = useLocation();
-
+  const { myContextVotes, setMyContextVotes } = useContext(VoteContext);
   // useEffect(() => {
   //   if (hash === comment.id) {
   //     setShowReplies(true);
@@ -424,6 +428,8 @@ function CommentView({
 
   return (
 
+  <>
+  {myContextVotes[comment.id] !== 'down' &&
     <div className="comment flex flex-col  rounded">
 
 
@@ -520,6 +526,9 @@ function CommentView({
               </div>
             )}
         </div>
+}
+        </>
+
   );
 }
 

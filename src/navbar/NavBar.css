@@ -6,25 +6,26 @@
   font-size: 14px;
 }
 
-.notification-icon {
+.navbar-notification-icon {
   position: relative;
-  font-size: 24px;
+  font-size: 24px !important;
+  color: 000000;
 }
 
 .notification-icon .fa {
   font-size: 2rem; /* Adjust the size as needed */
-  color: #333; /* Adjust the color as needed */
+  color: var(--text_color) !important; /* Adjust the color as needed */
 }
 
 .notification-badge {
   position: absolute;
-  top: -5px;
-  right: -5px;
+  top: -1px;
+  right: -8px;
   background-color: red;
   color: white;
   border-radius: 50%;
   padding: 3px 6px;
-  font-size: 10px;
+  font-size: 8px;
   font-weight: bold;
 }
 
@@ -49,11 +50,98 @@
 }
 
 .username {
-  margin-left: 8px; /* Adjust space between profile picture and username */
+  margin-left: 4px; /* Adjust space between profile picture and username */
 }
 
 .navbar-login-container .dropdown-toggle::after {
   margin-left: 1px; /* Adds space between username and the down carrot */
   display: inline-block;
   vertical-align: middle; /* Ensures the carrot aligns with the text */
+}
+
+.navbar,
+.navbar a,
+.navbar a.navbar-brand,
+.navbar a.nav-link {
+  color: var(--text_color);
+}
+
+.dropdown-menu {
+  background-color: #29E4B4; /* T B D */
+}
+
+.dropdown-item {
+  background-color: #CCE4D7;
+}
+
+.navbar-login-container >
+.login-buttons-container >
+.sign-up-button > .signup-btn {
+  display: inline-block;
+  border: 2px solid #000000;
+  border-radius: 5px;
+  background-color: #000000 !important;
+  color: #48CFAD !important;
+  padding: 10px 20px;
+  text-decoration: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
+
+  &:hover {
+    background-color: #000000;
+    color: #ffffff;
+  }
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.logo-container img {
+  height: 100px;
+}
+
+.navbar {
+  background: var(--navbar_color);
+  display: flex;
+  align-items: center;
+}
+
+.navbar-toggler.collapsed {
+  color: black;
+}
+
+.collapse.navbar-collapse {
+  position: relative;
+  right: 0;
+}
+
+
+.navbar-menu-right {
+  display: flex;
+  align-items: center;
+  margin-left: auto; /* This pushes the items to the right */
+}
+
+.nav-item {
+  margin-left: 20px; /* Controls the space between the items */
+}
+
+.navbar {
+  background: var(--navbar_color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Ensure logo and right menu are at opposite ends */
+  padding: 0 20px; /* Adds some padding to the sides */
+}
+
+.logo-container img {
+  height: 60px; /* Adjust the logo size as needed */
+}
+
+
+.login-buttons-container > #login, #sign-up {
+  display: flex;
+  align-items: center;
 }

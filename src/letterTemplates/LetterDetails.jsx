@@ -15,6 +15,7 @@ import { MessageContent } from "./MessageContent";
 import { Modal, Button } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
+import { ConfirmReportModal } from "./ConfirmReportModal";
 import React from 'react';
 import { Header } from "./Header";
 import { BsEnvelopeHeart } from "react-icons/bs";
@@ -53,6 +54,7 @@ export default function LetterDetails({
   const [noOgPreview, setNoOgPreview] = useState(false)
   const [showDropdown, setShowDropdown] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
   const dropdownRef = useRef(null);
   const supabaseUrl = import.meta.env.VITE_SUPABASE_API_URL;
 
@@ -170,9 +172,63 @@ export default function LetterDetails({
     // Add your delete logic here
   }
 
+  async function confirmReport(selectedReason, additionalInfo) {
+    console.log('Report post ' + id);
+    const reportData = {
+      letterId: letter.id,
+      userId: userContext.session?.user?.id,
+      reason: selectedReason,
+      additionalInfo: additionalInfo
+    };
+
+  const { data, error } = await reportLetter(reportData);
+
+  if (error) {
+      // Handle the error
+      console.error('Error submitting report:', error.message);
+      alert('There was an issue submitting your report. Please try again.');
+  } else if (data) {
+      // Handle the success case
+      setMyContextVotes((myContextVotes) => {
+          myContextVotes[reportData.letterId] = "down";
+          console.log('Context votes:', JSON.stringify(myContextVotes));
+          return myContextVotes;
+      });
+
+  }
+
+    setShowReportModal(false);
+    // Add your delete logic here
+  }
+
+  async function reportLetter({ letterId, userId, reason, additionalInfo }) {
+    const { data, error } = await supaClient
+        .from('letter_reports')
+        .insert([
+            {
+                reported_letter_id: letterId,
+                reported_by_user_id: userId,
+                report_reason: reason,
+                additional_info: additionalInfo
+            }
+        ]);
+
+    if (error) {
+        console.error('Error submitting report:', error.message);
+        return null;
+    }
+
+    console.log('Report submitted successfully:', data);
+    return data;
+  }
+
   // Function to close the modal
   function closeModal() {
     setShowDeleteModal(false);
+  }
+
+  function closeReportModal() {
+    setShowReportModal(false);
   }
 
 
@@ -260,6 +316,11 @@ export default function LetterDetails({
     show={showDeleteModal}
     onClose={closeModal}
     onConfirm={confirmDelete}
+  />
+  <ConfirmReportModal
+    show={showReportModal}
+    onClose={closeReportModal}
+    onConfirm={confirmReport}
   />
 </div>
 </>
