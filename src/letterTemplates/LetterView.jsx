@@ -585,7 +585,7 @@ function CreateComment({
     <>
       <form
         ref={containerRef}
-        className="p-4 flex flex-col justify-start mobile-full-width create-reply"
+        className=" flex flex-col justify-start mobile-full-width create-reply"
         data-e2e="create-comment-form"
         onSubmit={(event) => {
 
@@ -650,7 +650,7 @@ function CreateComment({
           ref={textareaRef}
           name="comment"
           placeholder={parent?.path === 'root' ? 'Your Comment Here' : 'Your Reply Here'}
-          className="text-gray-800 p-4 rounded"
+          className="text-gray-800  rounded create-comment-textbox"
           onChange={({ target: { value } }) => {
             setComment(value);
           }}

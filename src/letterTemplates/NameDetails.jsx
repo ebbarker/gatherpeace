@@ -274,7 +274,7 @@ export function NameDetails({
           <button className="post-comments-count-container post-control-button" onClick={toggleModal}>
             <i className="comment-icon-container">
               <BiCommentDetail />
-            </i>
+            </i> 
             <div className="count-root-comments">
               {' ' + letter?.count_comments}
             </div>

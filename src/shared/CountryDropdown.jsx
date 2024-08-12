@@ -6,6 +6,7 @@ import sortedCountryNames from './sorted_country_names.json';
 export function CountryDropdown ({selectedCountry, setSelectedCountry, city, setCity, state, setState, country, setCountry}) {
 
   useEffect(() => {
+    if (country === '') return;
     if (!sortedCountryNames.some(c => c.commonName === country)) {
       setSelectedCountry('--Country Not Listed--');
     } else {
@@ -32,7 +33,7 @@ export function CountryDropdown ({selectedCountry, setSelectedCountry, city, set
           value={selectedCountry}
           onChange={handleCountryChange}
         >
-          <option value="">--Select a country--</option>
+          <option value="x">--Select a country--</option>
           {sortedCountryNames.map((country, index) => (
             <option key={index} value={country.commonName}>
               {country.commonName} {country.commonName !== country.nativeName ? `(${country.nativeName})` : null}

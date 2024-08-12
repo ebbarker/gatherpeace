@@ -6,6 +6,7 @@
   border-top: 0.5px solid var(--divider_color); /* Dark green top border */
   /* border-bottom: .5px solid var(--text_color); */
   padding-top: 5px;
+  height: 38px;
 }
 
 .post-control-button {
@@ -16,7 +17,8 @@
   border-radius: 15px;
   border: none;
   color: var(--text_color);
-  width: 30%
+  width: 30%;
+  height: 30px;
 }
 
 .post-control-button:hover {
@@ -60,6 +62,9 @@
   color: var(--text_color) !important;
   padding: 3px 0 3px 0;
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .show-replies-button {

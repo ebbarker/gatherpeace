@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { router, UserContext } from "../layout/App";
 import { supaClient } from "../layout/supa-client";
 import "./AddYourName.css";
+import { CountryDropdown } from "../shared/CountryDropdown"
 
 export function AddYourName({ letters, setLetters, setAddingName }) {
   const user = useContext(UserContext);
@@ -9,11 +10,15 @@ export function AddYourName({ letters, setLetters, setAddingName }) {
   const formFields = {
     name: '',
     peaceTranslation: '',
-    country: '',
-    state: '',
-    city: '',
+    // country: '',
+    // state: '',
+    // city: '',
     letterContent: ''
   }
+  const [state, setState] = useState('');
+  const [city, setCity] = useState('');
+  const [country, setCountry] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState('');
 
   const [formData, setFormData] = useState(formFields);
 
@@ -32,9 +37,9 @@ export function AddYourName({ letters, setLetters, setAddingName }) {
       setErrors(validationErrors);
       return;
     }
-
+    //console.log(JSON.stringify(validationErrors));
     // Clear errors
-    setErrors({});
+   // setErrors({});
 
     // Call the form submission function
     submitForm(formData);
@@ -60,7 +65,7 @@ export function AddYourName({ letters, setLetters, setAddingName }) {
     const errors = {};
     if (!data.name) errors.name = 'Name is required';
     if (!data.peaceTranslation) errors.peaceTranslation = 'Peace translation is required';
-    if (!data.country) errors.country = 'Country is required';
+    // if (!data.country) errors.country = 'Country is required';
     return errors;
   };
 
@@ -91,7 +96,8 @@ export function AddYourName({ letters, setLetters, setAddingName }) {
       sign_off: peaceTranslation,
       sender_name: senderName,
       recipient: 'me',
-      post_type: 'name'
+      post_type: 'name',
+      avatar_url: user?.profile?.avatar_url
     }
     console.log('new letter: ' + JSON.stringify(newLetter))
     setLetters([newLetter, ...letters]);
@@ -104,9 +110,9 @@ export function AddYourName({ letters, setLetters, setAddingName }) {
       .rpc("create_new_name", {
         userId: user?.session?.user?.id,
         content: formData.letterContent,
-        sender_country: formData.country,
-        sender_state: formData.state,
-        sender_city: formData.city,
+        sender_country: country,
+        sender_state: state,
+        sender_city: city,
         sign_off: formData.peaceTranslation,
         sender_name: formData.name,
         recipient: null,
@@ -122,9 +128,9 @@ export function AddYourName({ letters, setLetters, setAddingName }) {
             formData.letterContent,
             data[0].new_letter_id,
             data[0].creation_time,
-            formData.senderCountry,
-            formData.senderState,
-            formData.senderCity,
+            country,
+            state,
+            city,
             formData.peaceTranslation,
             formData.name,
             formData.recipient,
@@ -164,7 +170,7 @@ export function AddYourName({ letters, setLetters, setAddingName }) {
           {errors.peaceTranslation && <span className="error-message">{errors.peaceTranslation}</span>}
         </div>
 
-        <div className="form-group">
+        {/* <div className="form-group">
           <label htmlFor="country">Country (required):</label>
           <input
             type="text"
@@ -175,9 +181,22 @@ export function AddYourName({ letters, setLetters, setAddingName }) {
             className={errors.country ? 'error' : ''}
           />
           {errors.country && <span className="error-message">{errors.country}</span>}
-        </div>
+        </div> */}
 
-        <div className="form-group">
+          <CountryDropdown
+            selectedCountry={selectedCountry}
+            setSelectedCountry={setSelectedCountry}
+            country={country}
+            setCountry={setCountry}
+            state={state}
+            city={city}
+            setState={setState}
+            setCity={setCity}
+          />
+
+
+
+        {/* <div className="form-group">
           <label htmlFor="state">State/Province (optional):</label>
           <input
             type="text"
@@ -197,7 +216,7 @@ export function AddYourName({ letters, setLetters, setAddingName }) {
             value={formData.city}
             onChange={handleChange}
           />
-        </div>
+        </div> */}
 
         <div className="form-group">
           <label htmlFor="message">Message (optional, up to 2000 characters):</label>
@@ -210,7 +229,7 @@ export function AddYourName({ letters, setLetters, setAddingName }) {
             rows="5"
             className={errors.message ? 'error' : ''}
           />
-          {errors.message && <span className="error-message">{errors.message}</span>}
+          {errors.message && <span className="error-message">Error: {errors.message}</span>}
         </div>
         {addingNameError && (addingNameError.message = "You have already added your name" ?
          <div>You have already added your name to the peace wall. You can only add your name once, but you can write on the Peace Wall as many times as you would like.</div> :

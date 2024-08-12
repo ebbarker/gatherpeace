@@ -359,7 +359,7 @@ async function reportComment({ commentId, userId, reason, additionalInfo }) {
 
       <div className="post-controls-container flex items-center">
         <button className="post-votes-container post-control-button" onClick={onVoteClick}>
-          <div>
+
             <span>
 
               <UpVote
@@ -371,7 +371,7 @@ async function reportComment({ commentId, userId, reason, additionalInfo }) {
               />
               {' ' + comment?.likes}
             </span>
-          </div>
+          
         </button>
         <button className="post-comments-count-container post-control-button" onClick={toggleModal}>
           { //if !comment?.path then this is in a timeline because those posts don't have paths.
