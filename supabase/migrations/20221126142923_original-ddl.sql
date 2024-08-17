@@ -11,7 +11,8 @@ create table user_profiles (
   state_province text,
   city text,
   bio text,
-  birthday date
+  birthday date,
+  has_signed BOOLEAN DEFAULT FALSE;
 );
 
 -- alter table user_profiles

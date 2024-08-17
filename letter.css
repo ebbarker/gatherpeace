@@ -4,6 +4,7 @@
   padding: 5px 10px 5px 10px;
   border-radius: 8px;
   width: 100%;
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
 }
 
 .head {
@@ -183,7 +184,7 @@ body.active-modal {
 
 .call-to-action-container {
   padding: 20px 0;
-  background-color: var(--greeting_background);
+  background-color: var(--body_background);
   display: flex;
   justify-content: center;
   flex-wrap: wrap; /* Allow wrapping to stack on smaller screens */

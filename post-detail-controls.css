@@ -55,7 +55,7 @@
 }
 
 .vote-filled {
-  color: var(--body_main)
+  color: var(--like_filled_color);
 }
 
 .reply-count-container {

@@ -28,7 +28,7 @@ export default function NavBar() {
   return (
 <>
   <div className="header-container">
-    <nav className="navbar navbar-expand-lg">
+    <nav className="navbar ">
       <div className="logo-container">
         <div className="navbar-home">
           <Link className="nav-logo-link" to="/">

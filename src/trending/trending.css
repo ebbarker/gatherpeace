@@ -1,0 +1,27 @@
+.trending-tags-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 10px;
+  overflow: hidden; /* Ensures content doesn't overflow */
+}
+
+.trending-tags {
+  display: flex;
+  gap: 15px; /* Adds space between items */
+  white-space: nowrap; /* Forces tags to stay on one line */
+  overflow: hidden; /* Hide overflowed tags */
+  text-overflow: ellipsis; /* Adds ellipsis if content overflows */
+  align-items: center;
+}
+
+.tag-item {
+  padding: 5px 10px;
+  background-color: #e0f7fa;
+  border-radius: 5px;
+  white-space: nowrap; /* Prevents tag from breaking into two lines */
+  font-size: 14px;
+  overflow: hidden; /* Hide overflowed text */
+  text-overflow: ellipsis; /* Adds ellipsis for long tags */
+  max-width: 150px; /* Limits the maximum width of each tag */
+  text-align: center; /* Centers the text within the tag */
+}

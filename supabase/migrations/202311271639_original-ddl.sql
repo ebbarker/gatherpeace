@@ -391,16 +391,16 @@ RETURNS TABLE(new_letter_id UUID, creation_time TIMESTAMP WITH TIME ZONE)
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Check if the user already has a signature
+    -- Check if the user has already signed
     IF EXISTS (
         SELECT 1
-        FROM "letters"
-        WHERE "user_id" = "userId" AND "post_type" = 'name'
+        FROM user_profiles
+        WHERE user_id = "userId" AND has_signed = TRUE
     ) THEN
-        -- If the user already has a signature, raise an exception
+        -- If the user has already signed, raise an exception
         RAISE EXCEPTION 'You have already added your name';
     ELSE
-        -- If the user does not have a signature, proceed with the insertion
+        -- If the user has not signed, proceed with the insertion
         WITH "inserted_letter" AS (
             INSERT INTO "letters" (
                 "user_id",
@@ -439,9 +439,38 @@ BEGIN
             recipient
         );
 
+        -- Update the has_signed field to true
+        UPDATE user_profiles
+        SET has_signed = TRUE
+        WHERE user_id = "userId";
+
         RETURN QUERY
         SELECT new_letter_id, creation_time;
     END IF;
+END; $$;
+
+
+CREATE OR REPLACE FUNCTION delete_name(
+    "userId" uuid,
+    "letterId" uuid
+)
+RETURNS VOID
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Delete the letter contents first
+    DELETE FROM "letter_contents"
+    WHERE "letter_id" = "letterId" AND "user_id" = "userId";
+
+    -- Delete the letter
+    DELETE FROM "letters"
+    WHERE id = "letterId" AND "user_id" = "userId";
+
+    -- Update the has_signed field to false
+    UPDATE user_profiles
+    SET has_signed = FALSE
+    WHERE user_id = "userId";
+
 END; $$;
 
 

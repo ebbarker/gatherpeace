@@ -43,19 +43,44 @@ export function LetterView({ id = null, letterData = null,  myVotes = null, onVo
     return rootless.split(".").filter((x) => !!x).length;
   };
 
-  const defaultDeleteMessage = async (id) => {
+  const defaultDeleteMessage = async (id, type) => {
     console.log('delete default id: ' + id);
-    try {
-      const { data, error } = await supaClient.rpc('delete_letter_and_comments', { letter_id: id });
+    if (type === 'name') {
+      try {
+        const userId = userContext.session?.user?.id; // Assuming you have the user ID from your session or context
 
-      if (error) {
-        console.error('Error deleting letter and comments:', error.message);
-      } else {
-        navigate('/');
+        // Call the delete_name function
+        const { data, error } = await supaClient.rpc('delete_name', {
+          userId: userContext.session.user.id,
+          letterId: id
+        });
+
+        if (error) {
+          throw error; // Throw the error to be caught in the catch block
+        } else {
+          userContext.updateProfile({has_signed: false});
+          navigate('/');
+        }
+
+      } catch (error) {
+        console.error('Error deleting name:', error.message);
+        alert('There was an issue deleting your name. Please try again.');
+        // Handle the error (e.g., show a notification to the user)
       }
-    } catch (error) {
-      console.error('Unexpected error:', error);
+    } else {
+      try {
+        const { data, error } = await supaClient.rpc('delete_letter_and_comments', { letter_id: id });
+
+        if (error) {
+          console.error('Error deleting letter and comments:', error.message);
+        } else {
+          navigate('/');
+        }
+      } catch (error) {
+        console.error('Unexpected error:', error);
+      }
     }
+
 
   };
 

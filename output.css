@@ -42,21 +42,23 @@
   --text_color: #000000;
   --secondary_text_color:#32413c;
   --modal_color: #5d8276;
-  --button_color: #d2f6ea;
+  --button_color: #bdffe9;
   --button_hover_color: #41977b;
   --form_text_color: black;
   --text_area_color: white;
   --divider_color:   #94afa6;
   --section_divider_top_border: none;
   --input_form_border: 1px solid #86ccb5;
-  --greeting_background: rgb(175, 254, 224);
-  --navbar_color: #CCE4D7;
+  --greeting_background: rgb(154, 255, 216);
+  --navbar_color: #9be6cd;
   --call_to_action_background: #129E9E;
   --call_to_action_text: #ffffff;
   --cancel_background: #e0f7fa;
   --cancel_background_hover: #c2e2e6;
   --cancel_text: #000000;
   --cancel_border: border: 1px solid #a9a9a9;
+  --title_text-color: #41977b;
+  --like_filled_color: #23b79a;
 }
 
 body {
@@ -64,14 +66,14 @@ body {
   color: var(--text_color) !important;
 }
 
-.rounded{
-  border-radius: 0.25rem !important;
-  background-color: var(--body_background) !important;
-  color: var(--text_color) !important;
+.header-container {
+  background-color: var(--call_to_action_background) !important;
 }
 
 .rounded{
   border-radius: 0.25rem !important;
+  background-color: var(--body_background) !important;
+  color: var(--text_color) !important;
 }
 
 .or {
@@ -268,7 +270,7 @@ body {
   }
   .create-comments-container {
     width: 90%;
-    margin: 10px 0 10px 0;
+    margin: 10px 5px 10px 5px;
   }
 
   .comments-container {
@@ -285,7 +287,7 @@ body {
     border-radius: 0 !important;
   }
 
-  .create-reply {
+  .create-reply-container {
     width: 100% !important;
   }
 
@@ -310,11 +312,11 @@ body {
 }
 
 .wall-title {
-  color: var(--body_main);
+  color: var(--call_to_action_background);
   padding-bottom: 20px;
   padding-top: 20px;
   margin: 0;
-  background-color: var(--greeting_background);
+  background-color: var(--body_background);
 }
 
 .create-post-submit-button {
@@ -323,10 +325,11 @@ body {
   color: var();
 }
 
-.create-comments-container {
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
+@media screen and (min-width: 800px) {
+  .create-comments-container {
+    margin-top: 20px;
+    width: 800px;
+  }
 }
 
 .left-border-line {
@@ -411,13 +414,24 @@ body.active-modal {
 
 .modal-back-button {
   width: 50px;
-  border-radius: 8px;
-  background-color: #29E4B4;
-  color: black;
+  border: none;
+  background-color: transparent;
+  color: var(--body_background);
   justify-content: center;
   align-content: center;
   padding: 5px;
-  font-size: 30px;
+  font-size: 40px;
   display: flex;
-  transform: translate(0, 10px);
+
+}
+
+@media screen and (min-width: 800px) {
+  .modal-back-button {
+    transform: translateX(20px) translateY(5px);
+  }
+
+}
+
+@media screen and (max-width: 799px) {
+
 }

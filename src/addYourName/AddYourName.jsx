@@ -135,6 +135,7 @@ export function AddYourName({ letters, setLetters, setAddingName }) {
             formData.name,
             formData.recipient,
           );
+          user.updateProfile({has_signed: true});
           setFormData(formFields);
           setAddingName(false);
         }

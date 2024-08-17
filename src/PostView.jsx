@@ -417,7 +417,7 @@ function CreateComment({
     <>
       <form
         ref={containerRef}
-        className="p-4 flex flex-col justify-start mobile-full-width create-reply"
+        className="p-4 flex flex-col justify-start mobile-full-width create-reply-container"
         data-e2e="create-comment-form"
         onSubmit={(event) => {
           event.preventDefault();

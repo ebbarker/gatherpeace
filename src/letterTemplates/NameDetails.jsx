@@ -147,7 +147,7 @@ export function NameDetails({
 
   function confirmDelete() {
     console.log('Delete post ' + id);
-    deleteMessage(id);
+    deleteMessage(id, 'name');
 
     setShowDeleteModal(false);
     // Add your delete logic here
@@ -231,17 +231,17 @@ export function NameDetails({
     <>
       <div className="details-container" key={id}>
         <Header
-            id={id}
-            letter={letter}
-            userContext={userContext}
-            showDropdown={showDropdown}
-            handleDropdownToggle={handleDropdownToggle}
-            handleDelete={handleDelete}
-            handleReport={handleReport}
-            dropdownRef={dropdownRef}
-            postLabel={'Signature'}
-            icon={<GiFeather />}
-          />
+          id={id}
+          letter={letter}
+          userContext={userContext}
+          showDropdown={showDropdown}
+          handleDropdownToggle={handleDropdownToggle}
+          handleDelete={handleDelete}
+          handleReport={handleReport}
+          dropdownRef={dropdownRef}
+          postLabel={'Signature'}
+          icon={<GiFeather />}
+        />
         <div className="letter-sender-details">
           <div className="name-peace">"{letter?.sign_off}"</div>
           <div className="sender-name">{`${letter?.sender_name}`}</div>
@@ -274,7 +274,7 @@ export function NameDetails({
           <button className="post-comments-count-container post-control-button" onClick={toggleModal}>
             <i className="comment-icon-container">
               <BiCommentDetail />
-            </i> 
+            </i>
             <div className="count-root-comments">
               {' ' + letter?.count_comments}
             </div>

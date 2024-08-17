@@ -68,7 +68,7 @@ export default function UserProfile() {
 
   async function updateProfileInfo(event, avatarUrl) {
     event.preventDefault();
-    if (bio.length > 500) {
+    if (bio?.length > 500) {
       setSubmitError('Bio is too long.')
       return;
     }
@@ -218,8 +218,8 @@ export default function UserProfile() {
               onChange={(e) => setBio(e.target.value)}
               rows="5"
             />
-            <p className="character-counter">{bio.length}/500</p>
-            {bio.length > 500 && <p className="error-text">Bio cannot exceed 500 characters</p>}
+            <p className="character-counter">{bio?.length}/500</p>
+            {bio?.length > 500 && <p className="error-text">Bio cannot exceed 500 characters</p>}
           </div>
           <div>
             <label htmlFor="website">Website</label>

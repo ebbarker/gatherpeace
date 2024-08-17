@@ -9,9 +9,10 @@ import { Stepform } from "./createPostForm/Stepform";
 //import { Letter } from "./Letter"
 import { SearchBar } from "./search-bar/SearchBar"
 import { NewsFeed } from "./newsFeed/NewsFeed";
+import { TrendingTags } from "./trending/TrendingTags";
 
 export function AllPosts({ parent }) {
-  const { session, profile } = useContext(UserContext);
+  const { session, profile, updateProfile } = useContext(UserContext);
   const { pageNumber } = useParams(1);
   const [letters, setLetters] = useState([]);
   const [myVotes, setMyVotes] = useState({});
@@ -130,19 +131,43 @@ export function AllPosts({ parent }) {
     }
   }
 
-  const deleteLetter = async (id) => {
-    try {
-      const { data, error } = await supaClient.rpc('delete_letter_and_comments', { letter_id: id });
+  const deleteLetter = async (id, type = null) => {
+    if (type === 'name') {
+      try {
 
-      if (error) {
-        console.error('Error deleting letter and comments:', error.message);
-      } else {
+
+        // Call the delete_name function
+        const { data, error } = await supaClient.rpc('delete_name', {
+          userId: session.user.id,
+          letterId: id
+        });
+
+        if (error) {
+          throw error; // Throw the error to be caught in the catch block
+        }
+
         setLetters(letters => letters.filter(letter => letter.id !== id));
+        updateProfile({has_signed: false});
+        // You can perform additional actions here, such as updating the UI
+
+      } catch (error) {
+        console.error('Error deleting name:', error.message);
+        alert('There was an issue deleting your name. Please try again.');
+        // Handle the error (e.g., show a notification to the user)
       }
-    } catch (error) {
-      console.error('Unexpected error:', error);
+    } else {
+      try {
+        const { data, error } = await supaClient.rpc('delete_letter_and_comments', { letter_id: id });
+
+        if (error) {
+          console.error('Error deleting letter and comments:', error.message);
+        } else {
+          setLetters(letters => letters.filter(letter => letter.id !== id));
+        }
+      } catch (error) {
+        console.error('Unexpected error:', error);
+      }
     }
-    // let temp = [...letters]
 
   };
 
@@ -174,16 +199,16 @@ export function AllPosts({ parent }) {
     <>
       {!writingMessage && !addingName &&
         <div className="call-to-action-container" >
-          <button className="add-your-name action-button" onClick={showAddNameDialog}>
+          {!profile?.has_signed && <button className="add-your-name action-button" onClick={showAddNameDialog}>
             <span>Add Your Name</span>
-          </button>
-          <button className="write-a-message action-button" onClick={showMessageDialog}>
+          </button>}
+          {profile?.has_signed && <button className="write-a-message action-button" onClick={showMessageDialog}>
             <span>Write a Peace Message</span>
-          </button>
+          </button>}
         </div>}
       {addingName && <AddYourName letters={letters} setLetters={setLetters} setAddingName={setAddingName} />}
       {writingMessage && <Stepform letters={letters} setLetters={setLetters} setWritingMessage={setWritingMessage}/>}
-
+      <TrendingTags />
       <SearchBar
         searchKeyword={searchKeyword}
         setSearchKeyword={setSearchKeyword}
