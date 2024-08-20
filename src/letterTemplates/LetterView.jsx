@@ -328,7 +328,7 @@ export function LetterView({ id = null, letterData = null,  myVotes = null, onVo
     <>
 
       <div className="letter-container flex flex-col">
-      <div class="letter flex flex-col place-content-center grow">
+      <div className="letter flex flex-col place-content-center grow">
         {pageError &&
           <>
             <h4>There was an error loading the page. The details of the error are:</h4>

@@ -39,7 +39,7 @@ export default function Login({ inline = false }) {
       {!inline ? (
         <div className="flex m-4 place-items-center login-buttons-container">
           <div
-            className="nav-item login-button"
+            className="nav-item login-button-nav"
             id="login"
             onClick={() => {
               setAuthMode("sign_in");
@@ -53,7 +53,7 @@ export default function Login({ inline = false }) {
           </div>
           <span className="or"> or </span>
           <div
-            className="nav-item sign-up-button"
+            className="sign-up-button"
             id="sign-up"
             onClick={() => {
               setAuthMode("sign_up");
@@ -67,9 +67,9 @@ export default function Login({ inline = false }) {
           </div>
         </div>
       ) : (
-        <div className="flex m-4 place-items-center login-buttons-container">
+        <div className="flex place-items-center login-buttons-container">
           <div
-            className="nav-item login-button"
+            className="login-button"
             id="login"
             onClick={() => {
               setAuthMode("sign_in");
@@ -84,7 +84,7 @@ export default function Login({ inline = false }) {
           </div>
           <span className="or-text"> or </span>
           <div
-            className="nav-item sign-up-button"
+            className="sign-up-button"
             id="sign-up"
             onClick={() => {
               setAuthMode("sign_up");

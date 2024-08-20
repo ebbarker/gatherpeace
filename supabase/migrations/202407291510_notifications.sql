@@ -306,35 +306,42 @@ CREATE TABLE tags (
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
+ALTER TABLE tags
+ADD CONSTRAINT unique_letter_tag UNIQUE (letter_content_id, tag);
 
-CREATE OR REPLACE FUNCTION extract_and_store_tags()
+
+
+CREATE OR REPLACE FUNCTION extract_tags_from_content()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    tag text;
+    extracted_tag text;
     tag_array text[];
 BEGIN
-    -- Extract all hashtags from the content
-    tag_array := regexp_matches(NEW.content, '#\w+', 'g');
+    -- Extract all unique lowercase hashtags from the content
+    tag_array := ARRAY(
+        SELECT DISTINCT lower(unnest(regexp_matches(NEW.content, '#\w+', 'g')))
+    );
 
     -- Loop through each tag and insert into the tags table
-    FOREACH tag IN ARRAY tag_array
+    FOREACH extracted_tag IN ARRAY tag_array
     LOOP
-        INSERT INTO tags (letter_content_id, tag)
-        VALUES (NEW.id, lower(tag));
+        BEGIN
+            INSERT INTO tags (letter_content_id, tag)
+            VALUES (NEW.id, extracted_tag)
+            ON CONFLICT (letter_content_id, tag) DO NOTHING;
+        EXCEPTION
+            WHEN OTHERS THEN
+                RAISE NOTICE 'Error inserting tag: %', SQLERRM;
+        END;
     END LOOP;
 
     RETURN NEW;
 END;
 $$;
 
-CREATE TRIGGER before_insert_letter_content
-BEFORE INSERT ON letter_contents
+CREATE TRIGGER extract_tags_trigger
+AFTER INSERT ON letter_contents
 FOR EACH ROW
-EXECUTE FUNCTION extract_and_store_tags();
-
-CREATE TRIGGER before_update_letter_content
-BEFORE UPDATE OF content ON letter_contents
-FOR EACH ROW
-EXECUTE FUNCTION extract_and_store_tags();
+EXECUTE FUNCTION extract_tags_from_content();

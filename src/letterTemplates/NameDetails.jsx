@@ -11,13 +11,14 @@ import { VoteContext } from "../contexts/VoteContext";
 import LinkPreview from "../link-preview/LinkPreview";
 import { MessageContent } from "./MessageContent";
 import { Modal, Button } from 'react-bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
+// import 'bootstrap/dist/css/bootstrap.min.css';
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 import { ConfirmReportModal } from "./ConfirmReportModal";
 import { ProfilePicture } from "../shared/ProfilePicture";
 import { Link, useLoaderData, useParams } from "react-router-dom";
 import { Header } from "./Header";
 import { GiFeather } from "react-icons/gi";
+import { PostControls } from "./PostControls";
 
 
 export function NameDetails({
@@ -259,33 +260,12 @@ export function NameDetails({
         </div>
         <MessageContent content={letter.content} />
         {ogPreview && <LinkPreview ogPreview={ogPreview} />}
-        <div className="post-controls-container flex items-center">
-          <button className="post-votes-container post-control-button" onClick={onVoteClick}>
-            <span>
-              <UpVote
-                direction="up"
-                filled={myContextVotes[letter?.id]}
-                enabled={!!userContext.session}
-                isClicked={isClicked}
-              />
-              {' ' + letter?.likes}
-            </span>
-          </button>
-          <button className="post-comments-count-container post-control-button" onClick={toggleModal}>
-            <i className="comment-icon-container">
-              <BiCommentDetail />
-            </i>
-            <div className="count-root-comments">
-              {' ' + letter?.count_comments}
-            </div>
-          </button>
-          <button className="post-control-button copy-link-button" onClick={copyLink}>
-            <i className="link-icon-container">
-              <PiLinkBold />
-            </i>
-            {copied ? <div className="copy-link-text">Copied!</div> : <div className="copy-link-text">Copy Link</div>}
-          </button>
-        </div>
+
+        <PostControls
+          letter={letter}
+          onVoteClick={onVoteClick}
+          toggleModal={toggleModal}
+        />
 
         <ConfirmDeleteModal
           show={showDeleteModal}

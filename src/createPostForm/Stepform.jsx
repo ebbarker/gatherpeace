@@ -95,6 +95,7 @@ export function Stepform ({ newPostCreated = () => {}, letters, setLetters, setW
       avatar_url: user?.profile?.avatar_url
     }
     setLetters([newLetter, ...letters]);
+    setWritingMessage(false);
     console.log(letters);
   }
 

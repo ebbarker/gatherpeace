@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supaClient } from "../layout/supa-client";
-import './trending.css'
+import './trending.css';
+import { Link } from "react-router-dom";
 
 export function TrendingTags() {
     const [tags, setTags] = useState([]);
@@ -9,47 +10,50 @@ export function TrendingTags() {
 
     useEffect(() => {
         const fetchTrendingTags = async () => {
-          try {
-            const { data, error } = await supaClient
-                .from('trending_tags_view')
-                .select('*')
-                .order('frequency', { ascending: false });
+            try {
+                const { data, error } = await supaClient
+                    .from('trending_tags_view')
+                    .select('*')
+                    .order('frequency', { ascending: false });
 
-            if (error) {
-                console.log('error in error block: ' + error);
-            } if (data) {
-              setTags(data);
-              console.log('tags: ' + JSON.stringify(data));
+                if (error) {
+                    console.log('error in error block: ' + error);
+                    setPageError(error.message);
+                } else if (data) {
+                    const validTags = data.filter(tag => tag.tag && tag.tag.trim() !== '');  // Filter out empty or invalid tags
+                    setTags(validTags);
+                    console.log('tags: ' + JSON.stringify(validTags));
+                }
+            } catch (error) {
+                console.log('error fetching tags: ' + JSON.stringify(error));
+                setPageError(error.message);
+            } finally {
+                setLoading(false);
             }
-
-
-        } catch (error) {
-            console.log('error fetching tags: ' + JSON.stringify(error));
-
-        }
-        setLoading(!loading);
         };
 
         fetchTrendingTags();
     }, []);
 
     if (loading) return <p>Loading trending tags...</p>;
-    if (pageError) return <p>Error fetching trending tags: {error}</p>;
+    if (pageError) return <p>Error fetching trending tags: {pageError}</p>;
 
     return (
-      <div className="trending-tags-container">
-          <h2>Trending Tags (Last 7 Days)</h2>
-          <div className="trending-tags">
-              {tags.length > 0 ? (
-                  tags.map((tag, index) => (
-                      <div className="tag-item" key={index}>
-                          {tag.tag} - {tag.frequency} {tag.frequency > 1 ? 'posts' : 'post'}
-                      </div>
-                  ))
-              ) : (
-                  <p>No trending tags available.</p>
-              )}
-          </div>
-      </div>
+        <div className="trending-tags-container">
+            <div className="trending-tags">
+                {tags.length > 0 ? (
+                    tags.map((tag, index) => (
+                        <Link key={index} to={`/peace-wall/1?query=%23${tag.tag.slice(1)}`}>
+                            <div className="tag-item">
+                                {/* {tag.tag} - {tag.frequency} {tag.frequency > 1 ? 'posts' : 'post'} */}
+                                {tag.tag} 
+                            </div>
+                        </Link>
+                    ))
+                ) : (
+                    <p>No trending tags available.</p>
+                )}
+            </div>
+        </div>
     );
 }

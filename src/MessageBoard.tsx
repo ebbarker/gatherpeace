@@ -17,12 +17,12 @@ export default function MessageBoard() {
       {userProfile.session ? (
         <></>
       ) : (
-        <h4
-          className="login-to-join text-center m-6 flex justify-center place-items-center"
+        <div
+          className="login-to-join text-center flex justify-center place-items-center"
           data-e2e="peace-wall-login"
         >
           <Login  inline={true}/>
-        </h4>
+        </div>
       )}
       <Outlet />
     </div>

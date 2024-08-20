@@ -24,4 +24,18 @@
   text-overflow: ellipsis; /* Adds ellipsis for long tags */
   max-width: 150px; /* Limits the maximum width of each tag */
   text-align: center; /* Centers the text within the tag */
+  color: var(--text_color);
+}
+
+.tag-item:hover {
+  background-color: rgb(169, 247, 202);
+}
+
+@media (max-width: 799px) {
+  .trending-tags-container {
+    width: 100%;
+  }
+  .trending-tags {
+    max-width: 100%;
+  }
 }

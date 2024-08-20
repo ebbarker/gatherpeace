@@ -1,4 +1,4 @@
-create extension ltree;
+-- create extension ltree;
 
 create table user_profiles (
   user_id uuid primary key references auth.users (id) ON DELETE CASCADE NOT NULL,
@@ -12,7 +12,7 @@ create table user_profiles (
   city text,
   bio text,
   birthday date,
-  has_signed BOOLEAN DEFAULT FALSE;
+  has_signed BOOLEAN DEFAULT FALSE
 );
 
 -- alter table user_profiles
@@ -36,8 +36,8 @@ insert into storage.buckets (id, name)
 
 -- -- Set up access controls for storage.
 -- -- See https://supabase.com/docs/guides/storage/security/access-control#policy-examples for more details.
-create policy "Avatar images are publicly accessible." on storage.objects
-  for select using (bucket_id = 'avatars');
+-- create policy "Avatar images are publicly accessible." on storage.objects
+--   for select using (bucket_id = 'avatars');
 
 create policy "Anyone can upload an avatar." on storage.objects
   for insert with check (bucket_id = 'avatars');
@@ -212,7 +212,7 @@ CREATE TRIGGER trigger_notify_comment_like
 AFTER INSERT ON post_votes
 FOR EACH ROW
 WHEN (NEW.vote_type = 'up')
-EXECUTE FUNCTION notify_comment_like();
+EXECUTE FUNCTION notify_like();
 
 CREATE OR REPLACE FUNCTION delete_like_notification()
 RETURNS TRIGGER AS $$

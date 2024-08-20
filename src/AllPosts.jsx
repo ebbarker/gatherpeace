@@ -39,10 +39,12 @@ export function AllPosts({ parent }) {
     setAddingName(true);
   }
 
+  //8-20-24 - i believe the page should always be one, so changing from:
+ // navigate(`/peace-wall/${pageNumber || 1}?query=${encodeURIComponent(searchKeyword)}`);
   const handleSearch = (e) => {
     console.log('REROUTING');
     e.preventDefault();
-    navigate(`/peace-wall/${pageNumber || 1}?query=${encodeURIComponent(searchKeyword)}`);
+    navigate(`/peace-wall/1?query=${encodeURIComponent(searchKeyword)}`);
     //getLetters(searchKeyword);
   };
 
@@ -74,6 +76,8 @@ export function AllPosts({ parent }) {
 
   }, [term]);
 
+
+
   async function getLetters() {
     const queryPageNumber = pageNumber ? +pageNumber : 1;
     //let searchCondition = searchKeyword.length > 0 ? { search_keyword: searchKeyword } : {};
@@ -87,7 +91,7 @@ export function AllPosts({ parent }) {
       const { data: lettersData, error: lettersError } = await supaClient
         .rpc("get_letters_with_tsv", {
           page_number: queryPageNumber,
-          search_keyword: term,
+          search_keyword: term || null,
           page_filter: parent,
         })
         .select("*");
@@ -109,23 +113,40 @@ export function AllPosts({ parent }) {
   async function fetchTotalPages() {
     console.log(parent);
     try {
-      let countQuery = supaClient.from("letters").select("*", { count: "exact", head: true });
+      let countQuery;
 
+      // If there's a search term, use an RPC to get the total count for full-text search
       if (term && term.length) {
-        countQuery = countQuery.filter("tsv", "plainto_tsquery", term);
+        const { data: countData, error: countError } = await supaClient
+          .rpc('get_total_letters_count', { search_keyword: term, page_filter: parent });
+
+        if (countError) {
+          throw ('count error: ' + JSON.stringify(countError));
+        }
+
+        // Set total pages based on the count returned by the RPC
+        const totalCount = countData?.[0]?.total_count || 0;
+        setTotalPages(Math.ceil(totalCount / 10));
+
+      } else {
+        // If there's no search term, just count letters directly
+        countQuery = supaClient.from("letters").select("*", { count: "exact", head: true });
+
+        // Apply the filter for 'post_type' if necessary
+        if (parent === "list-of-names") {
+          countQuery = countQuery.eq('post_type', 'signature');
+        }
+
+        const { count: totalCount, error: countError } = await countQuery;
+
+        if (countError) {
+          throw ('count error: ' + JSON.stringify(countError));
+        }
+
+        // Set total pages based on the count from the normal query
+        setTotalPages(totalCount ? Math.ceil(totalCount / 10) : 0);
       }
 
-      if (parent === "list-of-names") {
-        countQuery = countQuery.eq('post_type', 'signature');
-      }
-
-      const { count: totalCount, error: countError } = await countQuery;
-
-      if (countError) {
-        throw ('count error: ' + JSON.stringify(countError));
-      }
-
-      setTotalPages(totalCount ? Math.ceil(totalCount / 10) : 0);
     } catch (error) {
       console.error("Error fetching total pages:", error);
     }
@@ -197,7 +218,7 @@ export function AllPosts({ parent }) {
 
   return (
     <>
-      {!writingMessage && !addingName &&
+      {!writingMessage && !addingName && session &&
         <div className="call-to-action-container" >
           {!profile?.has_signed && <button className="add-your-name action-button" onClick={showAddNameDialog}>
             <span>Add Your Name</span>
