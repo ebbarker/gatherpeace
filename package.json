@@ -12,7 +12,7 @@
     "@sentry/react": "^7.63.0",
     "@sentry/tracing": "^7.64.0",
     "@supabase/auth-ui-react": "^0.2.6",
-    "@supabase/supabase-js": "^2.43.5",
+    "@supabase/supabase-js": "^2.45.2",
     "@supabase/ui": "^0.36.5",
     "axios": "^1.6.2",
     "bootstrap": "^4.6.0",

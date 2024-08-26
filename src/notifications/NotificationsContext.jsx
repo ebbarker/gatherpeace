@@ -1,7 +1,6 @@
-import React, { createContext, useState, useEffect, useCallback, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 import { UserContext } from "../layout/App";
 import { supaClient } from "../layout/supa-client";
-import { Link } from "react-router-dom";
 
 export const NotificationsContext = createContext();
 
@@ -47,34 +46,52 @@ export const NotificationsProvider = ({ children }) => {
       setNotifications(newUnreadNotifications);
       setOldNotifications(newReadNotifications);
 
-      //setNotifications(prevNotifications => [...prevNotifications, ...data]);
     } catch (error) {
       console.error("Error fetching notifications:", error);
     }
   }
 
-
-  const fetchUnreadNotifications = async () => {
+  const fetchCountUnreadNotifications = async () => {
     try {
-      console.log("User ID:", session.user.id); // Log user ID to ensure it's correct
-
-      const { count, error, data } = await supaClient
+      const { count, error } = await supaClient
         .from("notifications")
-        .select("id", { count: "exact", head: true }) // Select id and count
+        .select("id", { count: "exact", head: true })
         .eq("read", false)
         .eq("user_id_receiver", session.user.id);
 
       if (error) {
-        console.error("Error fetching notifications:", error);
+        console.error("Error fetching unread count:", error);
       } else {
-        console.log("Count:", count); // Log the count value
-        console.log("Data:", data); // Log any returned data to help troubleshoot
-        setUnreadCount(count ?? 0); // Update the state with the count
+        setUnreadCount(count ?? 0);
       }
     } catch (err) {
       console.error("Unexpected error:", err);
     }
   };
+
+  // Listen for real-time notifications
+  useEffect(() => {
+    if (session?.user?.id) {
+      const notificationSubscription = supaClient
+        .channel(`notifications`)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id_receiver=eq.${session.user.id}`,
+        }, payload => {
+          setNotifications((prevNotifications) => [payload.new, ...prevNotifications]);
+          setUnreadCount((prevCount) => prevCount + 1);
+        })
+        .subscribe();
+
+      return () => {
+        supaClient.removeSubscription(notificationSubscription);
+      };
+    }
+
+
+  }, [session?.user?.id]);
 
   useEffect(() => {
     if (!session) {
@@ -83,15 +100,13 @@ export const NotificationsProvider = ({ children }) => {
       setOldNotifications([]);
       setPage(1);
       setHasMore(true);
-
-      //fetchNotifications();
     }
   }, [session]);
 
   useEffect(() => {
     if (session?.user?.id) {
       fetchNotifications();
-      fetchUnreadNotifications();
+      fetchCountUnreadNotifications();
     }
   }, [page, session?.user?.id]);
 
