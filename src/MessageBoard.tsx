@@ -10,7 +10,9 @@ export default function MessageBoard() {
   const userProfile = useContext(UserContext);
   return (
     <div className="flex flex-col place-content-center w-full main-title">
-      <a href="/peace-wall/1"><h2  className="text-5xl text-center wall-title">Peace Wall</h2></a>
+      <Link to="/peace-wall/1">
+        <h2 className="text-5xl text-center wall-title">Peace Wall</h2>
+      </Link>
       {/* <Link to="/peace-wall/1">
         <h2 className="text-5xl text-center mb-1">Message Board</h2>
       </Link> */}

@@ -220,30 +220,94 @@ AFTER INSERT ON comments
 FOR EACH ROW
 EXECUTE FUNCTION notify_letter_author_of_comment_or_reply();
 
+
+------
 -- Create the notify_like function
-CREATE OR REPLACE FUNCTION notify_like()
+CREATE OR REPLACE FUNCTION notify_letter_like()
 RETURNS TRIGGER AS $$
 DECLARE
     target_letter_id uuid;
-    path_segments int;
-    notification_type text;
 BEGIN
-    -- Ensure the target ID is valid
+    -- Get the letter (post) ID from the vote
     target_letter_id := NEW.letter_id;
 
-    -- Count the number of segments in the path
-    path_segments := array_length(string_to_array(text2ltree(concat('root.', replace(target_letter_id::text, '-', '_'), '.', replace(NEW.letter_id::text, '-', '_')))::text, '.'), 1);
+    -- Insert notification for the letter (post) author
+    INSERT INTO notifications (
+        id,
+        modified,
+        type,
+        target_id,
+        table_name,
+        user_id_creator,
+        user_id_receiver,
+        path
+    )
+    VALUES (
+        uuid_generate_v4(),
+        now(),
+        'post_like',
+        NEW.letter_id,
+        'letter_votes',
+        NEW.user_id,
+        (SELECT user_id FROM letters WHERE id = target_letter_id),
+        text2ltree(concat('root.', replace(target_letter_id::text, '-', '_')))
+    );
 
-    -- Determine the notification type based on the number of UUIDs in the path
-    IF path_segments = 2 THEN
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger for letter (post) like notifications
+CREATE TRIGGER trigger_notify_letter_like
+AFTER INSERT ON letter_votes
+FOR EACH ROW
+WHEN (NEW.vote_type = 'up')
+EXECUTE FUNCTION notify_letter_like();
+
+CREATE OR REPLACE FUNCTION delete_letter_like_notification()
+RETURNS TRIGGER AS $$
+DECLARE
+    target_letter_id uuid;
+BEGIN
+    -- Get the letter (post) ID from the deleted like
+    target_letter_id := OLD.letter_id;
+
+    -- Delete the notification for the letter (post) like
+    DELETE FROM notifications
+    WHERE target_id = target_letter_id
+      AND table_name = 'letter_votes'
+      AND type = 'post_like'
+      AND user_id_creator = OLD.user_id;
+
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger to delete post like notifications
+CREATE TRIGGER trigger_delete_letter_like_notification
+AFTER DELETE ON letter_votes
+FOR EACH ROW
+WHEN (OLD.vote_type = 'up')
+EXECUTE FUNCTION delete_letter_like_notification();
+
+
+CREATE OR REPLACE FUNCTION notify_comment_like()
+RETURNS TRIGGER AS $$
+DECLARE
+    target_comment_id uuid;
+    notification_type text;
+BEGIN
+    -- Get the comment (post) ID from the vote
+    target_comment_id := NEW.comment_id;
+
+    -- Determine the notification type based on the comment depth
+    IF array_length(string_to_array(NEW.comment_path::text, '.'), 1) = 2 THEN
         notification_type := 'comment_like';
-    ELSIF path_segments = 3 THEN
-        notification_type := 'reply_like';
     ELSE
-        RAISE EXCEPTION 'Unexpected path length';
+        notification_type := 'reply_like';
     END IF;
 
-    -- Insert notification for the letter author
+    -- Insert notification for the comment/reply author
     INSERT INTO notifications (
         id,
         modified,
@@ -258,46 +322,58 @@ BEGIN
         uuid_generate_v4(),
         now(),
         notification_type,
-        NEW.letter_id,
-        'letter_votes',
+        NEW.comment_id,
+        'post_votes',
         NEW.user_id,
-        (SELECT user_id FROM letters WHERE id = target_letter_id),
-        text2ltree(concat('root.', replace(target_letter_id::text, '-', '_'), '.', replace(NEW.letter_id::text, '-', '_')))
+        (SELECT user_id FROM comments WHERE id = target_comment_id),
+        NEW.comment_path
     );
 
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- Create the remove_like_notification function
-CREATE OR REPLACE FUNCTION remove_like_notification()
+-- Create trigger for comment like notifications
+CREATE TRIGGER trigger_notify_comment_like
+AFTER INSERT ON post_votes
+FOR EACH ROW
+WHEN (NEW.vote_type = 'up')
+EXECUTE FUNCTION notify_comment_like();
+
+CREATE OR REPLACE FUNCTION delete_comment_like_notification()
 RETURNS TRIGGER AS $$
+DECLARE
+    target_comment_id uuid;
 BEGIN
-    -- Delete the notification related to the like
+    -- Get the comment (post) ID from the deleted like
+    target_comment_id := OLD.comment_id;
+
+    -- Delete the notification for the comment like or reply like
     DELETE FROM notifications
-    WHERE target_id = OLD.letter_id
-      AND table_name = 'letter_votes'
-      AND type = 'like'
+    WHERE target_id = target_comment_id
+      AND table_name = 'post_votes'
+      AND (type = 'comment_like' OR type = 'reply_like')
       AND user_id_creator = OLD.user_id;
 
     RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
 
--- Create the trigger to notify like
-CREATE TRIGGER trigger_notify_like
-AFTER INSERT ON letter_votes
-FOR EACH ROW
-WHEN (NEW.vote_type = 'up')
-EXECUTE FUNCTION notify_like();
-
--- Create the trigger to remove like notification
-CREATE TRIGGER trigger_remove_like_notification
-AFTER DELETE ON letter_votes
+-- Create trigger to delete comment or reply like notifications
+CREATE TRIGGER trigger_delete_comment_like_notification
+AFTER DELETE ON post_votes
 FOR EACH ROW
 WHEN (OLD.vote_type = 'up')
-EXECUTE FUNCTION remove_like_notification();
+EXECUTE FUNCTION delete_comment_like_notification();
 
+
+
+
+
+
+
+
+------
 
 CREATE TABLE tags (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,

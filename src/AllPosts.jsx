@@ -11,6 +11,7 @@ import { SearchBar } from "./search-bar/SearchBar"
 import { NewsFeed } from "./newsFeed/NewsFeed";
 import { TrendingTags } from "./trending/TrendingTags";
 
+
 export function AllPosts({ parent }) {
   const { session, profile, updateProfile } = useContext(UserContext);
   const { pageNumber } = useParams(1);
@@ -99,7 +100,6 @@ export function AllPosts({ parent }) {
       if (lettersError) {
         throw lettersError;
       }
-      console.log("Fetched letters data:", JSON.stringify(lettersData));
 
 
       setLetters(lettersData ? lettersData : []);
@@ -377,7 +377,7 @@ function Pagination({
         <Link
           data-e2e={`page-1`}
           className={notSelectedStyles}
-          to={searchKeyword ? `/peace-wall/${pageNumber}?query=${encodeURIComponent(searchKeyword)}` : `/peace-wall/${pageNumber}`}
+          to={searchKeyword ? `/peace-wall/1?query=${encodeURIComponent(searchKeyword)}` : `/peace-wall/1`}
           key={1}
         >
           1
@@ -407,7 +407,7 @@ function Pagination({
         <Link
           data-e2e={`page-${totalPages}`}
           className={notSelectedStyles}
-          to={searchKeyword ? `/peace-wall/${pageNumber}?query=${encodeURIComponent(searchKeyword)}` : `/peace-wall/${pageNumber}`}
+          to={searchKeyword ? `/peace-wall/${totalPages}?query=${encodeURIComponent(searchKeyword)}` : `/peace-wall/${totalPages}`}
           key={totalPages}
         >
           {totalPages}

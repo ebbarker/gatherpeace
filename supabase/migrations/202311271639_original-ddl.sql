@@ -141,6 +141,12 @@ BEGIN
                           END;
     ELSE
         target_letter_id := NEW.letter_id;
+
+        -- Only proceed if the vote type has changed
+        IF TG_OP = 'UPDATE' AND OLD.vote_type = NEW.vote_type THEN
+            RETURN NULL; -- Exit early if the vote type didn't change
+        END IF;
+
         -- Determine the vote and like increments for INSERT or UPDATE
         vote_increment := CASE
                             WHEN NEW.vote_type = 'up' THEN 1
@@ -164,7 +170,6 @@ END;
 $$;
 
 
-
 create trigger update_letter_score
     after insert or update or delete
     on letter_votes
@@ -178,40 +183,38 @@ CREATE OR REPLACE FUNCTION insert_letter_vote(
 )
 RETURNS json AS $$
 DECLARE
+    v_current_vote text;
     v_xmax bigint;
 BEGIN
-    INSERT INTO letter_votes (letter_id, user_id, vote_type)
-    VALUES (p_letter_id, p_user_id, p_vote_type)
-    ON CONFLICT (letter_id, user_id)
-    DO UPDATE SET
-        vote_type = EXCLUDED.vote_type
-    RETURNING xmax INTO v_xmax;
+    -- Fetch the current vote type for this user and letter
+    SELECT vote_type INTO v_current_vote
+    FROM letter_votes
+    WHERE letter_id = p_letter_id AND user_id = p_user_id;
 
-    IF v_xmax = 0 THEN
-        RETURN json_build_object('status', 'success', 'message', 'New vote created');
+    -- Only perform the update if the vote_type is different
+    IF v_current_vote IS DISTINCT FROM p_vote_type THEN
+        INSERT INTO letter_votes (letter_id, user_id, vote_type)
+        VALUES (p_letter_id, p_user_id, p_vote_type)
+        ON CONFLICT (letter_id, user_id)
+        DO UPDATE SET
+            vote_type = EXCLUDED.vote_type
+        RETURNING xmax INTO v_xmax;
+
+        -- Check if it's a new vote or an update
+        IF v_xmax = 0 THEN
+            RETURN json_build_object('status', 'success', 'message', 'New vote created');
+        ELSE
+            RETURN json_build_object('status', 'success', 'message', 'Vote updated');
+        END IF;
     ELSE
-        RETURN json_build_object('status', 'success', 'message', 'Vote updated');
+        -- If the vote is the same, return a message without triggering an update
+        RETURN json_build_object('status', 'success', 'message', 'No change in vote');
     END IF;
 EXCEPTION
     WHEN OTHERS THEN
         RETURN json_build_object('status', 'error', 'message', SQLERRM);
 END;
 $$ LANGUAGE plpgsql;
-
-
-CREATE OR REPLACE FUNCTION delete_letter_vote(p_user_id uuid, p_letter_id uuid)
-RETURNS int
-LANGUAGE plpgsql
-AS $$
-DECLARE
-    rows_deleted INT;
-BEGIN
-    DELETE FROM letter_votes
-    WHERE user_id = p_user_id AND letter_id = p_letter_id
-    RETURNING 1 INTO rows_deleted;
-    RETURN rows_deleted;
-END;
-$$;
 
 
 -- CREATE OR REPLACE FUNCTION get_letters(page_number INT)

@@ -11,6 +11,7 @@ export const NotificationsProvider = ({ children }) => {
   const [oldNotifications, setOldNotifications] = useState([]);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   function formatPath(path) {
     return path.split('.').map(segment => segment.replace(/_/g, '-')).join('.');
@@ -52,6 +53,29 @@ export const NotificationsProvider = ({ children }) => {
     }
   }
 
+
+  const fetchUnreadNotifications = async () => {
+    try {
+      console.log("User ID:", session.user.id); // Log user ID to ensure it's correct
+
+      const { count, error, data } = await supaClient
+        .from("notifications")
+        .select("id", { count: "exact", head: true }) // Select id and count
+        .eq("read", false)
+        .eq("user_id_receiver", session.user.id);
+
+      if (error) {
+        console.error("Error fetching notifications:", error);
+      } else {
+        console.log("Count:", count); // Log the count value
+        console.log("Data:", data); // Log any returned data to help troubleshoot
+        setUnreadCount(count ?? 0); // Update the state with the count
+      }
+    } catch (err) {
+      console.error("Unexpected error:", err);
+    }
+  };
+
   useEffect(() => {
     if (!session) {
       // Reset notifications when session changes
@@ -67,6 +91,7 @@ export const NotificationsProvider = ({ children }) => {
   useEffect(() => {
     if (session?.user?.id) {
       fetchNotifications();
+      fetchUnreadNotifications();
     }
   }, [page, session?.user?.id]);
 
@@ -75,7 +100,7 @@ export const NotificationsProvider = ({ children }) => {
   };
 
   return (
-    <NotificationsContext.Provider value={{ notifications, oldNotifications, hasMore, loadMoreNotifications }}>
+    <NotificationsContext.Provider value={{ notifications, oldNotifications, hasMore, loadMoreNotifications, unreadCount }}>
       {children}
     </NotificationsContext.Provider>
   );

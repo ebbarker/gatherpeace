@@ -1,0 +1,20 @@
+a.hashtag-link {
+  color: #2b2f28 !important; /* Off-black with a hint of green */
+  text-decoration: none;
+}
+
+/* Hovered custom link */
+.hashtag-link:hover {
+  color: #1a6f40;
+  text-decoration: underline;
+}
+
+/* Visited custom link */
+.hashtag-link:visited {
+  color: #2b2f28;
+}
+
+/* Active custom link */
+.hashtag-link:active {
+  color: #14582e;
+}

@@ -17,6 +17,7 @@ import { IoArrowBackCircleSharp } from "react-icons/io5";
 import { NameDetails } from "./NameDetails";
 
 
+
 export function Letter({
   index,
   letterData,

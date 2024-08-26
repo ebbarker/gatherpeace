@@ -157,93 +157,7 @@ CREATE TABLE post_votes (
     UNIQUE (comment_id, user_id)
 );
 
--- Trigger Function to create notifications for comment likes
-CREATE OR REPLACE FUNCTION notify_like()
-RETURNS TRIGGER AS $$
-DECLARE
-    target_letter_id uuid;
-    path_segments int;
-    notification_type text;
-BEGIN
-    -- Ensure the target ID is valid
-    target_letter_id := NEW.letter_id;
 
-    -- Count the number of segments in the path
-    path_segments := array_length(string_to_array(text2ltree(concat('root.', replace(target_letter_id::text, '-', '_'), '.', replace(NEW.letter_id::text, '-', '_')))::text, '.'), 1);
-
-    -- Determine the notification type based on the number of UUIDs in the path
-    IF path_segments = 2 THEN
-        notification_type := 'comment_like';
-    ELSIF path_segments = 3 THEN
-        notification_type := 'reply_like';
-    ELSE
-        RAISE EXCEPTION 'Unexpected path length';
-    END IF;
-
-    -- Insert notification for the letter author
-    INSERT INTO notifications (
-        id,
-        modified,
-        type,
-        target_id,
-        table_name,
-        user_id_creator,
-        user_id_receiver,
-        path
-    )
-    VALUES (
-        uuid_generate_v4(),
-        now(),
-        notification_type,
-        NEW.letter_id,
-        'letter_votes',
-        NEW.user_id,
-        (SELECT user_id FROM letters WHERE id = target_letter_id),
-        text2ltree(concat('root.', replace(target_letter_id::text, '-', '_'), '.', replace(NEW.letter_id::text, '-', '_')))
-    );
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-
--- Trigger to call the function after insert on post_votes
-CREATE TRIGGER trigger_notify_comment_like
-AFTER INSERT ON post_votes
-FOR EACH ROW
-WHEN (NEW.vote_type = 'up')
-EXECUTE FUNCTION notify_like();
-
-CREATE OR REPLACE FUNCTION delete_like_notification()
-RETURNS TRIGGER AS $$
-DECLARE
-    target_comment_id uuid;
-BEGIN
-    -- Get the comment ID from the deleted like
-    target_comment_id := OLD.comment_id;
-
-    -- Ensure the comment ID is valid
-    IF target_comment_id IS NULL THEN
-        RAISE EXCEPTION 'Invalid comment ID for delete notification';
-    END IF;
-
-    -- Delete the notification for the comment like
-    DELETE FROM notifications
-    WHERE target_id = target_comment_id
-      AND table_name = 'post_votes'
-      AND type = 'comment_like'
-      AND user_id_creator = OLD.user_id;
-
-    RETURN OLD;
-END;
-$$ LANGUAGE plpgsql;
-
--- Trigger to call the function after delete on post_votes
-CREATE TRIGGER trigger_delete_like_notification
-AFTER DELETE ON post_votes
-FOR EACH ROW
-WHEN (OLD.vote_type = 'up')
-EXECUTE FUNCTION delete_like_notification();
 
 
 
@@ -255,27 +169,67 @@ SET search_path = public
 AS $$
 DECLARE
     target_comment_id uuid;
-    vote_type text;
+    old_vote_type text;
+    new_vote_type text;
 BEGIN
-    -- Determine which record (OLD or NEW) to refer to based on the operation.
-    IF TG_OP = 'DELETE' THEN
-        target_comment_id := OLD.comment_id;
-        vote_type := OLD.vote_type;
-    ELSE
-        target_comment_id := NEW.comment_id;
-        vote_type := NEW.vote_type;
-    END IF;
+    target_comment_id := COALESCE(OLD.comment_id, NEW.comment_id);
+    old_vote_type := OLD.vote_type;
+    new_vote_type := NEW.vote_type;
 
-    -- Update likes and score in the comments table based on the vote type
-    IF vote_type = 'up' THEN
-        UPDATE comments
-        SET likes = likes + CASE WHEN TG_OP = 'DELETE' THEN -1 ELSE 1 END,
-            score = score + CASE WHEN TG_OP = 'DELETE' THEN -1 ELSE 1 END
-        WHERE id = target_comment_id;
-    ELSIF vote_type = 'down' THEN
-        UPDATE comments
-        SET score = score + CASE WHEN TG_OP = 'DELETE' THEN 5 ELSE -5 END
-        WHERE id = target_comment_id;
+    -- Handle the DELETE case
+    IF TG_OP = 'DELETE' THEN
+        -- Remove the effects of the deleted vote
+        IF old_vote_type = 'up' THEN
+            UPDATE comments
+            SET likes = likes - 1,
+                score = score - 1
+            WHERE id = target_comment_id;
+        ELSIF old_vote_type = 'down' THEN
+            UPDATE comments
+            SET score = score + 5
+            WHERE id = target_comment_id;
+        END IF;
+
+    -- Handle the INSERT case
+    ELSIF TG_OP = 'INSERT' THEN
+        IF new_vote_type = 'up' THEN
+            UPDATE comments
+            SET likes = likes + 1,
+                score = score + 1
+            WHERE id = target_comment_id;
+        ELSIF new_vote_type = 'down' THEN
+            UPDATE comments
+            SET score = score - 5
+            WHERE id = target_comment_id;
+        END IF;
+
+    -- Handle the UPDATE case (only adjust score if vote_type changed)
+    ELSIF TG_OP = 'UPDATE' THEN
+        IF old_vote_type <> new_vote_type THEN
+            -- Revert the old vote
+            IF old_vote_type = 'up' THEN
+                UPDATE comments
+                SET likes = likes - 1,
+                    score = score - 1
+                WHERE id = target_comment_id;
+            ELSIF old_vote_type = 'down' THEN
+                UPDATE comments
+                SET score = score + 5
+                WHERE id = target_comment_id;
+            END IF;
+
+            -- Apply the new vote
+            IF new_vote_type = 'up' THEN
+                UPDATE comments
+                SET likes = likes + 1,
+                    score = score + 1
+                WHERE id = target_comment_id;
+            ELSIF new_vote_type = 'down' THEN
+                UPDATE comments
+                SET score = score - 5
+                WHERE id = target_comment_id;
+            END IF;
+        END IF;
     END IF;
 
     RETURN null;

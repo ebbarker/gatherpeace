@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import "./Letter.css";
 
 const MAX_CHARACTERS = 200; // Maximum number of characters before truncating
 
@@ -22,7 +23,7 @@ export function MessageContent({ content }) {
           } else {
             // Odd indexes are tags (matched by the regex)
             acc.push(
-              <Link key={idx} to={`/peace-wall/1?query=%23${part}`}>
+              <Link key={idx} to={`/peace-wall/1?query=%23${part}`} className="hashtag-link">
                 #{part}
               </Link>
             );
