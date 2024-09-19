@@ -1,11 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaRegCommentDots, FaThumbsUp } from "react-icons/fa";
+import { FaRegCommentDots } from "react-icons/fa";
+import { FaHandPeace, FaRegHandPeace } from "react-icons/fa6";
 
 // Utility function to format the path
 const formatPath = (path) => path.replace(/_/g, '-');
 
 export function NotificationCard ({ notification }) {
+  // if (notification.new)
   const notificationLink = `/peace-wall/letter/${formatPath(notification.path.split('.')[1])}#${notification.target_id}`;
 
   let unreadCount;
@@ -20,35 +22,35 @@ export function NotificationCard ({ notification }) {
         return (
           <div>
             <span className="notification-card-creator-username">{notification.creator_username}</span>
-            {` ${unreadCount} commented on your post.`}
+            {` ${unreadCount ?? ''} commented on your post.`}
           </div>
         );
       case 'reply':
         return (
           <div>
             <span className="notification-card-creator-username">{notification.creator_username}</span>
-            {` ${unreadCount} replied to your comment.`}
+            {` ${unreadCount ?? ''} replied to your comment.`}
           </div>
         );
-      case 'like':
+      case 'post_like':
         return (
           <div>
             <span className="notification-card-creator-username">{notification.creator_username}</span>
-            {` ${unreadCount} liked your post.`}
+            {` ${unreadCount ?? ''} liked your post.`}
           </div>
         );
       case 'comment_like':
         return (
           <div>
             <span className="notification-card-creator-username">{notification.creator_username}</span>
-            {` ${unreadCount} liked your comment.`}
+            {` ${unreadCount ?? ''} liked your comment.`}
           </div>
         );
       case 'reply_like':
         return (
           <div>
             <span className="notification-card-creator-username">{notification.creator_username}</span>
-            {` ${unreadCount} liked your reply.`}
+            {` ${unreadCount ?? ''} liked your reply.`}
           </div>
         );
       default:
@@ -61,9 +63,10 @@ export function NotificationCard ({ notification }) {
       case 'comment':
       case 'reply':
         return <FaRegCommentDots />;
-      case 'like':
+      case 'post_like':
       case 'comment_like':
-        return <FaThumbsUp />;
+      case 'reply_like':
+        return <FaHandPeace />;
       default:
         return null;
     }

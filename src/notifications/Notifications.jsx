@@ -31,7 +31,7 @@ export function Notifications() {
         ))}
       </ul>
       {hasMore ? (
-        <button onClick={loadMoreNotifications}>Show More</button>
+        <button className="action-button" onClick={loadMoreNotifications}>Show More</button>
       ) : (
         <p>No more notifications.</p>
       )}

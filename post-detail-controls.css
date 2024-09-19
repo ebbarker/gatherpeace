@@ -38,6 +38,10 @@
   font-size: 20px;
 }
 
+.like-info-container .fa-hand-peace {
+  font-size: 24px; /* Adjust as needed */
+  line-height: 1; /* This ensures the icon isn't affected by any line-height */
+}
 
 
 

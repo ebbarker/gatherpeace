@@ -4,19 +4,21 @@ import { Auth, ThemeSupa } from "@supabase/auth-ui-react";
 import { UserContext } from "./App";
 import Dialog from "./Dialog";
 
-export default function Login({ inline = false }) {
-  const [showModal, setShowModal] = useState(false);
-  const [authMode, setAuthMode] = useState<"sign_in" | "sign_up">("sign_in");
+export default function LoginPrompt({ setShowLoginModal, showLoginModal }) {
+  // const [showModal, setShowModal] = useState(true);
+  const [authMode, setAuthMode] = useState("sign_in");
   const { session } = useContext(UserContext);
   const [errorMessage, setErrorMessage] = useState('');
+  const [greetingScreen, setGreetingScreen] = useState(true);
 
-  const dialog = useRef<HTMLDivElement>(null);
+  // const dialog = useRef(null);
 
   useEffect(() => {
     if (session?.user) {
-      setShowModal(false);
+      // setShowModal(false);
+      setShowLoginModal(false);
     }
-  }, [session]);
+  }, [session, setShowLoginModal]);
 
   const setReturnPath = () => {
     localStorage.setItem("returnPath", window.location.pathname);
@@ -24,7 +26,8 @@ export default function Login({ inline = false }) {
 
   const handleAuthStateChange = (event, session) => {
     if (event === 'SIGNED_IN' && session) {
-      setShowModal(false);
+      console.log('EVENT TRIGGERED');
+      setShowLoginModal(false);
     }
   };
 
@@ -36,44 +39,20 @@ export default function Login({ inline = false }) {
 
   return (
     <>
-      {!inline ? (
-        <div className="flex m-4 place-items-center login-buttons-container">
-          <div
-            className="nav-item login-button-nav"
-            id="login"
-            onClick={() => {
-              setAuthMode("sign_in");
-              setShowModal(true);
-              setReturnPath();
-            }}
-          >
-            <a className="login" href="#">
-              Login
-            </a>
-          </div>
-          <span className="or"> or </span>
-          <div
-            className="sign-up-button"
-            id="sign-up"
-            onClick={() => {
-              setAuthMode("sign_up");
-              setShowModal(true);
-              setReturnPath();
-            }}
-          >
-            <a className="signup-btn" href="#">
-              Sign up
-            </a>
-          </div>
-        </div>
-      ) : (
-        <div className="flex place-items-center login-buttons-container">
+
+
+      <Dialog
+        open={showLoginModal}
+        dialogStateChange={(open) => setShowLoginModal(open)}
+        contents={
+          greetingScreen ? (
+          <div className="flex place-items-center login-buttons-container">
           <div
             className="login-button"
             id="login"
             onClick={() => {
               setAuthMode("sign_in");
-              setShowModal(true);
+              setGreetingScreen(false);
               setReturnPath();
             }}
           >
@@ -88,7 +67,7 @@ export default function Login({ inline = false }) {
             id="sign-up"
             onClick={() => {
               setAuthMode("sign_up");
-              setShowModal(true);
+              setGreetingScreen(false);
               setReturnPath();
             }}
           >
@@ -98,12 +77,7 @@ export default function Login({ inline = false }) {
             <span className="to-participate-text">to participate.</span>
           </div>
         </div>
-      )}
-
-      <Dialog
-        open={showModal}
-        dialogStateChange={(open) => setShowModal(open)}
-        contents={
+           ) : (
           <>
             <Auth
               providers={["google", "facebook", "twitter"]}
@@ -126,8 +100,9 @@ export default function Login({ inline = false }) {
                 {errorMessage}
               </div>
             )}
-            <button onClick={() => setShowModal(false)}>Close</button>
+            <button onClick={() => setShowLoginModal(false)}>Close</button>
           </>
+          )
         }
       />
     </>

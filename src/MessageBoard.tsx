@@ -16,7 +16,7 @@ export default function MessageBoard() {
       {/* <Link to="/peace-wall/1">
         <h2 className="text-5xl text-center mb-1">Message Board</h2>
       </Link> */}
-      {userProfile.session ? (
+      {/* {userProfile.session ? (
         <></>
       ) : (
         <div
@@ -25,7 +25,7 @@ export default function MessageBoard() {
         >
           <Login  inline={true}/>
         </div>
-      )}
+      )} */}
       <Outlet />
     </div>
   );

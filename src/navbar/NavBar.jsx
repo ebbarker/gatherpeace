@@ -65,7 +65,7 @@ export default function NavBar() {
                   Peace Wall
                 </Link>
               </li>
-              <li className="nav-item">
+              {session && <li className="nav-item">
                 <Link className="nav-home-link nav-link" to="/notifications">
                   <div className="notification-container">
                     <div className="navbar-notification-icon">
@@ -76,7 +76,7 @@ export default function NavBar() {
                     </div>
                   </div>
                 </Link>
-              </li>
+              </li>}
 
               <li className="navbar-login-container nav-item">
                 {session?.user ? (

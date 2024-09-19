@@ -134,7 +134,9 @@ CREATE TABLE notifications (
     user_id_creator uuid REFERENCES auth.users (id) ON DELETE CASCADE NOT NULL,
     user_id_receiver uuid REFERENCES auth.users (id) ON DELETE CASCADE NOT NULL,
     path ltree, -- Adding the path column to record the path of replies
-    read boolean DEFAULT false
+    read boolean DEFAULT false,
+    creator_username text,
+    creator_avatar text;
 );
 
 CREATE OR REPLACE FUNCTION notify_letter_author_of_comment_or_reply()
@@ -143,6 +145,8 @@ DECLARE
     target_letter_id uuid;
     target_comment_id uuid;
     comment_path ltree;
+    creator_username text;
+    creator_avatar text;
 BEGIN
     -- Extract the letter ID from the path and replace underscores with hyphens
     target_letter_id := REPLACE(substring(NEW.path::text FROM 'root\.([0-9a-fA-F_]{8}_[0-9a-fA-F_]{4}_[0-9a-fA-F_]{4}_[0-9a-fA-F_]{4}_[0-9a-fA-F_]{12})'), '_', '-');
@@ -152,11 +156,15 @@ BEGIN
         RAISE EXCEPTION 'Invalid letter ID extracted from path %', NEW.path;
     END IF;
 
+    -- Fetch the creator's username and avatar from the user_profiles table
+    SELECT username, avatar_url INTO creator_username, creator_avatar
+    FROM user_profiles
+    WHERE user_id = NEW.user_id;
+
     comment_path := NEW.path;
+
     -- If the path length is greater than 70, it's a reply to a comment
     IF LENGTH(NEW.path::text) > 70 THEN
-
-
         -- Extract the comment ID from the comment path and replace underscores with hyphens
         target_comment_id := REPLACE(substring(comment_path::text FROM '([0-9a-fA-F_]{8}_[0-9a-fA-F_]{4}_[0-9a-fA-F_]{4}_[0-9a-fA-F_]{4}_[0-9a-fA-F_]{12})$'), '_', '-');
 
@@ -174,7 +182,9 @@ BEGIN
             table_name,
             user_id_creator,
             user_id_receiver,
-            path
+            path,
+            creator_username,
+            creator_avatar
         )
         VALUES (
             uuid_generate_v4(),
@@ -184,7 +194,9 @@ BEGIN
             'comments',
             NEW.user_id,
             (SELECT user_id FROM comments WHERE id = target_comment_id),
-            comment_path  -- Cast to ltree
+            comment_path,
+            creator_username,
+            creator_avatar
         );
 
     ELSE
@@ -197,7 +209,9 @@ BEGIN
             table_name,
             user_id_creator,
             user_id_receiver,
-            path
+            path,
+            creator_username,
+            creator_avatar
         )
         VALUES (
             uuid_generate_v4(),
@@ -207,13 +221,16 @@ BEGIN
             'comments',
             NEW.user_id,
             (SELECT user_id FROM letters WHERE id = target_letter_id),
-            comment_path
+            comment_path,
+            creator_username,
+            creator_avatar
         );
     END IF;
 
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 
 CREATE TRIGGER trigger_notify_author_of_comment_or_reply
 AFTER INSERT ON comments
@@ -227,9 +244,17 @@ CREATE OR REPLACE FUNCTION notify_letter_like()
 RETURNS TRIGGER AS $$
 DECLARE
     target_letter_id uuid;
+    creator_username text;
+    creator_avatar text;
 BEGIN
     -- Get the letter (post) ID from the vote
     target_letter_id := NEW.letter_id;
+
+    -- Fetch the username and avatar_url of the creator
+    SELECT username, avatar_url
+    INTO creator_username, creator_avatar
+    FROM user_profiles
+    WHERE user_id = NEW.user_id;
 
     -- Insert notification for the letter (post) author
     INSERT INTO notifications (
@@ -240,7 +265,9 @@ BEGIN
         table_name,
         user_id_creator,
         user_id_receiver,
-        path
+        path,
+        creator_username,
+        creator_avatar
     )
     VALUES (
         uuid_generate_v4(),
@@ -250,7 +277,9 @@ BEGIN
         'letter_votes',
         NEW.user_id,
         (SELECT user_id FROM letters WHERE id = target_letter_id),
-        text2ltree(concat('root.', replace(target_letter_id::text, '-', '_')))
+        text2ltree(concat('root.', replace(target_letter_id::text, '-', '_'))),
+        creator_username,
+        creator_avatar
     );
 
     RETURN NEW;
@@ -263,6 +292,72 @@ AFTER INSERT ON letter_votes
 FOR EACH ROW
 WHEN (NEW.vote_type = 'up')
 EXECUTE FUNCTION notify_letter_like();
+
+
+
+
+CREATE OR REPLACE FUNCTION notify_comment_like()
+RETURNS TRIGGER AS $$
+DECLARE
+    target_comment_id uuid;
+    notification_type text;
+    creator_username text;
+    creator_avatar text;
+BEGIN
+    -- Get the comment (post) ID from the vote
+    target_comment_id := NEW.comment_id;
+
+    -- Determine the notification type based on the comment depth
+    IF array_length(string_to_array(NEW.comment_path::text, '.'), 1) = 2 THEN
+        notification_type := 'comment_like';
+    ELSE
+        notification_type := 'reply_like';
+    END IF;
+
+    -- Fetch the username and avatar_url of the creator
+    SELECT username, avatar_url
+    INTO creator_username, creator_avatar
+    FROM user_profiles
+    WHERE user_id = NEW.user_id;
+
+    -- Insert notification for the comment/reply author
+    INSERT INTO notifications (
+        id,
+        modified,
+        type,
+        target_id,
+        table_name,
+        user_id_creator,
+        user_id_receiver,
+        path,
+        creator_username,
+        creator_avatar
+    )
+    VALUES (
+        uuid_generate_v4(),
+        now(),
+        notification_type,
+        NEW.comment_id,
+        'post_votes',
+        NEW.user_id,
+        (SELECT user_id FROM comments WHERE id = target_comment_id),
+        NEW.comment_path,
+        creator_username,
+        creator_avatar
+    );
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Create trigger for comment like notifications
+CREATE TRIGGER trigger_notify_comment_like
+AFTER INSERT ON post_votes
+FOR EACH ROW
+WHEN (NEW.vote_type = 'up')
+EXECUTE FUNCTION notify_comment_like();
+
 
 CREATE OR REPLACE FUNCTION delete_letter_like_notification()
 RETURNS TRIGGER AS $$
@@ -291,54 +386,7 @@ WHEN (OLD.vote_type = 'up')
 EXECUTE FUNCTION delete_letter_like_notification();
 
 
-CREATE OR REPLACE FUNCTION notify_comment_like()
-RETURNS TRIGGER AS $$
-DECLARE
-    target_comment_id uuid;
-    notification_type text;
-BEGIN
-    -- Get the comment (post) ID from the vote
-    target_comment_id := NEW.comment_id;
 
-    -- Determine the notification type based on the comment depth
-    IF array_length(string_to_array(NEW.comment_path::text, '.'), 1) = 2 THEN
-        notification_type := 'comment_like';
-    ELSE
-        notification_type := 'reply_like';
-    END IF;
-
-    -- Insert notification for the comment/reply author
-    INSERT INTO notifications (
-        id,
-        modified,
-        type,
-        target_id,
-        table_name,
-        user_id_creator,
-        user_id_receiver,
-        path
-    )
-    VALUES (
-        uuid_generate_v4(),
-        now(),
-        notification_type,
-        NEW.comment_id,
-        'post_votes',
-        NEW.user_id,
-        (SELECT user_id FROM comments WHERE id = target_comment_id),
-        NEW.comment_path
-    );
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Create trigger for comment like notifications
-CREATE TRIGGER trigger_notify_comment_like
-AFTER INSERT ON post_votes
-FOR EACH ROW
-WHEN (NEW.vote_type = 'up')
-EXECUTE FUNCTION notify_comment_like();
 
 CREATE OR REPLACE FUNCTION delete_comment_like_notification()
 RETURNS TRIGGER AS $$

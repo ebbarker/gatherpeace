@@ -4,7 +4,7 @@ import { PiLinkBold } from 'react-icons/pi';
 import { UpVote } from "../UpVote";
 import { UserContext } from "../layout/App";
 import { VoteContext } from "../contexts/VoteContext";
-import { FaHandPeace, FaRegHandPeace } from 'react-icons/fa';
+import { FaHandPeace, FaRegHandPeace } from 'react-icons/fa6';
 import { supaClient } from "../layout/supa-client";
 import { ProfilePicture } from "../shared/ProfilePicture";
 import { Link } from "react-router-dom";
@@ -60,7 +60,7 @@ export function PostControls({
         {letter?.likes > 0 &&
           <>
             <div className="like-info-container flex items-center" onClick={() => setShowLikesModal(true)}>
-              <FaRegHandPeace />
+              <FaHandPeace />
               <span>{' ' + letter?.likes}</span>
             </div>
           </>

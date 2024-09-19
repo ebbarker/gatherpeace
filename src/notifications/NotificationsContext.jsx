@@ -43,6 +43,7 @@ export const NotificationsProvider = ({ children }) => {
       newReadNotifications.sort((a, b) => new Date(b.modified) - new Date(a.modified));
 
       // Update the state
+      console.log('notification list: ' + JSON.stringify(newUnreadNotifications));
       setNotifications(newUnreadNotifications);
       setOldNotifications(newReadNotifications);
 
@@ -80,13 +81,14 @@ export const NotificationsProvider = ({ children }) => {
           table: 'notifications',
           filter: `user_id_receiver=eq.${session.user.id}`,
         }, payload => {
+          console.log('new notification: ' + JSON.stringify(payload));
           setNotifications((prevNotifications) => [payload.new, ...prevNotifications]);
           setUnreadCount((prevCount) => prevCount + 1);
         })
         .subscribe();
 
       return () => {
-        supaClient.removeSubscription(notificationSubscription);
+        notificationSubscription.unsubscribe();
       };
     }
 
@@ -120,3 +122,22 @@ export const NotificationsProvider = ({ children }) => {
     </NotificationsContext.Provider>
   );
 };
+
+//letter like
+// {"schema":"public","table":"notifications","commit_timestamp":"2024-08-29T21:38:48.594Z","eventType":"INSERT","new":
+// {"creator_avatar":"0.27244231307398037.jpg","creator_username":"ethanbaobarker","id":"5d32eb1a-7068-4d18-8877-2aa5c53c6290","modified":"2024-08-29T21:38:48.589244+00:00","path":"root.8e6da859_9248_4a59_abc2_3ad745217963","read":false,"table_name":"letter_votes","target_id":"8e6da859-9248-4a59-abc2-3ad745217963","type":"post_like","user_id_creator":
+// "f3ff1fc2-338b-4869-b39a-d12423df696e","user_id_receiver":"ac3f0e2f-bcd0-4b32-bbc6-c26aef2dc6fd"},"old":{},"errors":null}
+
+//comment like:
+
+// {"schema":"public","table":"notifications","commit_timestamp":"2024-08-29T21:41:23.579Z","eventType":"INSERT","new":
+// {"creator_avatar":"0.27244231307398037.jpg","creator_username":"ethanbaobarker",
+// "id":"6eccae71-ffa1-442b-b349-8fcba1426ac8","modified":"2024-08-29T21:41:23.573602+00:00","path":"root.8e6da859_9248_4a59_abc2_3ad745217963",
+// "read":false,"table_name":"post_votes","target_id":"e4b42f81-5999-4695-b9ae-3ffb9fcc0770",
+// "type":"comment_like","user_id_creator":"f3ff1fc2-338b-4869-b39a-d12423df696e","user_id_receiver":"ac3f0e2f-bcd0-4b32-bbc6-c26aef2dc6fd"},"old":{},"errors":null}
+
+//from aggregation
+// {"id":"df7c27d9-bce2-4f87-b8bb-6f42342798f1","modified":"2024-08-26T21:25:40.724184+00:00","type":"like",
+// "target_id":"0bbcea98-5f56-48e0-b574-29f25cd3aed1","table_name":"letter_votes",
+// "user_id_creator":"ac3f0e2f-bcd0-4b32-bbc6-c26aef2dc6fd","user_id_receiver":"ac3f0e2f-bcd0-4b32-bbc6-c26aef2dc6fd",
+// "path":"root.0bbcea98_5f56_48e0_b574_29f25cd3aed1","read":false,"unread_count":1,"creator_username":"ethanbaobarke"},

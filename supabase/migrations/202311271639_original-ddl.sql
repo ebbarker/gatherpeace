@@ -278,42 +278,29 @@ RETURNS TABLE (
     username text
 ) AS $$
 BEGIN
-    -- If no search term and the page number is less than 11, query the materialized view
-    IF search_keyword IS NULL AND page_number < 11 THEN
-        RETURN QUERY
-        SELECT t100.id, t100.user_id, t100.created_at, t100.content, t100.score, t100.likes, t100.path,
-               t100.sender_country, t100.sender_state, t100.sender_city, t100.sign_off,
-               t100.sender_name, t100.recipient, t100.count_comments, t100.post_type,
-               t100.avatar_url, t100.username
-        FROM top_100_letters t100
-        ORDER BY t100.score DESC, t100.created_at DESC
-        LIMIT 10 OFFSET (page_number - 1) * 10;
-
-    -- Otherwise, query the base tables with the search keyword and pagination
-    ELSE
-        RETURN QUERY
-        WITH LimitedLetters AS (
-            SELECT l.id, l.user_id, l.created_at, l.path,
-                   l.score, l.likes, l.count_comments, l.post_type
-            FROM letters l
-            JOIN letter_contents lc ON l.id = lc.letter_id
-            WHERE
-                (search_keyword IS NULL OR lc.tsv @@ plainto_tsquery('english', search_keyword)) AND
-                (page_filter IS NULL OR l.post_type = page_filter)
-            ORDER BY l.score DESC, l.created_at DESC
-            LIMIT 10 OFFSET (page_number - 1) * 10
-        )
-        SELECT ll.id, ll.user_id, ll.created_at, lc.content, ll.score, ll.likes,
-               ll.path, lc.sender_country, lc.sender_state,
-               lc.sender_city, lc.sign_off, lc.sender_name, lc.recipient,
-               ll.count_comments, ll.post_type, up.avatar_url, up.username
-        FROM LimitedLetters ll
-        JOIN letter_contents lc ON ll.id = lc.letter_id
-        LEFT JOIN user_profiles up ON ll.user_id = up.user_id
-        ORDER BY ll.score DESC, ll.created_at DESC;
-    END IF;
+    RETURN QUERY
+    WITH LimitedLetters AS (
+        SELECT l.id, l.user_id, l.created_at, l.path,
+               l.score, l.likes, l.count_comments, l.post_type
+        FROM letters l
+        JOIN letter_contents lc ON l.id = lc.letter_id
+        WHERE
+            (search_keyword IS NULL OR lc.tsv @@ plainto_tsquery('english', search_keyword)) AND
+            (page_filter IS NULL OR l.post_type = page_filter)
+        ORDER BY l.score DESC, l.created_at DESC
+        LIMIT 10 OFFSET (page_number - 1) * 10
+    )
+    SELECT ll.id, ll.user_id, ll.created_at, lc.content, ll.score, ll.likes,
+           ll.path, lc.sender_country, lc.sender_state,
+           lc.sender_city, lc.sign_off, lc.sender_name, lc.recipient,
+           ll.count_comments, ll.post_type, up.avatar_url, up.username
+    FROM LimitedLetters ll
+    JOIN letter_contents lc ON ll.id = lc.letter_id
+    LEFT JOIN user_profiles up ON ll.user_id = up.user_id
+    ORDER BY ll.score DESC, ll.created_at DESC;
 END;
 $$ LANGUAGE plpgsql;
+
 
 
 

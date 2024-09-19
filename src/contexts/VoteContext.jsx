@@ -48,8 +48,6 @@ export const VoteProvider = ({ children }) => {
         }, {});
 
         setMyContextVotes(votes);
-        console.log('my votes + ' + JSON.stringify(votes));
-        console.log('session: ' + session.user.id);
       });
     }
   }, [session?.user?.id]);

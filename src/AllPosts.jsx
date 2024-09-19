@@ -10,6 +10,8 @@ import { Stepform } from "./createPostForm/Stepform";
 import { SearchBar } from "./search-bar/SearchBar"
 import { NewsFeed } from "./newsFeed/NewsFeed";
 import { TrendingTags } from "./trending/TrendingTags";
+import LoginPrompt from "./layout/LoginPrompt";
+import Dialog from "./layout/Dialog";
 
 
 export function AllPosts({ parent }) {
@@ -23,6 +25,7 @@ export function AllPosts({ parent }) {
   const [addingName, setAddingName] = useState(false);
   const { myContextVotes, setMyContextVotes } = useContext(VoteContext);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const term = searchParams.get("query");
   const location = useLocation();
@@ -37,7 +40,11 @@ export function AllPosts({ parent }) {
   const showAddNameDialog = (e) => {
     console.log ('clicked show NAME')
     e.preventDefault();
-    setAddingName(true);
+    if (!session) {
+      setShowLoginModal(true); // Show login modal if not logged in
+    } else {
+      setAddingName(true);
+    }
   }
 
   //8-20-24 - i believe the page should always be one, so changing from:
@@ -218,7 +225,7 @@ export function AllPosts({ parent }) {
 
   return (
     <>
-      {!writingMessage && !addingName && session &&
+      {!writingMessage && !addingName &&
         <div className="call-to-action-container" >
           {!profile?.has_signed && <button className="add-your-name action-button" onClick={showAddNameDialog}>
             <span>Add Your Name</span>
@@ -250,6 +257,8 @@ export function AllPosts({ parent }) {
         searchKeyword={searchKeyword}
         pageNumber={pageNumber}
       />
+
+      {showLoginModal && <LoginPrompt setShowLoginModal={setShowLoginModal} showLoginModal={showLoginModal}/>}
     </>
   );
 }
