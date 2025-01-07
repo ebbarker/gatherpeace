@@ -25,7 +25,7 @@ export function CreateLetter({ newLetterCreated = () => {}, letters, setLetters 
       created_at,
       count_comments: 0
     }
-    console.log('new letter: ' + JSONS.stringify(newLetter))
+
     setLetters([newLetter, ...letters])
   }
 
@@ -50,7 +50,6 @@ export function CreateLetter({ newLetterCreated = () => {}, letters, setLetters 
               if (error) {
                 console.log(error);
               } else {
-                console.log(JSON.stringify(data));
 
                 appendLetter(user.session?.user.id, content, data[0].new_letter_id, data[0].creation_time);
               }

@@ -12,6 +12,7 @@ import { Header } from "./Header";
 import { MessageContent } from "./MessageContent";
 import { PostControls } from "./PostControls";
 import  LinkPreview from "../link-preview/LinkPreview";
+import { castLetterVote } from "../AllPosts";
 
 export default function LetterDetails({
   id,
@@ -45,6 +46,7 @@ export default function LetterDetails({
   const dropdownRef = useRef(null);
 
   async function onVoteClick() {
+
     if (!letter) {
       return;
     }
@@ -184,9 +186,15 @@ export default function LetterDetails({
           <div className="sender-signoff">{letter?.sign_off}</div>
           <div className="sender-name">{`-${letter?.sender_name}`}</div>
           <div className="sender-location-details">
-            <div className="sender-city header-secondary">{letter?.sender_city ? `${letter.sender_city}, ` : null} </div>
-            <div className="sender-state header-secondary">{letter?.sender_state ? `${letter.sender_state}, ` : null}</div>
-            <div className="sender-country header-secondary">{letter?.sender_country}</div>
+            <div className="sender-address header-secondary">
+              {[
+                letter?.sender_city,
+                letter?.sender_state,
+                letter?.sender_country,
+              ]
+                .filter(Boolean) // Removes null/undefined values
+                .join(", ")}
+            </div>
           </div>
         </div>
         <LinkPreview text={letter.content} />

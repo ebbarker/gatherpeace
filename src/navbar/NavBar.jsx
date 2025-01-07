@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { Link } from "react-router-dom";
 import { UserContext } from "../layout/App";
 import Login from "../layout/Login";
-import twitterPeace from "../img/twitterpeace2.png";
+import twitterPeace from "../../public/handlogo.svg";
 import { supaClient } from "../layout/supa-client";
 import DarkMode from "../DarkMode";
 import { IoNotificationsSharp } from "react-icons/io5";
@@ -52,9 +52,9 @@ export default function NavBar() {
             id="navbarSupportedContent"
           >
             <ul className="navbar-menu-right navbar-nav ml-auto">
-              <li className="nav-item">
+              {/* <li className="nav-item">
                 <DarkMode />
-              </li>
+              </li> */}
               <li className="nav-item active">
                 <Link className="nav-home-link nav-link" to="/">
                   Home <span className="sr-only">(current)</span>
@@ -102,6 +102,10 @@ export default function NavBar() {
                         My Profile
                       </a>
                       <div className="dropdown-divider"></div>
+                      <a className="dropdown-item" href="/settings">
+                        My Settings
+                      </a>
+                      <div className="dropdown-divider"></div>
                       <a
                         className="dropdown-item"
                         href="#"
@@ -110,6 +114,7 @@ export default function NavBar() {
                         Logout
                       </a>
                     </ul>
+
                   </>
                 ) : (
                   <Login />

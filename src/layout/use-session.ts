@@ -267,14 +267,14 @@ export function useSession() {
   const navigate = useNavigate();
 
   const fetchSession = useCallback(async () => {
-    console.log('Fetched session');
+
     const { data: { session } } = await supaClient.auth.getSession();
 
     setSession(session);
   }, []);
 
   const fetchProfile = useCallback(async (userId) => {
-    console.log('PROFILER CHANGED');
+
     const { data } = await supaClient
       .from("user_profiles")
       .select("*")
@@ -293,9 +293,9 @@ export function useSession() {
     fetchSession();
 
     const { data: authListener } = supaClient.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed');
+
       setSession(session);
-      if (!session) setProfile(null); 
+      if (!session) setProfile(null);
     });
 
     return () => {

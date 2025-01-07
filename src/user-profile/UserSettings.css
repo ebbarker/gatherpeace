@@ -1,0 +1,70 @@
+.user-settings-form {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.user-settings-title {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.user-settings-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px 20px;
+  align-items: center;
+}
+
+.user-settings-prompt {
+  grid-column: 1;
+}
+
+.user-settings-checkbox {
+  grid-column: 2;
+}
+
+.user-settings-input,
+.user-settings-input textarea {
+  grid-column: 1 / span 2;
+}
+
+.user-settings-input input,
+.user-settings-input textarea {
+  width: 100%;
+  padding: 8px;
+}
+
+.user-settings-examples {
+  font-size: 0.9em;
+  color: #666;
+  margin-top: 5px;
+}
+
+.remove-line {
+  background-color: #e0e0e0; /* Changed from red to light gray */
+  color: #333;              /* Dark text color for contrast */
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  margin-left: 10px;
+  border-radius: 4px;       /* Optional: adds slightly rounded corners */
+}
+
+.remove-line:hover {
+  background-color: #d5d5d5; /* Slightly darker on hover */
+}
+
+.user-settings-button {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.action-button {
+  /* Your existing styles for action-button */
+}
+
+/* Ensure the "X" button does not have the action-button class */
+.remove-line {
+  /* Styles for remove-line button */
+}

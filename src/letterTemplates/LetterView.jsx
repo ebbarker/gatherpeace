@@ -9,6 +9,7 @@ import { UpVote } from "../UpVote";
 import LetterDetails from "./LetterDetails";
 import ReplyDetails from "./ReplyDetails";
 import { NameDetails } from "./NameDetails";
+import { WallPost } from "./WallPost";
 import { UseScrollToHash } from "./UseScrollToHash";
 import { VoteContext } from "../contexts/VoteContext";
 
@@ -44,7 +45,7 @@ export function LetterView({ id = null, letterData = null,  myVotes = null, onVo
   };
 
   const defaultDeleteMessage = async (id, type) => {
-    console.log('delete default id: ' + id);
+
     if (type === 'name') {
       try {
         const userId = userContext.session?.user?.id; // Assuming you have the user ID from your session or context
@@ -152,10 +153,10 @@ export function LetterView({ id = null, letterData = null,  myVotes = null, onVo
 
   async function letterDetailLoader({ params, userContext }) {
 
-  console.log ('params: ' + JSON.stringify(params));
+
     let data, error;
       if (!letterData) {
-        console.log('getting letter and comments together ' + letterId);
+
           ({ data, error } = await supaClient
           .rpc("get_single_letter_with_comments", { p_letter_id: letterId })
           .select("*"));
@@ -169,7 +170,7 @@ export function LetterView({ id = null, letterData = null,  myVotes = null, onVo
         }
 
       } else {
-        console.log('using letterId to get comments');
+
           ({ data, error } = await supaClient
         .rpc("get_comments_by_letter_id", { letter_id: letterId })
         .select("*"));
@@ -194,13 +195,13 @@ export function LetterView({ id = null, letterData = null,  myVotes = null, onVo
     }, {});
     const letter = letterMap[letterId];
     const comments = data.filter((x) => x.id !== letterId);
-    console.log('comments: ' + comments);
+
 
     return { letter, comments };
   }
 
   useEffect(() => {
-    console.log('letter detail loader hit');
+
     letterDetailLoader({
       params: letterId ? { letterId } : params,
       userContext,
@@ -231,15 +232,15 @@ export function LetterView({ id = null, letterData = null,  myVotes = null, onVo
         newData.letter.likes++;
       }
 
-      console.log('newLetterDetailData, ' + JSON.stringify(newData));
+
       setletterDetailData(newData);
     }
-    console.log('letter vote success');
+
     function recursiveCommentMapper (current) {
 
       if (current.id == id) {
         if (direction === 'delete') {
-          console.log('deleting inside mapper')
+
           return {
             ...current,
             score: current.score - 1,
@@ -271,14 +272,14 @@ export function LetterView({ id = null, letterData = null,  myVotes = null, onVo
 
 
   function onCommentVoteSuccess(id, direction)  {
-   console.log('onCommentVoteSuccess: ' + direction);
+
 
     function recursiveCommentMapper (current) {
 
 
       if (current.id == id) {
         if (direction === 'delete') {
-          console.log('recursiveCommentMapper');
+
           return {
             ...current,
             score: current.score - 1,
@@ -286,7 +287,7 @@ export function LetterView({ id = null, letterData = null,  myVotes = null, onVo
           }
         }
         if (direction === 'up') {
-          console.log('recursiveCommentMapper');
+
           return {
             ...current,
             score: current.score + 1,
@@ -350,6 +351,17 @@ export function LetterView({ id = null, letterData = null,  myVotes = null, onVo
             }
             {letterDetailData?.letter?.post_type === 'name' &&
               <NameDetails
+                id={id ? id : letterId}
+                // key={letterDetailData?.letter?.id}
+                letter={letterData ? letterData : letterDetailData.letter}
+                onVoteSuccess={onVoteSuccess ? onVoteSuccess : onLetterVoteSuccess}
+                getDepth={getDepth}
+                repliesCount={letterDetailData.comments.length}
+                deleteMessage={handleDeleteMessage}
+              />
+            }
+            {letterDetailData?.letter?.post_type === 'wall_post' &&
+              <WallPost
                 id={id ? id : letterId}
                 // key={letterDetailData?.letter?.id}
                 letter={letterData ? letterData : letterDetailData.letter}
@@ -423,9 +435,9 @@ function CommentView({
 
 
   useEffect(() => {
-    console.log('COUNT!');
+
     for (let i = 0; i < comment.comments.length; i++) {
-      console.log('REPLY IDs: ' + comment.comments[i].id);
+
       if (comment.comments[i].id === hash) {
         setShowReplies(true);
       }
@@ -485,7 +497,7 @@ function CommentView({
                     onSuccess={(newComment) => {
 
                       function addComment (newComment) {
-                        console.log('this is the new comment being written: ' + JSON.stringify(newComment));
+
 
                         let parentIndex;
                         let realParent = newComment.path.slice(newComment.path.lastIndexOf('.') + 1);
@@ -623,7 +635,7 @@ function CreateComment({
           if (parentDepth >= 2) {
             actualPath = parent?.path;
           }
-          console.log(actualPath);
+
           supaClient
             .rpc("create_new_comment", {
               user_id: user.session?.user.id,
@@ -683,8 +695,8 @@ function CreateComment({
         <div className="flex gap-2 comment-submit-container">
           <button
             type="submit"
-            id="new-comment-submit"
-            className="bg-green-400 border rounded font-display text-lg p-2"
+
+            className="new-comment-submit"
             disabled={!comment}
           >
             Submit
@@ -692,7 +704,7 @@ function CreateComment({
           {onCancel && (
             <button
               type="button"
-              className="bg-gray-400 rounded font-display text-lg p-2"
+              className="new-comment-cancel"
               onClick={() => onCancel()}
             >
               Cancel

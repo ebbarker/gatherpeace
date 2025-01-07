@@ -1,11 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from "react-router-dom";
 import { FiMoreVertical, FiTrash } from "react-icons/fi";
 import { timeAgo } from "../layout/time-ago";
 import { ProfilePicture } from "../shared/ProfilePicture";
 import { FiAlertCircle } from "react-icons/fi";
-
-
+import LoginPrompt from "../layout/LoginPrompt";
 
 export function Header({
   id,
@@ -19,6 +18,7 @@ export function Header({
   postLabel,
   icon
 }) {
+  const [showLoginModal, setShowLoginModal] = useState(false);
   return (
     <div className="letter-header" key={id}>
       <div className="head flex justify-between">
@@ -38,7 +38,7 @@ export function Header({
             {letter && `${timeAgo(letter?.created_at)} ago`}
           </div>
           <div className="vert-dots-container" ref={dropdownRef}>
-            <button className="vert-dots" onClick={handleDropdownToggle}>
+            <button className="vert-dots" onClick={userContext.session ? handleDropdownToggle : () => setShowLoginModal(true)}>
               <FiMoreVertical />
             </button>
             {showDropdown &&  (
@@ -57,6 +57,7 @@ export function Header({
         </div>
       </div>
       <div className="header-divider"></div>
+      {showLoginModal && <LoginPrompt setShowLoginModal={setShowLoginModal} showLoginModal={showLoginModal}/>}
     </div>
   );
 }

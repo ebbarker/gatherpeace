@@ -95,7 +95,7 @@ export function PostView({ postData = null,  myVotes = null, onVoteSuccess = nul
 
     let data, error;
       if (!postData) {
-        console.log('getting post and comments together');
+
           ({ data, error } = await supaClient
           .rpc("get_single_post_with_comments", { post_id: postId })
           .select("*"));
@@ -109,7 +109,7 @@ export function PostView({ postData = null,  myVotes = null, onVoteSuccess = nul
         }
 
       } else {
-    //     console.log('using postId to get comments');
+
           ({ data, error } = await supaClient
         .rpc("get_comments_by_post_id", { post_id: postId })
         .select("*"));
@@ -296,7 +296,7 @@ function CommentView({
                     onSuccess={(newComment) => {
 
                       function addComment (newComment) {
-                        console.log('this is the new comment being written: ' + JSON.stringify(newComment));
+
 
                         let parentIndex;
                         let realParent = newComment.path.slice(newComment.path.lastIndexOf('.') + 1);
@@ -410,7 +410,7 @@ function CreateComment({
       // Scroll a little more down to create extra space
     window.scrollBy(0, extraOffset);
     }
-    console.log('called scroll');
+
   };
 
   return (
@@ -482,8 +482,8 @@ function CreateComment({
         <div className="flex gap-2 comment-submit-container">
           <button
             type="submit"
-            id="new-comment-submit"
-            className="bg-green-400 border rounded font-display text-lg p-2"
+
+            className="new-comment-submit"
             disabled={!comment}
           >
             Submit
@@ -491,7 +491,7 @@ function CreateComment({
           {onCancel && (
             <button
               type="button"
-              className="bg-gray-400 rounded font-display text-lg p-2"
+              className="new-comment-cancel"
               onClick={() => onCancel()}
             >
               Cancel

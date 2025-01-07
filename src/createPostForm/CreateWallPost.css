@@ -1,0 +1,9 @@
+.create-wall-post {
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: white;
+  max-width: 800px;
+  width: 100%;
+}

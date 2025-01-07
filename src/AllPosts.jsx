@@ -12,6 +12,7 @@ import { NewsFeed } from "./newsFeed/NewsFeed";
 import { TrendingTags } from "./trending/TrendingTags";
 import LoginPrompt from "./layout/LoginPrompt";
 import Dialog from "./layout/Dialog";
+import { CreateWallPost } from "./createPostForm/CreateWallPost";
 
 
 export function AllPosts({ parent }) {
@@ -26,19 +27,21 @@ export function AllPosts({ parent }) {
   const { myContextVotes, setMyContextVotes } = useContext(VoteContext);
   const [searchParams, setSearchParams] = useSearchParams();
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [writingWallPost, setWritingWallPost] = useState(false);
+
 
   const term = searchParams.get("query");
   const location = useLocation();
   const navigate = useNavigate();
 
   const showMessageDialog = (e) => {
-    console.log('clicked show MESSAGE');
+
     e.preventDefault();
     setWritingMessage(true);
   }
 
   const showAddNameDialog = (e) => {
-    console.log ('clicked show NAME')
+
     e.preventDefault();
     if (!session) {
       setShowLoginModal(true); // Show login modal if not logged in
@@ -47,14 +50,29 @@ export function AllPosts({ parent }) {
     }
   }
 
+  const showWallPostDialog = (e) => {
+    e.preventDefault();
+
+      setWritingWallPost(true);
+
+  };
+
   //8-20-24 - i believe the page should always be one, so changing from:
  // navigate(`/peace-wall/${pageNumber || 1}?query=${encodeURIComponent(searchKeyword)}`);
   const handleSearch = (e) => {
-    console.log('REROUTING');
     e.preventDefault();
     navigate(`/peace-wall/1?query=${encodeURIComponent(searchKeyword)}`);
     //getLetters(searchKeyword);
   };
+
+  useEffect(() => {
+    const openMessage = searchParams.get("addName");
+    if (openMessage === "true") {
+      setAddingName(true); // Open the "Write a Peace Message" section
+      document.getElementById("peace-form")?.scrollIntoView({ behavior: "smooth" });
+
+    }
+  }, [searchParams]);
 
   // useEffect(() => {
   //   const searchParams = new URLSearchParams(location.search);
@@ -92,10 +110,7 @@ export function AllPosts({ parent }) {
   // console.log('USER SESSION: ' + JSON.stringify(session.user));
   // console.log('PROFILE: ' + JSON.stringify(profile));
     try {
-      console.log('page_number:', queryPageNumber);
-      console.log('search_keyword from get letters:', searchKeyword);
-      console.log('page_filter:', parent);
-      console.log('term before querying letters: ' + term);
+
       const { data: lettersData, error: lettersError } = await supaClient
         .rpc("get_letters_with_tsv", {
           page_number: queryPageNumber,
@@ -118,7 +133,7 @@ export function AllPosts({ parent }) {
 
 
   async function fetchTotalPages() {
-    console.log(parent);
+
     try {
       let countQuery;
 
@@ -225,17 +240,36 @@ export function AllPosts({ parent }) {
 
   return (
     <>
-      {!writingMessage && !addingName &&
-        <div className="call-to-action-container" >
-          {!profile?.has_signed && <button className="add-your-name action-button" onClick={showAddNameDialog}>
-            <span>Add Your Name</span>
-          </button>}
-          {profile?.has_signed && <button className="write-a-message action-button" onClick={showMessageDialog}>
-            <span>Write a Peace Message</span>
-          </button>}
-        </div>}
-      {addingName && <AddYourName letters={letters} setLetters={setLetters} setAddingName={setAddingName} />}
-      {writingMessage && <Stepform letters={letters} setLetters={setLetters} setWritingMessage={setWritingMessage}/>}
+      {!writingMessage && !addingName && !writingWallPost && (
+        <div className="call-to-action-container">
+          {!profile?.has_signed && (
+            <button className="add-your-name action-button" onClick={showAddNameDialog}>
+              <span>Write a Peace Message</span>
+            </button>
+          )}
+          {profile?.has_signed && (
+            <>
+              <button className="write-on-wall action-button" onClick={showWallPostDialog}>
+                <span>Write on the Peace Wall</span>
+              </button>
+              <button className="write-a-message action-button" onClick={showMessageDialog}>
+                <span>Send a Peace Letter</span>
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+        {addingName && (
+          <AddYourName letters={letters} setLetters={setLetters} setAddingName={setAddingName} isOpen={addingName}/>
+        )}
+
+        {writingMessage && (
+          <Stepform letters={letters} setLetters={setLetters} setWritingMessage={setWritingMessage} />
+        )}
+        {writingWallPost && (
+          <CreateWallPost posts={letters} setPosts={setLetters} setWritingWallPost={setWritingWallPost} />
+        )}
       <TrendingTags />
       <SearchBar
         searchKeyword={searchKeyword}
@@ -271,7 +305,6 @@ export async function castLetterVote({
   onError = (error) => console.log('error!!!') // Optional: define an onError callback for handling errors
 }) {
 
-console.log('casting letter vote!');
 
   if (voteType === "up") {
     await supaClient.rpc("insert_letter_vote",
@@ -285,7 +318,6 @@ console.log('casting letter vote!');
         console.error('error upvoting: ' + error.message);
       } else {
         onSuccess();
-        console.log('votedUp');
       }
     });
   } else if (voteType === "delete") {
@@ -323,9 +355,6 @@ export async function castPostVote({
 }) {
   try {
     if (voteType === "up") {
-      console.log('up voting from post_votes');
-      console.log('path: ' + postPath);
-      console.log('comment: ' + JSON.stringify(comment));
       const { data, error } = await supaClient
         .from("post_votes")
         .upsert(

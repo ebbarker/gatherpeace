@@ -28,8 +28,6 @@ export function AllPosts() {
         .select("*")
         .then(({ data }) => {
           setPosts(data);
-          console.log(JSON.stringify(data));
-
         }),
       supaClient
         .from("posts")

@@ -9,34 +9,42 @@ const getDomainFromUrl = (url: string) => {
 };
 
 // Utility function to prioritize tags with fallback
-const getTag = (primary: any, fallback1: any, fallback2: any, fallback3: any, externalLink: string = null) => {
-  return primary || fallback1 || fallback2 || fallback3 || externalLink; // Keep URL as it is if no title is found
+const getTag = (...tags: any[]) => {
+  // Return the first truthy, non-empty value
+  return tags.find((tag) => tag && typeof tag === "string" && tag.trim() !== "");
 };
+
 
 // Function to structure the metadata into an object
 const buildLinkPreview = (metaData: any, externalLink: string) => {
+  // Prioritize tags based on metaData and fallbacks
   return {
     title: getTag(
       metaData?.og?.title,
       metaData?.twitter?.title,
       metaData?.title,
-      null, // Skip description in the title fallback
-      externalLink // Use full URL with http(s) as the last fallback for title
+      externalLink // Use the URL itself if no title is found
     ),
-    description: getTag(metaData?.og?.description, metaData?.twitter?.description, metaData?.description, null),
+    description: getTag(
+      metaData?.og?.description,
+      metaData?.twitter?.description,
+      metaData?.description
+    ),
     image: getTag(
-      metaData?.og?.image,
       metaData?.twitter?.image,
-      metaData?.image,
-      null
+      metaData?.og?.image,
+      null // Fallback if no image exists
     ),
-    site_name: getTag(metaData?.og?.site_name, metaData?.twitter?.site, metaData?.keywords, null)
+    site_name: getTag(
+      metaData?.og?.site_name,
+      metaData?.twitter?.site,
+      metaData?.keywords
+    ),
   };
 };
 
 // Serve the function
 serve(async (req) => {
-  console.log("Received a request:", req.method, req.url);
 
   const supabaseClient = createClient(
     Deno.env.get('SUPABASE_URL') ?? '',
@@ -44,44 +52,49 @@ serve(async (req) => {
   );
 
   if (req.method === 'OPTIONS') {
-    console.log('Received OPTIONS request, returning ok');
+
     return new Response('ok', { headers: corsHeaders });
   }
 
   const writeLinkDataToDB = async (preview: any, url: string) => {
-    console.log('Attempting to write link preview to DB for URL:', url);
+    console.log('Writing data to DB:', JSON.stringify(preview));
     const record = {
       url,
       title: preview.title,
       description: preview.description, // If description is null, it will insert null
       image_location: preview.image,
-      site_name: preview.site_name
     };
 
     const { data, error } = await supabaseClient
       .from('link_previews')
       .insert([record]);
 
+      console.log('Insert Result:', { data, error });
+
     if (error) {
       console.error('Error writing data to DB:', error.message);
     } else {
-      console.log('Data successfully written to DB:', data);
     }
   };
 
   try {
-    console.log('Attempting to parse request body...');
+
     const { externalLink } = await req.json();
-    console.log('External link received:', externalLink);
+
 
     // Fetch all meta tags
-    console.log('Fetching metadata for the external link...');
+
     const metaData = await getMetaTags(externalLink);
-    console.log("Raw MetaData Response:", JSON.stringify(metaData, null, 2));
+    console.log('Fetched metaData:', JSON.stringify(metaData));
+    for (const key in metaData) {
+      console.log('Key:', key, 'Value:', metaData[key]);
+    }
+    console.log('meta image: ' + metaData.image);
+
 
     // Build the link preview based on the priority of tags
     const linkPreview = buildLinkPreview(metaData, externalLink);
-    console.log("Link preview object built:", JSON.stringify(linkPreview));
+
 
     // Respond to the user right away with the preview data
     const response = new Response(JSON.stringify(linkPreview), {

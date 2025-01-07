@@ -48,7 +48,6 @@ export function CreatePost({ newPostCreated = () => {}, posts, setPosts }) {
               if (error) {
                 console.log(error);
               } else {
-                console.log(JSON.stringify(data))
 
                 appendPost(user.session?.user.id, content, data[0].new_post_id, data[0].creation_time);
               }

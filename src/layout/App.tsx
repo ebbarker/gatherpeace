@@ -18,7 +18,8 @@ import Home from './Home';
 import MessageBoard from '../MessageBoard';
 import NavBar from '../navbar/NavBar';
 import { PostView } from '../PostView';
-import PrivacyPolicy from '../PrivacyPolicy';
+import PrivacyPolicy from '../legal/PrivacyPolicy';
+import TermsOfService from '../legal/TermsOfService';
 import { SupashipUserInfo, useSession } from './use-session';
 import { Welcome, welcomeLoader } from './Welcome';
 import * as Sentry from '@sentry/react';
@@ -31,6 +32,10 @@ import { supaClient } from "./supa-client";
 import { ListOfNames } from "../listOfNames/ListOfNames";
 import { Notifications } from "../notifications/Notifications";
 import { NotificationsProvider } from "../notifications/NotificationsContext";
+import  UserSettings from "../user-profile/UserSettings";
+import Footer from "./Footer";
+import ContactPage from "./ContactPage";
+import SubmitArt from "./SubmitArt";
 
 Sentry.init({
   dsn: 'https://5a282404b548c3304777f4db6615b992@o4505705490350080.ingest.sentry.io/4505705494478848',
@@ -93,8 +98,12 @@ export const router = sentryCreateBrowserRouter([
         loader: welcomeLoader,
       },
       { path: 'privacy-policy', element: <PrivacyPolicy /> },
+      { path: 'terms-of-service', element: <TermsOfService /> },
       { path: 'profile', element: <PrivateUserProfile /> },
+      { path: 'settings', element: <UserSettings /> },
       { path: 'signatories', element: <ListOfNames /> },
+      { path: 'contact', element: <ContactPage /> },
+      { path: 'submit-art', element: <SubmitArt /> },
       {
         path: '*', // Use a wildcard to capture all other routes
         element: <CatchAllRoutes />,
@@ -147,13 +156,18 @@ function Layout() {
   // }, [setUser]);
 
   return (
-    <UserContext.Provider value={{ session, profile, updateProfile }}>
-      <VoteProvider>
-        <NotificationsProvider>
-          <NavBar />
-          <Outlet />
-        </NotificationsProvider>
-      </VoteProvider>
+<UserContext.Provider value={{ session, profile, updateProfile }}>
+      <div className="layout-container">
+        <VoteProvider>
+          <NotificationsProvider>
+            <NavBar />
+            <div className="content-container">
+              <Outlet />
+            </div>
+            <Footer />
+          </NotificationsProvider>
+        </VoteProvider>
+      </div>
     </UserContext.Provider>
   );
 }

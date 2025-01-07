@@ -87,7 +87,7 @@ export default function LoginText() {
         contents={
           <>
             <Auth
-              providers={["google", "facebook", "twitter"]}
+              providers={["google"]}
               supabaseClient={supaClient}
               appearance={{
                 theme: ThemeSupa,
@@ -100,7 +100,9 @@ export default function LoginText() {
               }}
               view={authMode}
             />
-            <button onClick={() => setShowModal(false)}>Close</button>
+
+              <button className="cancel-button" onClick={() => setShowLoginModal(false)}>Close</button>
+            
           </>
         }
       />

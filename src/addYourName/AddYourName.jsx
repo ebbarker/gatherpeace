@@ -1,34 +1,39 @@
-import React, { useState, useContext } from 'react';
-import { router, UserContext } from "../layout/App";
-import { supaClient } from "../layout/supa-client";
-import "./AddYourName.css";
-import { CountryDropdown } from "../shared/CountryDropdown"
+// AddYourName.jsx
 
-export function AddYourName({ letters, setLetters, setAddingName }) {
+import React, { useState, useEffect, useContext } from 'react';
+import { UserContext } from '../layout/App';
+import { supaClient } from '../layout/supa-client';
+import './AddYourName.css';
+import { CountryDropdown } from '../shared/CountryDropdown';
+
+export function AddYourName({ letters, setLetters, setAddingName, isOpen }) {
   const user = useContext(UserContext);
   const [addingNameError, setAddingNameError] = useState(null);
-  const formFields = {
+
+  const [formData, setFormData] = useState({
     name: '',
-    peaceTranslation: '',
-    // country: '',
-    // state: '',
-    // city: '',
-    letterContent: ''
-  }
+    peaceTranslation: 'peace',
+    letterContent: '',
+  });
+
   const [state, setState] = useState('');
   const [city, setCity] = useState('');
   const [country, setCountry] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('');
 
-  const [formData, setFormData] = useState(formFields);
-
-
-
   // Error state
   const [errors, setErrors] = useState({});
+  const [imageError, setImageError] = useState(null);
+
+  // Image file state
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+  const [uploading, setUploading] = useState(false);
+
+
 
   // Handle form submission
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     // Validate form
@@ -37,24 +42,56 @@ export function AddYourName({ letters, setLetters, setAddingName }) {
       setErrors(validationErrors);
       return;
     }
-    //console.log(JSON.stringify(validationErrors));
-    // Clear errors
-   // setErrors({});
 
-    // Call the form submission function
-    submitForm(formData);
+    let imageUrl = null;
 
-    // Clear form
-    // setFormData({
-    //   name: '',
-    //   peaceTranslation: '',
-    //   country: '',
-    //   state: '',
-    //   city: '',
-    //   message: ''
-    // });
+    // Handle image upload
+    if (imageFile) {
+      setUploading(true);
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${user.session.user.id}-${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supaClient.storage
+        .from('gallery')
+        .upload(filePath, imageFile);
+
+      if (uploadError) {
+        console.error('Error uploading image:', uploadError.message);
+        setAddingNameError(uploadError);
+        setUploading(false);
+        return;
+      }
+
+      const { data, error: urlError } = supaClient.storage
+        .from('gallery')
+        .getPublicUrl(filePath);
+
+      if (urlError) {
+        console.error('Error getting public URL:', urlError.message);
+        setAddingNameError(urlError);
+        setUploading(false);
+        return;
+      }
+
+      imageUrl = data.publicUrl;
+      setUploading(false);
+    }
+
+    // Proceed to submit the form
+    submitForm(imageUrl);
   };
+  useEffect(() => {
+   if (isOpen) {
+          setTimeout(() => {
+        document.getElementById("peace-form")?.scrollIntoView({ behavior: "smooth" });
+      }, 100); // Adjust delay as needed
+   }
+      // Ensure smooth scroll happens after the element is in the DOM
 
+
+  }, [isOpen]);
+  // Handle form cancellation
   const handleCancel = (event) => {
     event.preventDefault();
     setAddingName(false);
@@ -64,8 +101,8 @@ export function AddYourName({ letters, setLetters, setAddingName }) {
   const validateForm = (data) => {
     const errors = {};
     if (!data.name) errors.name = 'Name is required';
-    if (!data.peaceTranslation) errors.peaceTranslation = 'Peace translation is required';
-    // if (!data.country) errors.country = 'Country is required';
+    // if (!data.peaceTranslation) errors.peaceTranslation = 'Peace translation is required';
+    if (!data.letterContent) errors.letterContent = 'Message is required';
     return errors;
   };
 
@@ -75,68 +112,83 @@ export function AddYourName({ letters, setLetters, setAddingName }) {
     setFormData({ ...formData, [name]: value });
   };
 
+  // Handle image selection
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Check file size (2MB = 2 * 1024 * 1024 bytes)
+      if (file.size > 2 * 1024 * 1024) {
+        setImageError('Image size should not exceed 2MB.');
+        setImageFile(null);
+        setImagePreviewUrl(null);
+        return;
+      } else {
+        setImageError(null); // Clear previous errors
+      }
 
-  function appendLetter(userId, content, newId, created_at, senderCountry, senderState, senderCity, peaceTranslation, senderName,
-    recipient,
-    recipientCountry,
-    recipientState,
-    recipientCity) {
-    let newLetter = {
-      id: newId,
-      content,
-      score: 0,
-      likes: 0,
-      username: user?.profile?.username,
-      user_id: userId,
-      created_at,
-      count_comments: 0,
-      sender_country: senderCountry,
-      sender_state: senderState,
-      sender_city: senderCity,
-      sign_off: peaceTranslation,
-      sender_name: senderName,
-      recipient: 'me',
-      post_type: 'name',
-      avatar_url: user?.profile?.avatar_url
+      // Create a preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreviewUrl(previewUrl);
+
+      // Update image file state
+      setImageFile(file);
+    } else {
+      setImagePreviewUrl(null);
+      setImageFile(null);
     }
-    console.log('new letter: ' + JSON.stringify(newLetter))
+  };
+
+  // Append the new letter to the list
+  function appendLetter(newLetter) {
     setLetters([newLetter, ...letters]);
-    console.log(letters);
   }
 
-  const submitForm = () => {
-
+  // Submit the form data
+  const submitForm = (imageUrl) => {
     supaClient
-      .rpc("create_new_name", {
-        userId: user?.session?.user?.id,
+      .rpc('create_new_name', {
+        userId: user.session.user.id,
         content: formData.letterContent,
         sender_country: country,
         sender_state: state,
         sender_city: city,
-        sign_off: formData.peaceTranslation,
+        sign_off: 'peace',
         sender_name: formData.name,
         recipient: null,
+        image_url: imageUrl, // Include imageUrl
       })
       .then(({ data, error }) => {
         if (error) {
           setAddingNameError(error);
-          console.log(error);
-          console.log('adding name error: ' + addingNameError);
+          console.error('Adding name error:', error.message);
         } else {
-          appendLetter(
-            user.session?.user.id,
-            formData.letterContent,
-            data[0].new_letter_id,
-            data[0].creation_time,
-            country,
-            state,
-            city,
-            formData.peaceTranslation,
-            formData.name,
-            formData.recipient,
-          );
-          user.updateProfile({has_signed: true});
-          setFormData(formFields);
+          const newLetter = {
+            id: data[0].new_letter_id,
+            content: formData.letterContent,
+            score: 0,
+            likes: 0,
+            username: user.profile.username,
+            user_id: user.session.user.id,
+            created_at: data[0].creation_time,
+            count_comments: 0,
+            sender_country: country,
+            sender_state: state,
+            sender_city: city,
+            sign_off: 'peace',
+            sender_name: formData.name,
+            recipient: 'me',
+            post_type: 'name',
+            avatar_url: user.profile.avatar_url,
+            image_url: imageUrl,
+          };
+          appendLetter(newLetter);
+          user.updateProfile({ has_signed: true });
+          setFormData({
+            name: '',
+            letterContent: '',
+          });
+          setImageFile(null);
+          setImagePreviewUrl(null);
           setAddingName(false);
         }
       });
@@ -144,13 +196,23 @@ export function AddYourName({ letters, setLetters, setAddingName }) {
 
   return (
     <div className="App">
-      <form className="peace-form" onSubmit={handleSubmit}>
+      <form id="peace-form" className="peace-form" onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="name">Name (required):</label>
+            <div className="name-recommendation-text">
+              Gather Peace recommends using your real name, or real initials, such as "John S.",
+              as the project becomes more significant by emphasizing interactions between real people. You can use a fake name if you do not feel comfortable using your real one.
+            </div>
           <input
             type="text"
             id="name"
             name="name"
+            autoFocus // Automatically focuses on the field when the component renders
+            onFocus={(e) => {
+              // Ensure cursor starts at the beginning of the input
+              e.target.selectionStart = 0;
+              e.target.selectionEnd = 0;
+            }}
             value={formData.name}
             onChange={handleChange}
             className={errors.name ? 'error' : ''}
@@ -158,7 +220,7 @@ export function AddYourName({ letters, setLetters, setAddingName }) {
           {errors.name && <span className="error-message">{errors.name}</span>}
         </div>
 
-        <div className="form-group">
+        {/* <div className="form-group">
           <label htmlFor="peaceTranslation">Write "peace" in your language (required):</label>
           <input
             type="text"
@@ -169,77 +231,71 @@ export function AddYourName({ letters, setLetters, setAddingName }) {
             className={errors.peaceTranslation ? 'error' : ''}
           />
           {errors.peaceTranslation && <span className="error-message">{errors.peaceTranslation}</span>}
-        </div>
-
-        {/* <div className="form-group">
-          <label htmlFor="country">Country (required):</label>
-          <input
-            type="text"
-            id="country"
-            name="country"
-            value={formData.country}
-            onChange={handleChange}
-            className={errors.country ? 'error' : ''}
-          />
-          {errors.country && <span className="error-message">{errors.country}</span>}
         </div> */}
 
-          <CountryDropdown
-            selectedCountry={selectedCountry}
-            setSelectedCountry={setSelectedCountry}
-            country={country}
-            setCountry={setCountry}
-            state={state}
-            city={city}
-            setState={setState}
-            setCity={setCity}
-          />
-
-
-
-        {/* <div className="form-group">
-          <label htmlFor="state">State/Province (optional):</label>
-          <input
-            type="text"
-            id="state"
-            name="state"
-            value={formData.state}
-            onChange={handleChange}
-          />
-        </div>
+        <CountryDropdown
+          selectedCountry={selectedCountry}
+          setSelectedCountry={setSelectedCountry}
+          country={country}
+          setCountry={setCountry}
+          state={state}
+          city={city}
+          setState={setState}
+          setCity={setCity}
+        />
 
         <div className="form-group">
-          <label htmlFor="city">City (optional):</label>
-          <input
-            type="text"
-            id="city"
-            name="city"
-            value={formData.city}
-            onChange={handleChange}
-          />
-        </div> */}
+          <label htmlFor="letterContent">Message (required, up to 2000 characters):</label>
 
-        <div className="form-group">
-          <label htmlFor="message">Message (optional, up to 2000 characters):</label>
           <textarea
-            id="message"
+            id="letterContent"
             name="letterContent"
             value={formData.letterContent}
             onChange={handleChange}
             maxLength="2000"
             rows="5"
-            className={errors.message ? 'error' : ''}
+            className={errors.letterContent ? 'error' : ''}
           />
-          {errors.message && <span className="error-message">Error: {errors.message}</span>}
+          <p className="hint-text">
+            Not sure what to write? Just say "Peace."  You can always write another message later.
+          </p>
+          {errors.letterContent && <span className="error-message">{errors.letterContent}</span>}
         </div>
-        {addingNameError && (addingNameError.message = "You have already added your name" ?
-         <div>You have already added your name to the peace wall. You can only add your name once, but you can write on the Peace Wall as many times as you would like.</div> :
-         <div>{addingNameError.message}</div>)
-        }
-        {!addingNameError && (<div className="button-container">
-          <button type="submit" className="submit-button action-button" onClick={handleSubmit}>Submit</button>
-          <button type="button" className="cancel-button cancel-button" onClick={handleCancel}>Cancel</button>
-        </div>)}
+
+        <div className="form-group">
+          <label htmlFor="imageUpload">Add a Photo (optional):</label>
+          <input
+            type="file"
+            id="imageUpload"
+            name="imageUpload"
+            accept="image/*"
+            onChange={handleImageChange}
+          />
+          {imageError && <span className="error-message">{imageError}</span>}
+          {imagePreviewUrl && (
+            <img src={imagePreviewUrl} alt="Image Preview" className="image-preview" />
+          )}
+        </div>
+
+        {addingNameError && (
+          addingNameError.message === 'You have already added your name' ? (
+            <div>
+              You have already added your name to the peace wall. You can only add your name once,
+              but you can write on the Peace Wall as many times as you would like.
+            </div>
+          ) : (
+            <div>{addingNameError.message}</div>
+          )
+        )}
+
+        <div className="button-container">
+          <button type="submit" className="submit-button action-button" disabled={uploading}>
+            {uploading ? 'Uploading...' : 'Submit'}
+          </button>
+          <button type="button" className="cancel-button cancel-button" onClick={handleCancel}>
+            Cancel
+          </button>
+        </div>
       </form>
     </div>
   );

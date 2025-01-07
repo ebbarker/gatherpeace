@@ -16,6 +16,7 @@
     "@supabase/ui": "^0.36.5",
     "axios": "^1.6.2",
     "bootstrap": "^4.6.0",
+    "browser-image-compression": "^2.0.2",
     "deno": "^0.1.1",
     "mdb-react-ui-kit": "^6.1.0",
     "node-sass": "^7.0.3",

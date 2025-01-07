@@ -22,7 +22,6 @@ export function TrendingTags() {
                 } else if (data) {
                     const validTags = data.filter(tag => tag.tag && tag.tag.trim() !== '');  // Filter out empty or invalid tags
                     setTags(validTags);
-                    console.log('tags: ' + JSON.stringify(validTags));
                 }
             } catch (error) {
                 console.log('error fetching tags: ' + JSON.stringify(error));
@@ -38,22 +37,22 @@ export function TrendingTags() {
     if (loading) return <p>Loading trending tags...</p>;
     if (pageError) return <p>Error fetching trending tags: {pageError}</p>;
 
-    return (
-        <div className="trending-tags-container">
-            <div className="trending-tags">
-                {tags.length > 0 ? (
-                    tags.map((tag, index) => (
+return (
+    <>
+        {tags.length > 0 && (
+            <div className="trending-tags-container">
+                <div className="trending-tags">
+                    {tags.map((tag, index) => (
                         <Link key={index} to={`/peace-wall/1?query=%23${tag.tag.slice(1)}`}>
                             <div className="tag-item">
                                 {/* {tag.tag} - {tag.frequency} {tag.frequency > 1 ? 'posts' : 'post'} */}
-                                {tag.tag} 
+                                {tag.tag}
                             </div>
                         </Link>
-                    ))
-                ) : (
-                    <p>No trending tags available.</p>
-                )}
+                    ))}
+                </div>
             </div>
-        </div>
-    );
+        )}
+    </>
+);
 }

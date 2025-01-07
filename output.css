@@ -3,6 +3,43 @@
   --body_color: black;
   --link_color: green;
 }
+
+/* @import url('https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,200..1000;1,200..1000&display=swap');
+
+html,
+body {
+  font-family: 'Mulish', sans-serif !important;
+  font-weight: 400 !important;
+} */
+
+[data-theme="light"] {
+  --body_main: #29E4B4;
+  --body_background: #bdffe9;
+  --container_background: #ffffff;
+  --text_color: #000000;
+  --secondary_text_color: #32413c;
+  --modal_color: #7eb2a1;
+  --button_color: #bdffe9;
+  --button_hover_color: #41977b;
+  --form_text_color: black;
+  --text_area_color: white;
+  --divider_color: #94afa6;
+  --section_divider_top_border: none;
+  --input_form_border: 1px solid #86ccb5;
+  --greeting_background: rgb(154, 255, 216);
+  --navbar_color: #9be6cd;
+  --call_to_action_background: #129E9E;
+  --call_to_action_text: #ffffff;
+  --cancel_background: #cef0e3;
+  --cancel_background_hover: #c2e2e6;
+  --cancel_text: #000000;
+  --cancel_border: border: 1px solid #a9a9a9;
+  --title_text-color: #41977b;
+  --like_filled_color: #23b79a;
+  --main_input_background: white;
+}
+
+
 [data-theme="dark"] {
   --body_main: #29E4B4;
   --body_background: #090c0b;
@@ -26,7 +63,7 @@
   --text_color: #000000;
   --secondary_text_color:#32413c;
   --modal_color: #547b6e;
-  --button_color: #d2f6ea;
+  --button_color: #b4f8e1;
   --button_hover_color: #41977b;
   --form_text_color: black;
   --text_area_color: white;
@@ -35,35 +72,12 @@
   --input_form_border: 1px solid #86ccb5;
 }
 
-[data-theme="light"] {
-  --body_main: #29E4B4;
-  --body_background: #bdffe9;
-  --container_background: #ffffff;
-  --text_color: #000000;
-  --secondary_text_color:#32413c;
-  --modal_color: #5d8276;
-  --button_color: #bdffe9;
-  --button_hover_color: #41977b;
-  --form_text_color: black;
-  --text_area_color: white;
-  --divider_color:   #94afa6;
-  --section_divider_top_border: none;
-  --input_form_border: 1px solid #86ccb5;
-  --greeting_background: rgb(154, 255, 216);
-  --navbar_color: #9be6cd;
-  --call_to_action_background: #129E9E;
-  --call_to_action_text: #ffffff;
-  --cancel_background: #e0f7fa;
-  --cancel_background_hover: #c2e2e6;
-  --cancel_text: #000000;
-  --cancel_border: border: 1px solid #a9a9a9;
-  --title_text-color: #41977b;
-  --like_filled_color: #23b79a;
-}
+
 
 body {
   background-color: var(--body_background) !important;
   color: var(--text_color) !important;
+
 }
 
 .header-container {
@@ -150,6 +164,7 @@ body {
 
 
 
+
 .please-text {
   padding-right: 5px;
 }
@@ -172,6 +187,10 @@ body {
 .nav-item {
   display: flex;
   align-items: center;
+}
+
+.comments-container {
+  background: var(--body_background);
 }
 
 @media screen and (min-width: 800px) {
@@ -220,6 +239,7 @@ body {
 
   .comments-container {
     width: 800px;
+
   }
 
   .reply-container {
@@ -375,14 +395,30 @@ body {
   border-top: 0px;
 }
 
-#new-comment-submit {
-  margin-top: 5px;
-  border: none !important;
-  color: var(--text_color);
-  background-color: var(--button_color);
+.new-comment-submit {
+  margin: 5px 5px 5px;
+
+  color: white;
+  background-color: var(--call_to_action_background);
+  border-radius: 6px;
+  height: 40px;
+  border: 1px solid black;
 }
 
-#new-comment-submit:hover {
+.new-comment-submit:hover {
+  background-color: var(--button_hover_color);
+}
+
+.new-comment-cancel {
+  margin: 5px 5px 5px;
+  color: black;
+  background-color: white;
+  border-radius: 6px;
+  height: 40px;
+  border: 1px solid black;
+}
+
+.new-comment-cancel:hover {
   background-color: var(--button_hover_color);
 }
 
@@ -441,4 +477,68 @@ body.active-modal {
 
 @media screen and (max-width: 799px) {
 
+}
+
+.legal-container {
+  margin-left: 10px;
+}
+
+.btn-close {
+  width: 1em;
+  height: 1em;
+  opacity: 0.5;
+}
+
+.btn-close::before {
+  content: '×';
+  font-size: 1.5rem;
+  color: #000;
+  position: absolute;
+  top: -0.2em;
+  left: 0;
+}
+
+.btn-close:hover {
+  opacity: 1;
+}
+
+.custom-close-button {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: #000;
+  /* Change the color as needed */
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  cursor: pointer;
+}
+
+.custom-close-button:hover {
+  color: #095925;
+  /* Change the hover color as needed */
+}
+
+.footer-link {
+  color: black !important;
+}
+
+.centered-button-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  /* Centers items horizontally */
+}
+
+.centered-button {
+  width: 100%;
+}
+
+.nav-logo {
+  padding: 5px 5px 5px 0;
+}
+
+.letter-content-container {
+  margin-top: 10px !important;
 }

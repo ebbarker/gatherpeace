@@ -5,18 +5,17 @@ import Dialog from "./Dialog";
 import { supaClient } from "./supa-client";
 
 export async function welcomeLoader() {
-  console.log('welcome loader is Called');
+
   try {
     const {
       data: { user },
     } = await supaClient.auth.getUser();
 
     if (!user) {
-      console.log('line 12');
+
       return redirect("/");
     } else {
-      console.log('user: ' + JSON.stringify(user));
-      console.log('line 15');
+
     }
 
     try {
@@ -32,7 +31,7 @@ export async function welcomeLoader() {
       }
 
       if (data?.username) {
-        console.log('data.username on line 33' + data?.username);
+
         return redirect("/");
       }
 
@@ -59,6 +58,12 @@ export function Welcome() {
   const invalidString = useMemo(() => validateUsername(userName), [userName]);
   const { updateProfile } = useContext(UserContext);
 
+  const defaultAvatars = [
+    '/default_avatars/dove.jpg',
+    '/default_avatars/feather.jpg',
+    '/default_avatars/peace.jpg',
+  ];
+
   return (
     <Dialog
       allowClose={false}
@@ -69,43 +74,46 @@ export function Welcome() {
             Welcome to Gather Peace
           </h2>
           <p className="text-center">
-            Please fill out a profile.
+            Please pick a username.
           </p>
           <form
             className="grid grid-cols-1 place-items-center"
             onSubmit={(event) => {
               event.preventDefault();
-              console.log('user id ' + user.session?.user.id,);
-              supaClient
-                  .from("user_profiles")
-                  .insert([
-                      {
-                          user_id: user.session?.user.id,
-                          username: userName,
-                      },
-                  ])
-                  .then(({ error }) => {
-                      if (error) {
-                        if (error.message.indexOf('duplicate key') !== -1) {
-                          setServerError(`Username "${userName}" is already taken`);
-                          console.log(JSON.stringify(error));
-                        }  else {
-                          setServerError(`Unknown error: ${error.message}`);
-                          console.log(JSON.stringify(error));
-                        }
 
-                      } else {
-                          setUserName(userName); // Set the username state here
-                          updateProfile({ username: userName });
-                          const target = localStorage.getItem("returnPath") || "/";
-                          localStorage.removeItem("returnPath");
-                          console.log('redirecting line 65');
-                          setTimeout(() => {
-                              navigate(target);
-                          }, 200);
-                      }
-                  });
-          }}
+              // Select a random avatar
+              const randomAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
+
+              supaClient
+                .from("user_profiles")
+                .insert([
+                  {
+                    user_id: user.session?.user.id,
+                    username: userName.trim(),
+                    avatar_url: randomAvatar,
+                  },
+                ])
+                .then(({ error }) => {
+                  if (error) {
+                    if (error.message.indexOf('duplicate key') !== -1) {
+                      setServerError(`Username "${userName}" is already taken`);
+
+                    } else {
+                      setServerError(`Unknown error: ${error.message}`);
+
+                    }
+                  } else {
+                    updateProfile({ username: userName, avatar_url: randomAvatar });
+                    // const target = localStorage.getItem("returnPath") || "/";
+                    // localStorage.removeItem("returnPath");
+                    const target = "/?addName=true"; // Specify the query parameter to open the section
+                    navigate(target, { replace: true }); // Redirect to AllPosts with the openMessage indicator
+                    setTimeout(() => {
+                      navigate(target);
+                    }, 200);
+                  }
+                });
+            }}
           >
             <input
               name="username"
@@ -127,7 +135,7 @@ export function Welcome() {
               </p>
             )}
             <p className="text-center">
-              This is the name people will see you as on Gather Peace
+              This is the name people will see you as on Gather Peace.
             </p>
             <button
               className="font-display text-2xl bg-green-400 text-center rounded p-2 m-2 mb-8"

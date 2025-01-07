@@ -7,6 +7,7 @@ CREATE TABLE letters (
     count_comments INT DEFAULT 0 NOT NULL,
     likes int DEFAULT 0 NOT NULL,
     post_type text
+
 );
 
 CREATE TABLE letter_contents (
@@ -21,7 +22,8 @@ CREATE TABLE letter_contents (
     sender_name text,
     recipient text,
     tsv TSVECTOR,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    image_url TEXT
 );
 
 CREATE TABLE letter_votes (
@@ -253,6 +255,55 @@ $$ LANGUAGE plpgsql;
 -- END;
 -- $$ LANGUAGE plpgsql;
 
+-- CREATE OR REPLACE FUNCTION get_letters_with_tsv(
+--     page_number INT,
+--     search_keyword TEXT DEFAULT NULL,
+--     page_filter TEXT DEFAULT NULL
+-- )
+-- RETURNS TABLE (
+--     id uuid,
+--     user_id uuid,
+--     created_at TIMESTAMP WITH TIME ZONE,
+--     content TEXT,
+--     score INT,
+--     likes INT,
+--     path ltree,
+--     sender_country text,
+--     sender_state text,
+--     sender_city text,
+--     sign_off text,
+--     sender_name text,
+--     recipient text,
+--     count_comments INT,
+--     post_type text,
+--     avatar_url text,
+--     username text,
+--     image_url text  -- Added image_url to the RETURNS TABLE
+-- ) AS $$
+-- BEGIN
+--     RETURN QUERY
+--     WITH LimitedLetters AS (
+--         SELECT l.id, l.user_id, l.created_at, l.path,
+--                l.score, l.likes, l.count_comments, l.post_type
+--         FROM letters l
+--         JOIN letter_contents lc ON l.id = lc.letter_id
+--         WHERE
+--             (search_keyword IS NULL OR lc.tsv @@ plainto_tsquery('english', search_keyword)) AND
+--             (page_filter IS NULL OR l.post_type = page_filter)
+--         ORDER BY l.score DESC, l.created_at DESC
+--         LIMIT 10 OFFSET (page_number - 1) * 10
+--     )
+--     SELECT ll.id, ll.user_id, ll.created_at, lc.content, ll.score, ll.likes,
+--            ll.path, lc.sender_country, lc.sender_state,
+--            lc.sender_city, lc.sign_off, lc.sender_name, lc.recipient,
+--            ll.count_comments, ll.post_type, up.avatar_url, up.username,
+--            lc.image_url  -- Added lc.image_url to the SELECT clause
+--     FROM LimitedLetters ll
+--     JOIN letter_contents lc ON ll.id = lc.letter_id
+--     LEFT JOIN user_profiles up ON ll.user_id = up.user_id
+--     ORDER BY ll.score DESC, ll.created_at DESC;
+-- END;
+-- $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION get_letters_with_tsv(
     page_number INT,
     search_keyword TEXT DEFAULT NULL,
@@ -275,7 +326,8 @@ RETURNS TABLE (
     count_comments INT,
     post_type text,
     avatar_url text,
-    username text
+    username text,
+    image_url text
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -287,17 +339,18 @@ BEGIN
         WHERE
             (search_keyword IS NULL OR lc.tsv @@ plainto_tsquery('english', search_keyword)) AND
             (page_filter IS NULL OR l.post_type = page_filter)
-        ORDER BY l.score DESC, l.created_at DESC
+        ORDER BY l.created_at DESC  -- Changed sorting to use created_at
         LIMIT 10 OFFSET (page_number - 1) * 10
     )
     SELECT ll.id, ll.user_id, ll.created_at, lc.content, ll.score, ll.likes,
            ll.path, lc.sender_country, lc.sender_state,
            lc.sender_city, lc.sign_off, lc.sender_name, lc.recipient,
-           ll.count_comments, ll.post_type, up.avatar_url, up.username
+           ll.count_comments, ll.post_type, up.avatar_url, up.username,
+           lc.image_url
     FROM LimitedLetters ll
     JOIN letter_contents lc ON ll.id = lc.letter_id
     LEFT JOIN user_profiles up ON ll.user_id = up.user_id
-    ORDER BY ll.score DESC, ll.created_at DESC;
+    ORDER BY ll.created_at DESC;  -- Final sorting by created_at
 END;
 $$ LANGUAGE plpgsql;
 
@@ -382,14 +435,15 @@ BEGIN
 END; $$;
 
 CREATE OR REPLACE FUNCTION create_new_name(
-    "userId" uuid,
-    "content" text,
-    sender_country text,
-    sender_state text,
-    sender_city text,
-    sign_off text,
-    sender_name text,
-    recipient text
+    "content" TEXT,
+    recipient TEXT,
+    sender_city TEXT,
+    sender_country TEXT,
+    sender_name TEXT,
+    sender_state TEXT,
+    sign_off TEXT,
+    "userId" UUID,
+    image_url TEXT DEFAULT NULL -- Include image_url with a default value
 )
 RETURNS TABLE(new_letter_id UUID, creation_time TIMESTAMP WITH TIME ZONE)
 LANGUAGE plpgsql
@@ -429,7 +483,8 @@ BEGIN
             "sender_city",
             "sign_off",
             "sender_name",
-            "recipient"
+            "recipient",
+            "image_url" -- Include image_url column
         )
         VALUES (
             new_letter_id,
@@ -440,7 +495,8 @@ BEGIN
             sender_city,
             sign_off,
             sender_name,
-            recipient
+            recipient,
+            image_url -- Include image_url value
         );
 
         -- Update the has_signed field to true
@@ -451,7 +507,9 @@ BEGIN
         RETURN QUERY
         SELECT new_letter_id, creation_time;
     END IF;
-END; $$;
+END;
+$$;
+
 
 
 CREATE OR REPLACE FUNCTION delete_name(
@@ -595,7 +653,7 @@ $$;
 
 
 
-create extension http with schema extensions;
+-- create extension http with schema extensions;
 
 CREATE OR REPLACE FUNCTION get_user_profile_and_email(profile_name text)
 RETURNS TABLE(username text, website text, avatar_url text, email text) AS $$

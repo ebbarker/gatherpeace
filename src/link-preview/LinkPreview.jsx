@@ -25,7 +25,7 @@ export default function LinkPreview({ text }) {
       const arr = text.match(urlRegex);
       const url = arr?.length ? arr[0] : null;
 
-      console.log('Checking DB for URL:', url);
+
 
       if (!url) {
         setNoOgPreview(true);
@@ -106,17 +106,22 @@ export default function LinkPreview({ text }) {
     if (!ogPreview) return null;
 
     return (
-      <div className="link-preview">
-        {ogPreview.image && (
-          <div className="preview-image-container">
-            <img src={ogPreview.image} alt="Preview" className="preview-image" />
+        <a
+          href={ogPreview.url.startsWith("http") ? ogPreview.url : `https://${ogPreview.url}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="link-preview"
+        >
+          {ogPreview.image && (
+            <div className="preview-image-container">
+              <img src={ogPreview.image} alt="Preview" className="preview-image" />
+            </div>
+          )}
+          <div className="preview-text">
+            <p className="preview-url">{ogPreview.url}</p>
+            <h3 className="preview-title">{ogPreview.title}</h3>
+            <p className="preview-description">{ogPreview.description}</p>
           </div>
-        )}
-        <div className="preview-text">
-          <p className="preview-url">{ogPreview.url}</p> {/* URL added above title */}
-          <h3 className="preview-title">{ogPreview.title}</h3>
-          <p className="preview-description">{ogPreview.description}</p>
-        </div>
-      </div>
+        </a>
     );
   }

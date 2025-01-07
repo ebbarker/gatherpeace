@@ -14,7 +14,6 @@ export function Stepform ({ newPostCreated = () => {}, letters, setLetters, setW
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      console.log('Enter pressed');
 
       // Traverse up to the parent div and then to the next div
       let nextDiv = e.target.parentElement.nextElementSibling;
@@ -96,7 +95,7 @@ export function Stepform ({ newPostCreated = () => {}, letters, setLetters, setW
     }
     setLetters([newLetter, ...letters]);
     setWritingMessage(false);
-    console.log(letters);
+
   }
 
 

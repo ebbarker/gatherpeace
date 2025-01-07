@@ -10,6 +10,8 @@ import { ProfilePicture } from "../shared/ProfilePicture";
 import { Link } from "react-router-dom";
 import { IoArrowBackCircleSharp } from "react-icons/io5";
 import './PostControls.css';
+import LoginPrompt from "../layout/LoginPrompt";
+
 
 export function PostControls({
   letter,
@@ -23,6 +25,7 @@ export function PostControls({
   const [likesList, setLikesList] = useState([]);
   const userContext = useContext(UserContext);
   const { myContextVotes } = useContext(VoteContext);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   // Fetch the list of users who liked the post
   useEffect(() => {
@@ -70,13 +73,13 @@ export function PostControls({
         <div className="post-controls-container flex items-center">
           <button
             className="post-votes-container post-control-button"
-            onClick={onVoteClick}
+            onClick={userContext?.session ? onVoteClick : ()=>setShowLoginModal(true)}
           >
             <span>
               <UpVote
                 direction="up"
                 filled={myContextVotes[letter?.id]}
-                enabled={!!userContext.session}
+
                 isClicked={isClicked}
               />
               {' ' + letter?.likes}
@@ -138,6 +141,7 @@ export function PostControls({
           </div>
         )}
       </div>
+      {showLoginModal && <LoginPrompt setShowLoginModal={setShowLoginModal} showLoginModal={showLoginModal}/>}
     </>
   );
 }

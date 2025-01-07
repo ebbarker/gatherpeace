@@ -31,31 +31,66 @@ create table user_profiles (
 -- -- See https://supabase.com/docs/guides/auth/managing-user-data#using-triggers for more details.
 
 -- Set up Storage!
-insert into storage.buckets (id, name)
-  values ('avatars', 'avatars');
+-- insert into storage.buckets (id, name)
+--   values ('avatars', 'avatars');
+--   on conflict (id) do nothing;
 
--- -- Set up access controls for storage.
--- -- See https://supabase.com/docs/guides/storage/security/access-control#policy-examples for more details.
+-- -- -- Set up access controls for storage.
+-- -- -- See https://supabase.com/docs/guides/storage/security/access-control#policy-examples for more details.
+-- -- create policy "Avatar images are publicly accessible." on storage.objects
+-- --   for select using (bucket_id = 'avatars');
+
+-- create policy "Anyone can upload an avatar." on storage.objects
+--   for insert with check (bucket_id = 'avatars');
+
+-- create policy "Anyone can update their own avatar." on storage.objects
+--   for update using (auth.uid() = owner) with check (bucket_id = 'avatars');
+
+-- create policy "User can delete own avatar" on storage.objects
+--   for delete using (auth.uid() = owner);
+
+--   ----
+--   insert into storage.buckets (id, name)
+--   values ('default_avatars', 'default_avatars');
+--   on conflict (id) do nothing;
+
 -- create policy "Avatar images are publicly accessible." on storage.objects
---   for select using (bucket_id = 'avatars');
+--   for select using (bucket_id = 'default_avatars');
 
-create policy "Anyone can upload an avatar." on storage.objects
-  for insert with check (bucket_id = 'avatars');
+-- -- Create the 'gallery' bucket
+-- select storage.create_bucket(
+--   bucket_name := 'gallery',
+--   public := true -- Set to true if you want public access
+-- );
 
-create policy "Anyone can update their own avatar." on storage.objects
-  for update using (auth.uid() = owner) with check (bucket_id = 'avatars');
+-- Enable Row-Level Security on storage.objects
+alter table storage.objects enable row level security;
 
-create policy "User can delete own avatar" on storage.objects
-  for delete using (auth.uid() = owner);
+-- Policy to allow authenticated users to upload images to 'gallery'
+create policy "Allow authenticated users to upload images to gallery" on storage.objects
+  for insert
+  with check (
+    bucket_id = 'gallery' and auth.role() = 'authenticated'
+  );
 
-  ----
-  insert into storage.buckets (id, name)
-  values ('default_avatars', 'default_avatars');
+-- Policy to allow users to update their own images in 'gallery'
+create policy "Allow users to update their own images in gallery" on storage.objects
+  for update
+  using (
+    bucket_id = 'gallery' and auth.uid() = owner
+  )
+  with check (
+    bucket_id = 'gallery'
+  );
 
-create policy "Avatar images are publicly accessible." on storage.objects
-  for select using (bucket_id = 'default_avatars');
-
-
+-- Policy to allow authenticated users to read images from 'gallery'
+create policy "Allow authenticated users to read images from gallery" on storage.objects
+  for select
+  using (
+    bucket_id = 'gallery' and (
+      owner = auth.uid() or metadata ->> 'is_public' = 'true'
+    )
+  );
 
 
 -- create table posts (

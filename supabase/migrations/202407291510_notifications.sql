@@ -1,4 +1,9 @@
-CREATE OR REPLACE FUNCTION get_aggregated_notifications(p_user_id uuid, p_offset integer, p_limit integer)
+CREATE OR REPLACE FUNCTION get_aggregated_notifications(
+    p_user_id uuid,
+    p_offset integer,
+    p_limit integer,
+    p_unread_only boolean DEFAULT false
+)
 RETURNS TABLE (
     id uuid,
     modified timestamp with time zone,
@@ -27,6 +32,7 @@ BEGIN
             n1.read
         FROM notifications n1
         WHERE n1.user_id_receiver = p_user_id
+          AND (NOT p_unread_only OR n1.read = false) -- Filter based on unread status
         ORDER BY n1.path, n1.type, n1.read, n1.modified DESC
     ),
     unread_counts AS (
@@ -37,6 +43,7 @@ BEGIN
             COUNT(*)::integer AS unread_count
         FROM notifications n2
         WHERE n2.user_id_receiver = p_user_id
+          AND (NOT p_unread_only OR n2.read = false) -- Filter based on unread status
         GROUP BY n2.path, n2.type, n2.read
     )
     SELECT
@@ -54,7 +61,7 @@ BEGIN
     FROM recent_notifications rn
     LEFT JOIN unread_counts uc ON rn.notification_path = uc.notification_path AND rn.type = uc.type AND rn.read = uc.read
     JOIN user_profiles up ON rn.user_id_creator = up.user_id
-    ORDER BY rn.modified DESC
+    ORDER BY rn.read ASC, rn.modified DESC -- Unread notifications first
     OFFSET p_offset
     LIMIT p_limit;
 END;
@@ -136,7 +143,7 @@ CREATE TABLE notifications (
     path ltree, -- Adding the path column to record the path of replies
     read boolean DEFAULT false,
     creator_username text,
-    creator_avatar text;
+    creator_avatar text
 );
 
 CREATE OR REPLACE FUNCTION notify_letter_author_of_comment_or_reply()
@@ -469,3 +476,12 @@ CREATE TRIGGER extract_tags_trigger
 AFTER INSERT ON letter_contents
 FOR EACH ROW
 EXECUTE FUNCTION extract_tags_from_content();
+
+CREATE OR REPLACE FUNCTION mark_notifications_as_read(p_notification_ids uuid[])
+RETURNS void AS $$
+BEGIN
+  UPDATE notifications
+  SET read = true
+  WHERE id = ANY(p_notification_ids);
+END;
+$$ LANGUAGE plpgsql;

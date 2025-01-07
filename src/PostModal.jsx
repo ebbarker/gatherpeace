@@ -37,7 +37,6 @@ export function Post({
 
   function toggleModal () {
     setShowModal(!showModal);
-    console.log('modal toggled');
   };
 
   function openModal() {

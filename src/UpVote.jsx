@@ -34,6 +34,7 @@ export function UpVote({
           </i>
         </div>
       )}
+      
     </>
   );
 }

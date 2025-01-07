@@ -1,9 +1,11 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import { supaClient } from "../layout/supa-client";
 import { UserContext } from "../layout/App";
 import Avatar from './Avatar';
 import './Profile.css';
 import { CountryDropdown } from "../shared/CountryDropdown";
+import { useNavigate, UNSAFE_NavigationContext } from 'react-router-dom';
+import { unstable_useBlocker as useBlocker, useBeforeUnload } from 'react-router-dom';
 
 export default function UserProfile() {
   const [profileName, setProfileName] = useState('');
@@ -17,18 +19,57 @@ export default function UserProfile() {
   const [usernameError, setUsernameError] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [showMoreError, setShowMoreError] = useState(false);
-  const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState('--Select a country--');
   const [state, setState] = useState('');
   const [city, setCity] = useState('');
   const [country, setCountry] = useState('');
   const [birthday, setBirthday] = useState(null);
   const [fullName, setFullName] = useState(null);
   const [submitError, setSubmitError] = useState(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  const navigate = useNavigate();
+
+  const handleInputChange = useCallback(
+    (setter) => (e) => {
+      setter(e.target.value);
+      setHasUnsavedChanges(true);
+    },
+    []
+  );
+
+  // Handle browser navigation (refresh, close tab)
+    useBeforeUnload(
+    (event) => {
+      if (hasUnsavedChanges) {
+        event.preventDefault();
+        event.returnValue = '';
+      }
+    },
+    hasUnsavedChanges
+  );
+
+function usePrompt(message, when) {
+    const blocker = useBlocker(when);
+
+    useEffect(() => {
+      if (blocker.state === 'blocked') {
+        const proceed = window.confirm(message);
+        if (proceed) {
+          blocker.proceed();
+        } else {
+          blocker.reset();
+        }
+      }
+    }, [blocker, message, when]);
+  }
+
+  usePrompt('You have unsaved changes, are you sure you want to leave?', hasUnsavedChanges);
 
   const defaultAvatars = [
-    { name: 'dove', url: '0.6161512621186469.jpg' },
-    { name: 'feather', url: '0.27244231307398037.jpg' },
-    { name: 'peace', url: '0.6879050797391486.jpg' },
+    { name: 'dove', url: '/default_avatars/dove.jpg' },
+    { name: 'feather', url: '/default_avatars/feather.jpg' },
+    { name: 'peace', url: '/default_avatars/peace.jpg' },
   ];
 
   useEffect(() => {
@@ -66,69 +107,113 @@ export default function UserProfile() {
     return () => { ignore = true; };
   }, [session, profile]);
 
-  async function updateProfileInfo(event, avatarUrl) {
-    event.preventDefault();
-    if (bio?.length > 500) {
-      setSubmitError('Bio is too long.')
-      return;
-    }
-    setLoading(true);
-    const { user } = session;
-    const updates = {
-      user_id: user?.id,
-      username,
-      full_name: fullName,
-      website,
-      avatar_url: avatarUrl ? avatarUrl : avatar_url,
-      updated_at: new Date(),
-      state_province: state,
-      city,
-      country: country ? country : selectedCountry,
-      bio,
-      birthday
-    };
-    const { error } = await supaClient.from('user_profiles').upsert(updates);
-    if (error) {
-        setUsernameError(error.message);
-        setUsername(profile.username);
+// UserProfile.jsx
 
-    } else {
-      setAvatarUrl(avatarUrl);
-      updateProfile({ username });
-    }
-    setLoading(false);
+async function updateProfileInfo(event, newAvatarUrl) {
+  event.preventDefault();
+  if (bio?.length > 500) {
+    setSubmitError('Bio is too long.');
+    return;
   }
+  setLoading(true);
+  const { user } = session;
+  const updates = {
+    user_id: user?.id,
+    username,
+    full_name: fullName,
+    website,
+    avatar_url: newAvatarUrl !== undefined ? newAvatarUrl : avatar_url,
+    updated_at: new Date(),
+    state_province: state,
+    city,
+    country: country || selectedCountry,
+    bio,
+    birthday,
+  };
+  const { error } = await supaClient.from('user_profiles').upsert(updates);
+  if (error) {
+    setUsernameError(error.message);
+    setUsername(profile.username);
+  } else {
+    setAvatarUrl(updates.avatar_url);
+    updateProfile({ username });
+    setHasUnsavedChanges(false); // Reset unsaved changes
+  }
+  setLoading(false);
+}
+
 
   async function uploadAvatar(event) {
+    const { user } = session;
     const file = event.target.files[0];
     const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
+    const fileName = `${user.session?.user.id}-${Date.now()}.${fileExt}`;
+    const bucket = "avatars";
     setUploading(true);
-    const { error } = await supaClient.storage.from('avatars').upload(fileName, file);
-    if (error) {
-      console.error('Error uploading avatar:', error.message);
-    } else {
-      updateProfileInfo(event, fileName);
+
+    // Upload the avatar to Supabase Storage
+    const { error: uploadError } = await supaClient.storage.from(bucket).upload(fileName, file);
+
+    if (uploadError) {
+      console.error('Error uploading avatar:', uploadError.message);
+      setUploading(false);
+      return;
     }
+
+    // Update the user's profile with the new avatar URL
+    const newAvatarUrl = fileName;
+    await updateAvatarInProfile(newAvatarUrl);
+
     setUploading(false);
   }
 
-  async function deleteAvatarForUser() {
-    const { user } = session;
-    const target_user_id = user.id;
-    if (user.id && avatar_url) {
+async function deleteAvatarForUser() {
+  const { user } = session;
+  const target_user_id = user.id;
+  if (user.id && avatar_url) {
+    if (!avatar_url.startsWith('/')) {
+      // It's a user-uploaded avatar stored in Supabase storage
       const { error: rpcError } = await supaClient.storage.from('avatars').remove([avatar_url]);
       if (rpcError) {
         console.error('Error:', rpcError.message);
-      } else {
-        const { error: updateError } = await supaClient.from('user_profiles').update({ avatar_url: null }).eq('user_id', target_user_id);
-        if (updateError) {
-          console.error('Error updating user profile:', updateError.message);
-        }
-        setAvatarUrl(null);
+        return;
       }
     }
+    // Update the user profile to remove avatar_url
+    const { error: updateError } = await supaClient
+      .from('user_profiles')
+      .update({ avatar_url: null })
+      .eq('user_id', target_user_id);
+    if (updateError) {
+      console.error('Error updating user profile:', updateError.message);
+    }
+    setAvatarUrl(null);
   }
+}
+
+  const handleAvatarSelection = (selectedAvatarUrl) => {
+    setAvatarUrl(selectedAvatarUrl);
+    updateAvatarInProfile(selectedAvatarUrl);
+  };
+
+const updateAvatarInProfile = async (newAvatarUrl) => {
+  setUploading(true);
+  const { user } = session;
+
+  // Update only the avatar_url field for the current user
+  const { error } = await supaClient
+    .from('user_profiles')
+    .update({ avatar_url: newAvatarUrl, updated_at: new Date() })
+    .eq('user_id', user.id);
+
+  if (error) {
+    console.error('Error updating avatar:', error.message);
+  } else {
+    setAvatarUrl(newAvatarUrl);
+    updateProfile({ avatar_url: newAvatarUrl });
+  }
+  setUploading(false);
+};
 
   return (
     <>
@@ -147,7 +232,7 @@ export default function UserProfile() {
               type="text"
               required
               value={username || ''}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={handleInputChange(setUsername)}
               disabled
             />
             {usernameError && <p className="error">Error: That username is already taken. Details: </p>}
@@ -165,10 +250,10 @@ export default function UserProfile() {
               {defaultAvatars.map((avatar) => (
                 <img
                   key={avatar.name}
-                  src={`http://127.0.0.1:54321/storage/v1/object/public/default_avatars/${avatar.url}`}
+                  src={`${avatar.url}`}
                   alt={avatar.name}
                   className="default-avatar"
-                  onClick={() => setAvatarUrl(avatar.url)}
+                  onClick={() => handleAvatarSelection(avatar.url)}
                 />
               ))}
               <div className="upload-avatar-wrapper">
@@ -194,11 +279,12 @@ export default function UserProfile() {
             <input
               id="name"
               value={fullName || ''}
-              onChange={(e) => setFullName(e.target.value)}
+              onChange={handleInputChange(setFullName)}
             />
-            <div className="name-recommendation-text">Gather Peace recommends using your real name, or real initials, such as "John S.",
+            <div className="name-recommendation-text">
+              Gather Peace recommends using your real name, or real initials, such as "John S.",
               as the project becomes more significant by emphasizing interactions between real people. This is optional.
-              </div>
+            </div>
           </div>
           <CountryDropdown
             selectedCountry={selectedCountry}
@@ -209,13 +295,14 @@ export default function UserProfile() {
             city={city}
             setState={setState}
             setCity={setCity}
+            setHasUnsavedChanges={setHasUnsavedChanges}
           />
           <div>
             <label htmlFor="bio">Bio</label>
             <textarea
               id="bio"
               value={bio || ''}
-              onChange={(e) => setBio(e.target.value)}
+              onChange={handleInputChange(setBio)}
               rows="5"
             />
             <p className="character-counter">{bio?.length}/500</p>
@@ -226,7 +313,7 @@ export default function UserProfile() {
             <input
               id="website"
               value={website || ''}
-              onChange={(e) => setWebsite(e.target.value)}
+              onChange={handleInputChange(setWebsite)}
             />
           </div>
           <div className="input-container">
@@ -235,7 +322,7 @@ export default function UserProfile() {
               id="birthday"
               type="date"
               value={birthday || ''}
-              onChange={(e) => setBirthday(e.target.value)}
+              onChange={handleInputChange(setBirthday)}
             />
           </div>
           {submitError && <div className="error-text">{submitError}</div>}

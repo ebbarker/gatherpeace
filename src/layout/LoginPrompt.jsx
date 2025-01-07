@@ -26,7 +26,6 @@ export default function LoginPrompt({ setShowLoginModal, showLoginModal }) {
 
   const handleAuthStateChange = (event, session) => {
     if (event === 'SIGNED_IN' && session) {
-      console.log('EVENT TRIGGERED');
       setShowLoginModal(false);
     }
   };
@@ -80,7 +79,7 @@ export default function LoginPrompt({ setShowLoginModal, showLoginModal }) {
            ) : (
           <>
             <Auth
-              providers={["google", "facebook", "twitter"]}
+              providers={["google"]}
               supabaseClient={supaClient}
               appearance={{
                 theme: ThemeSupa,

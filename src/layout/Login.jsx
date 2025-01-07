@@ -106,7 +106,7 @@ export default function Login({ inline = false }) {
         contents={
           <>
             <Auth
-              providers={["google", "facebook", "twitter"]}
+              providers={["google"]}
               supabaseClient={supaClient}
               appearance={{
                 theme: ThemeSupa,

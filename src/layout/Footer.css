@@ -1,0 +1,36 @@
+/* Footer.css */
+.footer {
+  background-color: var(--navbar_color);
+  padding: 1rem;
+  text-align: center;
+  position: relative;
+  bottom: 0;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.footer-links a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.footer-links a:hover {
+  text-decoration: underline;
+}
+
+.layout-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Ensures the container is at least as tall as the viewport */
+}
+
+/* Main content should grow to fill the space between the header and the footer */
+.content-container {
+  flex-grow: 1;
+}

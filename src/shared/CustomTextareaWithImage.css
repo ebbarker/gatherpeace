@@ -1,0 +1,56 @@
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-group textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  resize: vertical;
+}
+
+.form-group textarea.error {
+  border-color: red;
+}
+
+.error-message {
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.add-photo-button {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #e0e0e0;
+  color: #333;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.add-photo-button:hover {
+  background-color: #d5d5d5;
+}
+
+.add-photo-button svg {
+  margin-right: 8px;
+}
+
+.image-preview {
+  max-width: 100%;
+  height: auto;
+  margin-top: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}

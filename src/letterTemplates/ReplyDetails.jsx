@@ -14,6 +14,7 @@ import { ConfirmReportModal } from "./ConfirmReportModal";
 import { UseScrollToHash } from "./UseScrollToHash";
 import { ProfilePicture } from "../shared/ProfilePicture";
 import { FiAlertCircle } from "react-icons/fi";
+import LoginPrompt from "../layout/LoginPrompt";
 
 
 export default function CommentDetails({
@@ -49,6 +50,7 @@ export default function CommentDetails({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const dropdownRef = useRef(null);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   // UseScrollToHash();
 
@@ -82,7 +84,7 @@ export default function CommentDetails({
           let commentsList = temp.comments;
           temp.letter.score -= 2;
           temp.letter.count_comments -= 1;
-          console.log('parent id: ' + parentId);
+
 
           for (let i = 0; i < commentsList.length; i++) {
             let current = commentsList[i];
@@ -90,7 +92,7 @@ export default function CommentDetails({
             if (currentId === parentId) {
               current.score -= 2;
               current.count_comments -= 1;
-              console.log('comment.id: ' + comment.id);
+
               let parentCommentsList = current.comments.filter(
                 c => c.id.replace(/_/g, '-') !== comment.id.replace(/_/g, '-')
               );
@@ -98,13 +100,12 @@ export default function CommentDetails({
                 ...current,
                 comments: parentCommentsList
               };
-              console.log('parentCommentsList: ' + JSON.stringify(parentCommentsList));
-              console.log('modified temp: ' + JSON.stringify(temp));
+
               break;
             }
           }
         } else {
-          console.log ('comment: ' + JSON.stringify(comment));
+
           let commentIdToRemove = comment.id.replace(/_/g, '-');
           let children = 1 + comment.comments.length;
           temp.letter.score -= children * 2;
@@ -117,15 +118,14 @@ export default function CommentDetails({
 
       // removeCommentFromLetterDetailData(id);
 
-      console.log('Comment and replies deleted successfully:', data);
+
     } catch (error) {
       console.error('Unexpected error:', error);
     }
   }
 
   function handleDropdownToggle() {
-    console.log('toggled');
-    console.log('comment: ' + JSON.stringify(comment));
+
     setShowDropdown((prev) => !prev);
   }
 
@@ -170,7 +170,7 @@ export default function CommentDetails({
             // Handle the success case
             setMyContextVotes((myContextVotes) => {
                 myContextVotes[reportData.commentId] = "down";
-                console.log('Context votes:', JSON.stringify(myContextVotes));
+
                 return myContextVotes;
             });
 
@@ -181,7 +181,7 @@ export default function CommentDetails({
           let commentsList = temp.comments;
           temp.letter.score -= 2;
           temp.letter.count_comments -= 1;
-          console.log('parent id: ' + parentId);
+
 
           for (let i = 0; i < commentsList.length; i++) {
             let current = commentsList[i];
@@ -189,7 +189,7 @@ export default function CommentDetails({
             if (currentId === parentId) {
               current.score -= 2;
               current.count_comments -= 1;
-              console.log('comment.id: ' + comment.id);
+
               let parentCommentsList = current.comments.filter(
                 c => c.id.replace(/_/g, '-') !== comment.id.replace(/_/g, '-')
               );
@@ -197,13 +197,12 @@ export default function CommentDetails({
                 ...current,
                 comments: parentCommentsList
               };
-              console.log('parentCommentsList: ' + JSON.stringify(parentCommentsList));
-              console.log('modified temp: ' + JSON.stringify(temp));
+
               break;
             }
           }
         } else {
-          console.log ('comment: ' + JSON.stringify(comment));
+
           let commentIdToRemove = comment.id.replace(/_/g, '-');
           let children = 1 + comment.comments.length;
           temp.letter.score -= children * 2;
@@ -242,7 +241,7 @@ async function reportComment({ commentId, userId, reason, additionalInfo }) {
           return { error };
       }
 
-      console.log('Report submitted successfully:', data);
+
       return { data };
   } catch (error) {
       console.error('Unexpected error:', error.message);
@@ -255,7 +254,10 @@ async function reportComment({ commentId, userId, reason, additionalInfo }) {
   }
 
   async function onVoteClick () {
-
+      if (!userContext.session) {
+        setShowLoginModal(true);
+        return;
+      }
       if (!comment) {
         return;
       }
@@ -312,7 +314,7 @@ async function reportComment({ commentId, userId, reason, additionalInfo }) {
             {comment && `${timeAgo(comment?.created_at)} ago`}
           </div>
           <div className="vert-dots-container" ref={dropdownRef}>
-            <button className="vert-dots" onClick={handleDropdownToggle}>
+            <button className="vert-dots reply-dots" onClick={userContext.session ? handleDropdownToggle : () => setShowLoginModal(true)}>
               <FiMoreVertical />
             </button>
             {showDropdown &&  (
@@ -386,7 +388,9 @@ async function reportComment({ commentId, userId, reason, additionalInfo }) {
                           Cancel
                         </div>
                         :
-                        <div className="reply-count-container" onClick={() => {setCommenting(!commenting)}} disabled={!session}>
+                        <div className="reply-count-container" onClick={userContext.session ?
+                          () => {setCommenting(!commenting)} :
+                         () => setShowLoginModal(true)} disabled={!session}>
                           <i className="comment-icon-container">
                             <BiCommentDetail />
                           </i>
@@ -409,6 +413,7 @@ async function reportComment({ commentId, userId, reason, additionalInfo }) {
         onClose={closeReportModal}
         onConfirm={confirmReport}
       />
+      {showLoginModal && <LoginPrompt setShowLoginModal={setShowLoginModal} showLoginModal={showLoginModal}/>}
       </>
 
 

@@ -15,6 +15,7 @@ import { castLetterVote } from "../AllPosts";
 import { Modal } from "react-bootstrap"
 import { IoArrowBackCircleSharp } from "react-icons/io5";
 import { NameDetails } from "./NameDetails";
+import { WallPost } from "./WallPost";
 
 
 
@@ -40,7 +41,7 @@ export function Letter({
 
   function toggleModal () {
     setShowModal(!showModal);
-    console.log('modal toggled');
+
   };
 
   function openModal() {
@@ -48,7 +49,7 @@ export function Letter({
   }
 
   function deleteModalLetter(id) {
-    console.log('delete modal post: ' + id);
+
     deleteLetter(id);
     toggleModal();
   }
@@ -71,6 +72,19 @@ export function Letter({
         }
         {letterData?.post_type === 'name' &&
           <NameDetails
+          id={letterData?.id}
+            letter={letterData}
+            myVotes={myVotes}
+            onVoteSuccess={onVoteSuccess}
+            index={index}
+            toggleModal={toggleModal}
+            showModal={showModal}
+            deleteMessage={deleteLetter}
+            path={path}
+          />
+        }
+        {letterData?.post_type === 'wall_post' &&
+          <WallPost
           id={letterData?.id}
             letter={letterData}
             myVotes={myVotes}

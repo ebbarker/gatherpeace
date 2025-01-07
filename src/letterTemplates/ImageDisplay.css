@@ -1,0 +1,18 @@
+/* ImageDisplay.css */
+
+.image-display-container {
+  margin: 1em 0;
+  text-align: center;
+  align-items: center;
+}
+
+.letter-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.image-preview {
+  max-width: 100%;
+}

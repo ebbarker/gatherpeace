@@ -9,6 +9,7 @@ import { ConfirmReportModal } from "./ConfirmReportModal";
 import { Header } from "./Header";
 import { PostControls } from "./PostControls";
 import  LinkPreview from "../link-preview/LinkPreview";
+import { ImageDisplay } from './ImageDisplay'; // Import the new component
 
 export function NameDetails({
   id,
@@ -147,16 +148,22 @@ export function NameDetails({
           icon={<GiFeather />}
         />
         <div className="letter-sender-details">
-          <div className="name-peace">"{letter?.sign_off}"</div>
+          {/* <div className="name-peace">"{letter?.sign_off}"</div> */}
           <div className="sender-name">{`${letter?.sender_name}`}</div>
           <div className="sender-location-details">
-            <div className="sender-city header-secondary">{letter?.sender_city ? `${letter.sender_city}, ` : null}</div>
-            <div className="sender-state header-secondary">{letter?.sender_state ? `${letter.sender_state}, ` : null}</div>
-            <div className="sender-country header-secondary">{letter?.sender_country}</div>
+            <div className="sender-address header-secondary">
+              {[
+                letter?.sender_city,
+                letter?.sender_state,
+                letter?.sender_country,
+              ]
+                .filter(Boolean) // Removes null/undefined values
+                .join(", ")}
+            </div>
           </div>
         </div>
         <MessageContent content={letter.content} />
-
+        <ImageDisplay imageUrl={letter.image_url} />
         <LinkPreview text={letter.content} />
 
         <PostControls letter={letter} onVoteClick={onVoteClick} toggleModal={toggleModal} />
