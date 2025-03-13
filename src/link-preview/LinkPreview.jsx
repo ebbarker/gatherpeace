@@ -65,16 +65,18 @@ export default function LinkPreview({ text }) {
         if (error) {
           console.log('Error invoking edge function:', error.message);
           return;
+        } else {
+          console.log('Edge Function Response:', JSON.stringify(data));
         }
 
         setOgPreview({
           url: extractDomain(url),  // Add extracted domain without modifying case
-          title: data?.title || extractDomain(url),
-          description: data?.description || '',
-          image: data?.image || '',
+          title: data?.preview?.title || extractDomain(url),
+          description: data?.preview?.description || '',
+          image: data?.preview?.image || '',
         });
 
-        saveMetadataToDB(data, url);
+       // saveMetadataToDB(data, url);
       } catch (fetchError) {
         console.log('Edge Function Error:', fetchError.message);
       }

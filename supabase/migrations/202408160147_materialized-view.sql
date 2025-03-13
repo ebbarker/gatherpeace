@@ -1,7 +1,6 @@
 CREATE MATERIALIZED VIEW trending_tags_view AS
 SELECT tag, COUNT(*) AS frequency
 FROM tags
-WHERE created_at > NOW() - INTERVAL '7 days'
 GROUP BY tag
 ORDER BY frequency DESC;
 
