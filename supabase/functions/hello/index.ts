@@ -58,6 +58,7 @@ serve(async (req) => {
 
   const writeLinkDataToDB = async (preview: any, url: string) => {
     console.log('Writing data to DB:', JSON.stringify(preview));
+    console.log('this is the image: ' + preview.image);
     const record = {
       url,
       title: preview.title,

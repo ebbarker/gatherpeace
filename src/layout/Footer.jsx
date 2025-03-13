@@ -12,7 +12,7 @@ export default function Footer () {
     <Link to="/contact" className="footer-link">Collaborate</Link>
   </div>
   <div className="footer-copyright">
-    &copy; 2024 Gather Peace. All rights reserved.
+    &copy; 2025 Gather Peace. All rights reserved.
   </div>
 </footer>
   );

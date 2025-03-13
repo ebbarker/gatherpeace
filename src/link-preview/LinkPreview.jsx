@@ -71,7 +71,7 @@ export default function LinkPreview({ text }) {
           url: extractDomain(url),  // Add extracted domain without modifying case
           title: data?.title || extractDomain(url),
           description: data?.description || '',
-          image: data?.image_location || '',
+          image: data?.image || '',
         });
 
         saveMetadataToDB(data, url);
@@ -80,28 +80,28 @@ export default function LinkPreview({ text }) {
       }
     }
 
-    async function saveMetadataToDB(metadata, url) {
-      try {
-        const { data, error } = await supaClient
-          .from('link_previews')
-          .insert([
-            {
-              url: url,
-              title: metadata.title || extractDomain(url),
-              description: metadata.description,
-              image_location: metadata.image_location,
-            },
-          ]);
+    // async function saveMetadataToDB(metadata, url) {
+    //   try {
+    //     const { data, error } = await supaClient
+    //       .from('link_previews')
+    //       .insert([
+    //         {
+    //           url: url,
+    //           title: metadata.title || extractDomain(url),
+    //           description: metadata.description,
+    //           image_location: metadata.image_location,
+    //         },
+    //       ]);
 
-        if (error) {
-          console.log('Error saving metadata to DB:', error.message);
-        } else {
-          console.log('Metadata saved to DB:', data);
-        }
-      } catch (dbError) {
-        console.log('Error inserting data into DB:', dbError.message);
-      }
-    }
+    //     if (error) {
+    //       console.log('Error saving metadata to DB:', error.message);
+    //     } else {
+    //       console.log('Metadata saved to DB:', data);
+    //     }
+    //   } catch (dbError) {
+    //     console.log('Error inserting data into DB:', dbError.message);
+    //   }
+    // }
 
     if (!ogPreview) return null;
 
