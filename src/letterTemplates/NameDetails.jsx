@@ -153,9 +153,9 @@ export function NameDetails({
           <div className="sender-location-details">
             <div className="sender-address header-secondary">
               {[
-                letter?.sender_city,
-                letter?.sender_state,
-                letter?.sender_country,
+                letter?.city,
+                letter?.state,
+                letter?.country,
               ]
                 .filter(Boolean) // Removes null/undefined values
                 .join(", ")}

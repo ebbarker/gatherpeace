@@ -122,8 +122,7 @@ export function AllPosts({ parent }) {
       if (lettersError) {
         throw lettersError;
       }
-
-
+      console.log('lettersData: ' + JSON.stringify(lettersData));
       setLetters(lettersData ? lettersData : []);
     } catch (error) {
       console.error("Error fetching letters:", error);

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import "./Letter.css";
 
-const MAX_CHARACTERS = 200; // Maximum number of characters before truncating
+const MAX_CHARACTERS = 400; // Maximum number of characters before truncating
 
 export function MessageContent({ content }) {
   const [showFullContent, setShowFullContent] = useState(false);

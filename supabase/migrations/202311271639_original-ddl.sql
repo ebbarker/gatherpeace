@@ -15,9 +15,6 @@ CREATE TABLE letter_contents (
     user_id uuid REFERENCES auth.users (id) ON DELETE CASCADE NOT NULL,
     letter_id uuid REFERENCES letters (id) ON DELETE CASCADE NOT NULL,
     content text,
-    sender_country text,
-    sender_state text,
-    sender_city text,
     sign_off text,
     sender_name text,
     recipient text,
@@ -317,9 +314,9 @@ RETURNS TABLE (
     score INT,
     likes INT,
     path ltree,
-    sender_country text,
-    sender_state text,
-    sender_city text,
+    country text, -- Now coming from user_profiles
+    state_province text, -- Now coming from user_profiles
+    city text, -- Now coming from user_profiles
     sign_off text,
     sender_name text,
     recipient text,
@@ -339,36 +336,45 @@ BEGIN
         WHERE
             (search_keyword IS NULL OR lc.tsv @@ plainto_tsquery('english', search_keyword)) AND
             (page_filter IS NULL OR l.post_type = page_filter)
-        ORDER BY l.created_at DESC  -- Changed sorting to use created_at
+        ORDER BY l.created_at DESC
         LIMIT 10 OFFSET (page_number - 1) * 10
     )
     SELECT ll.id, ll.user_id, ll.created_at, lc.content, ll.score, ll.likes,
-           ll.path, lc.sender_country, lc.sender_state,
-           lc.sender_city, lc.sign_off, lc.sender_name, lc.recipient,
+           ll.path, up.country, up.state_province, up.city, -- Now from user_profiles
+           lc.sign_off, lc.sender_name, lc.recipient,
            ll.count_comments, ll.post_type, up.avatar_url, up.username,
            lc.image_url
     FROM LimitedLetters ll
     JOIN letter_contents lc ON ll.id = lc.letter_id
     LEFT JOIN user_profiles up ON ll.user_id = up.user_id
-    ORDER BY ll.created_at DESC;  -- Final sorting by created_at
+    ORDER BY ll.created_at DESC;
 END;
 $$ LANGUAGE plpgsql;
 
-
-
-
+-- Updated TSV Trigger (Fetching country/state/city from user_profiles)
 CREATE OR REPLACE FUNCTION letters_tsv_trigger() RETURNS trigger AS $$
+DECLARE
+  user_country TEXT;
+  user_state TEXT;
+  user_city TEXT;
 BEGIN
+  -- Fetch the country/state/city from user_profiles
+  SELECT country, state_province, city INTO user_country, user_state, user_city
+  FROM user_profiles
+  WHERE user_id = NEW.user_id;
+
+  -- Update TSV indexing with user_profiles data
   NEW.tsv := to_tsvector(
       'english',
       coalesce(NEW.sender_name, '') || ' ' ||
-      coalesce(NEW.sender_country, '') || ' ' ||
-      coalesce(NEW.sender_state, '') || ' ' ||
-      coalesce(NEW.sender_city, '') || ' ' ||
+      coalesce(user_country, '') || ' ' ||
+      coalesce(user_state, '') || ' ' ||
+      coalesce(user_city, '') || ' ' ||
       coalesce(NEW.sign_off, '') || ' ' ||
       coalesce(NEW.recipient, '') || ' ' ||
       coalesce(NEW.content, '')
   );
+
   RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
@@ -377,13 +383,9 @@ CREATE TRIGGER trg_update_letter_contents_tsv
 BEFORE INSERT OR UPDATE ON letter_contents
 FOR EACH ROW EXECUTE FUNCTION letters_tsv_trigger();
 
-
 CREATE OR REPLACE FUNCTION create_new_letter(
     "userId" uuid,
     "content" text,
-    sender_country text,
-    sender_state text,
-    sender_city text,
     sign_off text,
     sender_name text,
     recipient text,
@@ -412,9 +414,6 @@ BEGIN
     "letter_id",
     "content",
     "user_id",
-    "sender_country",
-    "sender_state",
-    "sender_city",
     "sign_off",
     "sender_name",
     "recipient"
@@ -423,42 +422,46 @@ BEGIN
     new_letter_id,
     "content",
     "userId",
-    sender_country,
-    sender_state,
-    sender_city,
     sign_off,
     sender_name,
     recipient
   );
 
-  RETURN NEXT;
-END; $$;
+  RETURN QUERY
+  SELECT new_letter_id, creation_time;
+END;
+$$;
+
 
 CREATE OR REPLACE FUNCTION create_new_name(
     "content" TEXT,
     recipient TEXT,
-    sender_city TEXT,
-    sender_country TEXT,
     sender_name TEXT,
-    sender_state TEXT,
     sign_off TEXT,
     "userId" UUID,
-    image_url TEXT DEFAULT NULL -- Include image_url with a default value
+    image_url TEXT DEFAULT NULL
 )
 RETURNS TABLE(new_letter_id UUID, creation_time TIMESTAMP WITH TIME ZONE)
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    user_country TEXT;
+    user_state TEXT;
+    user_city TEXT;
 BEGIN
+    -- Get user's location details
+    SELECT country, state_province, city INTO user_country, user_state, user_city
+    FROM user_profiles
+    WHERE user_id = "userId";
+
     -- Check if the user has already signed
     IF EXISTS (
         SELECT 1
         FROM user_profiles
         WHERE user_id = "userId" AND has_signed = TRUE
     ) THEN
-        -- If the user has already signed, raise an exception
         RAISE EXCEPTION 'You have already added your name';
     ELSE
-        -- If the user has not signed, proceed with the insertion
         WITH "inserted_letter" AS (
             INSERT INTO "letters" (
                 "user_id",
@@ -478,28 +481,22 @@ BEGIN
             "letter_id",
             "content",
             "user_id",
-            "sender_country",
-            "sender_state",
-            "sender_city",
             "sign_off",
             "sender_name",
             "recipient",
-            "image_url" -- Include image_url column
+            "image_url"
         )
         VALUES (
             new_letter_id,
             "content",
             "userId",
-            sender_country,
-            sender_state,
-            sender_city,
             sign_off,
             sender_name,
             recipient,
-            image_url -- Include image_url value
+            image_url
         );
 
-        -- Update the has_signed field to true
+        -- Mark user as signed
         UPDATE user_profiles
         SET has_signed = TRUE
         WHERE user_id = "userId";
@@ -548,9 +545,9 @@ RETURNS TABLE (
     score int,
     path ltree,
     count_comments int,
-    sender_country text,
-    sender_state text,
-    sender_city text,
+    country text,
+    state_province text,
+    city text,
     sign_off text,
     sender_name text,
     recipient text,
@@ -572,13 +569,13 @@ BEGIN
         p.score,
         p.path,
         p.count_comments,
-        pc.sender_country,
-        pc.sender_state,
-        pc.sender_city,
+        up.country,  -- Now from user_profiles
+        up.state_province,  -- Now from user_profiles
+        up.city,  -- Now from user_profiles
         pc.sign_off,
         pc.sender_name,
         pc.recipient,
-        p.post_type,  -- Get the actual post_type from the letters table
+        p.post_type,
         up.avatar_url
     FROM letters p
     JOIN letter_contents pc ON p.id = pc.letter_id
@@ -597,14 +594,14 @@ BEGIN
         c.likes,
         c.score,
         c.path,
-        c.count_comments,  -- Comments now have count_comments
-        NULL as sender_country,
-        NULL as sender_state,
-        NULL as sender_city,
+        c.count_comments,
+        NULL as country,
+        NULL as state_province,
+        NULL as city,
         NULL as sign_off,
         NULL as sender_name,
         NULL as recipient,
-        'comment',  -- Comments have post_type as 'comment'
+        'comment',
         up2.avatar_url
     FROM comments c
     JOIN user_profiles up2 ON c.user_id = up2.user_id
