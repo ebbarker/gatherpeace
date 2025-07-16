@@ -3,6 +3,10 @@ import { redirect, useNavigate } from "react-router-dom";
 import { UserContext } from "./App";
 import Dialog from "./Dialog";
 import { supaClient } from "./supa-client";
+import useMultiStepform from "./useMultiStepform";
+import UsernameForm from "./welcomeSteps/UsernameForm";
+import FullNameForm from "./welcomeSteps/FullNameForm";
+import LocationForm from "./welcomeSteps/LocationForm";
 
 export async function welcomeLoader() {
 
@@ -52,10 +56,7 @@ export async function welcomeLoader() {
 export function Welcome() {
   const user = useContext(UserContext);
   const navigate = useNavigate();
-  const [userName, setUserName] = useState("");
   const [serverError, setServerError] = useState("");
-  const [formIsDirty, setFormIsDirty] = useState(false);
-  const invalidString = useMemo(() => validateUsername(userName), [userName]);
   const { updateProfile } = useContext(UserContext);
 
   const defaultAvatars = [
@@ -63,6 +64,113 @@ export function Welcome() {
     '/default_avatars/feather.jpg',
     '/default_avatars/peace.jpg',
   ];
+
+  const formFields = {
+    username: "",
+    fullName: "",
+    country: "",
+    stateProvince: "",
+    city: "",
+  };
+
+  const [formData, setFormData] = useState(formFields);
+  const [stepValidation, setStepValidation] = useState({
+    username: false,
+    fullName: false,
+    location: false
+  });
+
+  function updateFields(fields) {
+    setFormData(prev => ({ ...prev, ...fields }));
+  }
+
+  function updateStepValidation(step, isValid) {
+    setStepValidation(prev => ({ ...prev, [step]: isValid }));
+  }
+
+  const { steps, currentStepIndex, step, next, back, isFirstStep, isLastStep } = useMultiStepform([
+    <UsernameForm
+      formData={formData}
+      updateFields={updateFields}
+      onValidationChange={(isValid) => updateStepValidation('username', isValid)}
+    />,
+    <FullNameForm
+      formData={formData}
+      updateFields={updateFields}
+      onValidationChange={(isValid) => updateStepValidation('fullName', isValid)}
+    />,
+    <LocationForm
+      formData={formData}
+      updateFields={updateFields}
+      onValidationChange={(isValid) => updateStepValidation('location', isValid)}
+    />,
+  ]);
+
+  const canProceed = () => {
+    switch (currentStepIndex) {
+      case 0:
+        return stepValidation.username;
+      case 1:
+        return stepValidation.fullName;
+      case 2:
+        return stepValidation.location;
+      default:
+        return false;
+    }
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    // Validate required fields
+    if (!formData.username || !formData.fullName || !formData.country || !formData.city) {
+      setServerError("Please fill in all required fields");
+      return;
+    }
+
+    // Select a random avatar
+    const randomAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
+
+    try {
+      const { error } = await supaClient
+        .from("user_profiles")
+        .insert([
+          {
+            user_id: user.session?.user.id,
+            username: formData.username.trim(),
+            full_name: formData.fullName.trim(),
+            country: formData.country.trim(),
+            state_province: formData.stateProvince.trim(),
+            city: formData.city.trim(),
+            avatar_url: randomAvatar,
+          },
+        ]);
+
+      if (error) {
+        if (error.message.indexOf('duplicate key') !== -1) {
+          setServerError(`Username "${formData.username}" is already taken`);
+        } else {
+          setServerError(`Unknown error: ${error.message}`);
+        }
+      } else {
+        updateProfile({
+          username: formData.username,
+          avatar_url: randomAvatar,
+          full_name: formData.fullName,
+          country: formData.country,
+          state_province: formData.stateProvince,
+          city: formData.city,
+        });
+        const target = "/?addName=true";
+        navigate(target, { replace: true });
+        setTimeout(() => {
+          navigate(target);
+        }, 200);
+      }
+    } catch (error) {
+      setServerError(`Error: ${error.message}`);
+    }
+  };
 
   return (
     <Dialog
@@ -73,77 +181,52 @@ export function Welcome() {
           <h2 className="text-green-400 drop-shadow-[0_0_9px_rgba(34,197,94,0.9)] m-4 text-center text-3xl">
             Welcome to Gather Peace
           </h2>
-          <p className="text-center">
-            Please pick a username.
-          </p>
           <form
             className="grid grid-cols-1 place-items-center"
-            onSubmit={(event) => {
-              event.preventDefault();
-
-              // Select a random avatar
-              const randomAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
-
-              supaClient
-                .from("user_profiles")
-                .insert([
-                  {
-                    user_id: user.session?.user.id,
-                    username: userName.trim(),
-                    avatar_url: randomAvatar,
-                  },
-                ])
-                .then(({ error }) => {
-                  if (error) {
-                    if (error.message.indexOf('duplicate key') !== -1) {
-                      setServerError(`Username "${userName}" is already taken`);
-
-                    } else {
-                      setServerError(`Unknown error: ${error.message}`);
-
-                    }
-                  } else {
-                    updateProfile({ username: userName, avatar_url: randomAvatar });
-                    // const target = localStorage.getItem("returnPath") || "/";
-                    // localStorage.removeItem("returnPath");
-                    const target = "/?addName=true"; // Specify the query parameter to open the section
-                    navigate(target, { replace: true }); // Redirect to AllPosts with the openMessage indicator
-                    setTimeout(() => {
-                      navigate(target);
-                    }, 200);
-                  }
-                });
-            }}
+            onSubmit={handleSubmit}
           >
-            <input
-              name="username"
-              placeholder="Username"
-              onChange={({ target }) => {
-                setUserName(target.value);
-                if (!formIsDirty) {
-                  setFormIsDirty(true);
-                }
-                if (serverError) {
-                  setServerError("");
-                }
-              }}
-              className="text-2xl font-display rounded border-2 text-color-green-400 border-green-400 p-2 m-4 text-center text-green-400 drop-shadow-[0_0_9px_rgba(34,197,94,0.9)] m-4 text-center text-3xl"
-            ></input>
-            {formIsDirty && (invalidString || serverError) && (
+            <div className="stepform-page-counter mb-4">
+              {currentStepIndex + 1} / {steps.length}
+            </div>
+            {step}
+            {serverError && (
               <p className="text-red-400 validation-feedback text-center">
-                {serverError || invalidString}
+                {serverError}
               </p>
             )}
-            <p className="text-center">
-              This is the name people will see you as on Gather Peace.
-            </p>
-            <button
-              className="font-display text-2xl bg-green-400 text-center rounded p-2 m-2 mb-8"
-              type="submit"
-              disabled={invalidString != null}
-            >
-              Submit
-            </button>
+            <div className="create-post-stepform-controls mt-4">
+              {!isFirstStep && (
+                <button
+                  type="button"
+                  className="font-display text-2xl bg-green-400 text-center rounded p-2 m-2"
+                  onClick={back}
+                >
+                  Back
+                </button>
+              )}
+              {isLastStep ? (
+                <button
+                  type="submit"
+                  className="font-display text-2xl bg-green-400 text-center rounded p-2 m-2"
+                  disabled={!canProceed()}
+                >
+                  Submit
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className={`font-display text-2xl text-center rounded p-2 m-2 ${
+                    canProceed()
+                      ? 'bg-green-400'
+                      : 'bg-gray-400 cursor-not-allowed'
+                  }`}
+                  onClick={next}
+                  disabled={!canProceed()}
+                >
+                  Next
+                </button>
+              )}
+            </div>
           </form>
         </>
       }
