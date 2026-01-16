@@ -1,16 +1,10 @@
 import { FormWrapper } from "./FormWrapper";
 
-export default function ToForm({
+export default function LetterContent({
   letterContent,
   updateFields,
-  to,
-  senderCountry,
-  senderState,
-  senderCity,
-  from,
-  recipientCountry,
-  recipientState,
-  recipientCity,
+  signOff,
+  handleKeyDown,
 }) {
 
 
@@ -26,6 +20,17 @@ export default function ToForm({
         value={letterContent}
         className="form-input form-content-input"
         ></textarea>
+      </div>
+      <div>
+        <label>Sign-off</label>
+        <input
+        required
+        type="text"
+        onChange={e => updateFields({ signOff: e.target.value })}
+        value={signOff}
+        className="form-input"
+        onKeyDown={handleKeyDown}
+        ></input>
       </div>
     </FormWrapper>
   )

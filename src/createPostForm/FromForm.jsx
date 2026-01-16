@@ -1,4 +1,5 @@
 import { FormWrapper } from "./FormWrapper";
+import sortedCountryNames from "../shared/sorted_country_names.json";
 
 export default function FromForm({
   senderCountry,
@@ -28,20 +29,42 @@ export default function FromForm({
     }
   };
 
+  const handleCountryChange = (e) => {
+    const selectedValue = e.target.value;
+    if (selectedValue === '--Country Not Listed--') {
+      updateFields({ senderCountry: '' });
+    } else {
+      updateFields({ senderCountry: selectedValue });
+    }
+  };
+
+  const selectedCountry = senderCountry || '--Select a country--';
+
   return (
     <FormWrapper title="Where are you from?">
 
       <div>
         <label>Your Country</label>
-        <input
+        <select
           required
           id="sender-country"
-          type="text"
           className="form-input"
-          onChange={e => updateFields({ senderCountry: e.target.value })}
+          onChange={handleCountryChange}
           onKeyDown={handleKeyDown}
-          value={senderCountry}
-        />
+          value={selectedCountry}
+        >
+          <option value="--Select a country--" disabled>--Select a country--</option>
+          <option value="--Prefer not to say--">--Prefer not to say--</option>
+          {sortedCountryNames.map((countryItem, index) => (
+            <option key={index} value={countryItem.commonName}>
+              {countryItem.commonName}{' '}
+              {countryItem.commonName !== countryItem.nativeName
+                ? `(${countryItem.nativeName})`
+                : null}
+            </option>
+          ))}
+          <option value="--Country Not Listed--">--Country Not Listed--</option>
+        </select>
       </div>
 
       <div>

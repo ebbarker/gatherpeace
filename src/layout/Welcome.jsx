@@ -79,6 +79,7 @@ export function Welcome() {
     fullName: false,
     location: false
   });
+  const [showLocationErrors, setShowLocationErrors] = useState(false);
 
   function updateFields(fields) {
     setFormData(prev => ({ ...prev, ...fields }));
@@ -103,6 +104,7 @@ export function Welcome() {
       formData={formData}
       updateFields={updateFields}
       onValidationChange={(isValid) => updateStepValidation('location', isValid)}
+      showErrors={showLocationErrors}
     />,
   ]);
 
@@ -207,8 +209,18 @@ export function Welcome() {
               {isLastStep ? (
                 <button
                   type="submit"
-                  className="font-display text-2xl bg-green-400 text-center rounded p-2 m-2"
-                  disabled={!canProceed()}
+                  className={`font-display text-2xl text-center rounded p-2 m-2 ${
+                    canProceed()
+                      ? 'bg-green-400'
+                      : 'bg-gray-400 cursor-not-allowed'
+                  }`}
+                  onClick={(e) => {
+                    if (!canProceed()) {
+                      e.preventDefault();
+                      setShowLocationErrors(true);
+                      return;
+                    }
+                  }}
                 >
                   Submit
                 </button>
@@ -220,8 +232,15 @@ export function Welcome() {
                       ? 'bg-green-400'
                       : 'bg-gray-400 cursor-not-allowed'
                   }`}
-                  onClick={next}
-                  disabled={!canProceed()}
+                  onClick={() => {
+                    if (currentStepIndex === 2 && !canProceed()) {
+                      setShowLocationErrors(true);
+                      return;
+                    }
+                    if (canProceed()) {
+                      next();
+                    }
+                  }}
                 >
                   Next
                 </button>

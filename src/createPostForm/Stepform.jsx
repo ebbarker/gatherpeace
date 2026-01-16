@@ -3,7 +3,6 @@ import useMultiStepform from './useMultiStepform';
 import ToForm from './ToForm';
 import FromForm from './FromForm';
 import LetterContent from './LetterContent';
-import YourNameForm from './YourNameForm';
 import { useNavigate } from "react-router-dom";
 import { router, UserContext } from "../layout/App";
 import { supaClient } from "../layout/supa-client";
@@ -37,7 +36,6 @@ export function Stepform ({ newPostCreated = () => {}, letters, setLetters, setW
   const formFields = {
     sender: "",
     signOff: "Peace,",
-    senderName: "",
     recipient: "Citizens of the World",
     recipientCountry: "World",
     recipientState: "",
@@ -56,7 +54,6 @@ export function Stepform ({ newPostCreated = () => {}, letters, setLetters, setW
     <ToForm {...formData} updateFields={updateFields} />,
     <LetterContent {...formData} updateFields={updateFields} />,
     <FromForm {...formData} updateFields={updateFields} />,
-    <YourNameForm {...formData} updateFields={updateFields} />,
   ]);
 
   function appendLetter(userId, content, newId, created_at, signOff, senderName, recipient) {
@@ -81,12 +78,13 @@ export function Stepform ({ newPostCreated = () => {}, letters, setLetters, setW
 
   function createLetter (event) {
     event.preventDefault();
+    const senderName = user?.profile?.full_name || "";
     supaClient
       .rpc("create_new_letter", {
         userId: user?.session?.user?.id,
         content: formData.letterContent,
         sign_off: formData.signOff,
-        sender_name: formData.senderName,
+        sender_name: senderName,
         recipient: formData.recipient,
         post_type: 'letter'
       })
@@ -100,7 +98,7 @@ export function Stepform ({ newPostCreated = () => {}, letters, setLetters, setW
             data[0].new_letter_id,
             data[0].creation_time,
             formData.signOff,
-            formData.senderName,
+            senderName,
             formData.recipient
           );
           setFormData(formFields);

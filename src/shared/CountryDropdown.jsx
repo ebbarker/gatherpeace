@@ -11,6 +11,7 @@ export function CountryDropdown({
   country,
   setCountry,
   setHasUnsavedChanges,
+  selectClassName,
 }) {
   useEffect(() => {
 
@@ -50,6 +51,7 @@ export function CountryDropdown({
           id="country-dropdown"
           value={selectedCountry}
           onChange={handleCountryChange}
+          className={selectClassName}
         >
           <option value="--Select a country--" disabled>--Select a country--</option>
           <option value="--Prefer not to say--">--Prefer not to say--</option>

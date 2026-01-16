@@ -6,8 +6,7 @@ RETURNS TABLE (
 LANGUAGE sql
 AS $$
     SELECT
-      COUNT(DISTINCT l.user_id) FILTER (WHERE l.post_type = 'name') AS signature_count,
-      COUNT(DISTINCT lc.sender_country) FILTER (WHERE l.post_type = 'name') AS unique_countries
-    FROM letters l
-    JOIN letter_contents lc ON l.id = lc.letter_id;
+      COUNT(*) AS signature_count,
+      COUNT(DISTINCT country) FILTER (WHERE country IS NOT NULL AND country != '') AS unique_countries
+    FROM user_profiles;
 $$;
