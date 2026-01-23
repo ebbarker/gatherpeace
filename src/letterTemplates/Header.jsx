@@ -19,6 +19,18 @@ export function Header({
   icon
 }) {
   const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // Prefer the human sender name; fall back to username if needed
+  const displayName = letter?.sender_name || letter?.username || "";
+
+  const locationString = [
+    letter?.city,
+    letter?.state,
+    letter?.country,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
   return (
     <div className="letter-header" key={id}>
       <div className="head flex justify-between">
@@ -28,8 +40,15 @@ export function Header({
           </Link>
           <div className="username-container">
             <Link to={`/@${letter?.username}`}>
-              <div className="header-username">@{letter?.username}</div>
+              <div className="header-username">
+                {displayName}
+              </div>
             </Link>
+            {locationString && (
+              <div className="header-secondary header-location">
+                {locationString}
+              </div>
+            )}
             <div className="post-type">{postLabel}{' '}<div className="post-type-icon">{icon}</div></div>
           </div>
         </div>

@@ -1,26 +1,15 @@
-const supabaseUrl = import.meta.env.VITE_SUPABASE_API_URL;
+import Avatar from "../user-profile/Avatar";
 
+// Thin wrapper so the feed/header use the exact same avatar logic
+// as the profile page (including Supabase download -> blob URL).
 export function ProfilePicture({ avatar_url, mini = null }) {
-  let avatarFullUrl = null;
-
-  if (avatar_url) {
-    if (avatar_url.startsWith('/')) {
-      // Default avatar in public folder
-      avatarFullUrl = avatar_url;
-    } else {
-      // User-uploaded avatar in Supabase storage
-      avatarFullUrl = `/storage/v1/object/public/avatars/${avatar_url}`;
-    }
-  } else {
-    // Placeholder image if no avatar is set
-    avatarFullUrl = '/default_avatars/peace.jpg'; // Adjust as needed
-  }
+  const size = mini ? 32 : 48; // tune to match your existing CSS
 
   return (
-    <img
-      src={avatarFullUrl}
-      alt="User Avatar"
-      className={mini ? 'mini-user-avatar' : 'user-avatar'}
+    <Avatar
+      url={avatar_url}
+      size={size}
+      profileIsPublic={true} // hides delete button
     />
   );
 }

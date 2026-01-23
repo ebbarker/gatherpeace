@@ -149,7 +149,7 @@ export function NameDetails({
         />
         <div className="letter-sender-details">
           {/* <div className="name-peace">"{letter?.sign_off}"</div> */}
-          <div className="sender-name">{`${letter?.sender_name}`}</div>
+          {/* <div className="sender-name">{`${letter?.sender_name}`}</div>
           <div className="sender-location-details">
             <div className="sender-address header-secondary">
               {[
@@ -160,7 +160,7 @@ export function NameDetails({
                 .filter(Boolean) // Removes null/undefined values
                 .join(", ")}
             </div>
-          </div>
+          </div> */}
         </div>
         <MessageContent content={letter.content} />
         <ImageDisplay imageUrl={letter.image_url} />

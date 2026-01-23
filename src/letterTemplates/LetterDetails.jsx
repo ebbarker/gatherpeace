@@ -172,11 +172,6 @@ export default function LetterDetails({
         />
         <div className="letter-second-header">
           <div className="recipient-description">To: {letter?.recipient}</div>
-          <div className="recipient-country header-secondary">
-            {letter?.country}
-          </div>
-          <div className="recipient-state header-secondary">{letter?.state}</div>
-          <div className="recipient-city header-secondary">{letter?.city}</div>
         </div>
 
         <MessageContent content={letter.content} />
@@ -184,18 +179,6 @@ export default function LetterDetails({
 
         <div className="letter-sender-details">
           <div className="sender-signoff">{letter?.sign_off}</div>
-          <div className="sender-name">{`-${letter?.sender_name}`}</div>
-          <div className="sender-location-details">
-            <div className="sender-address header-secondary">
-              {[
-                letter?.city,
-                letter?.state,
-                letter?.country,
-              ]
-                .filter(Boolean) // Removes null/undefined values
-                .join(", ")}
-            </div>
-          </div>
         </div>
         <LinkPreview text={letter.content} />
 

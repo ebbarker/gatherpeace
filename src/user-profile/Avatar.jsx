@@ -7,14 +7,15 @@ export default function Avatar({ url, size, onUpload, deleteAvatar, profileIsPub
   const [avatarUrl, setAvatarUrl] = useState(null);
 
   useEffect(() => {
-    if (url) {
-      if (url.startsWith('/')) {
-        // It's a default avatar stored in the public folder
-        setAvatarUrl(url);
-      } else {
-        // It's a user-uploaded avatar stored in Supabase storage
-        downloadImage(url);
-      }
+    if (!url) {
+      // No avatar set, use default
+      setAvatarUrl('/default_avatars/peace.jpg');
+    } else if (url.startsWith('/')) {
+      // It's a default avatar stored in the public folder
+      setAvatarUrl(url);
+    } else {
+      // It's a user-uploaded avatar stored in Supabase storage
+      downloadImage(url);
     }
   }, [url]);
 
@@ -28,6 +29,8 @@ export default function Avatar({ url, size, onUpload, deleteAvatar, profileIsPub
       setAvatarUrl(url);
     } catch (error) {
       console.log('Error downloading image: ', error.message);
+      // Fallback to default avatar if download fails
+      setAvatarUrl('/default_avatars/peace.jpg');
     }
   }
 
