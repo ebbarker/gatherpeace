@@ -7,6 +7,7 @@ import useMultiStepform from "./useMultiStepform";
 import UsernameForm from "./welcomeSteps/UsernameForm";
 import FullNameForm from "./welcomeSteps/FullNameForm";
 import LocationForm from "./welcomeSteps/LocationForm";
+import "./welcomeSteps/WelcomeValidation.css";
 
 export async function welcomeLoader() {
 
@@ -192,7 +193,7 @@ export function Welcome() {
             </div>
             {step}
             {serverError && (
-              <p className="text-red-400 validation-feedback text-center">
+              <p className="signup-validation-alert validation-feedback text-center">
                 {serverError}
               </p>
             )}

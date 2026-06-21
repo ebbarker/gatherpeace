@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './WelcomeValidation.css';
 
 export default function UsernameForm({ formData = {}, updateFields, onValidationChange }) {
   const [error, setError] = useState("");
@@ -44,7 +45,7 @@ export default function UsernameForm({ formData = {}, updateFields, onValidation
         required
       />
       {error && (
-        <p className="text-red-400 validation-feedback text-center">
+        <p className="signup-validation-alert validation-feedback text-center">
           {error}
         </p>
       )}
