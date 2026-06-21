@@ -246,7 +246,7 @@ export default function LocationForm({
             className="location-field-input"
             aria-invalid={!!errors.stateProvince}
           />
-          {errors.stateProvince && (
+          {showErrors && errors.stateProvince && (
             <p className="location-error-message" role="alert">
               {errors.stateProvince}
             </p>
@@ -265,7 +265,7 @@ export default function LocationForm({
             className="location-field-input"
             aria-invalid={!!errors.city}
           />
-          {errors.city && (
+          {showErrors && errors.city && (
             <p className="location-error-message" role="alert">
               {errors.city}
             </p>
