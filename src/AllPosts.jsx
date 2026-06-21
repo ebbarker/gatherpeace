@@ -37,7 +37,11 @@ export function AllPosts({ parent }) {
   const showMessageDialog = (e) => {
 
     e.preventDefault();
-    setWritingMessage(true);
+    if (!session) {
+      setShowLoginModal(true);
+    } else {
+      setWritingMessage(true);
+    }
   }
 
   const showAddNameDialog = (e) => {
@@ -242,9 +246,14 @@ export function AllPosts({ parent }) {
       {!writingMessage && !addingName && !writingWallPost && (
         <div className="call-to-action-container">
           {!profile?.has_signed && (
-            <button className="add-your-name action-button" onClick={showAddNameDialog}>
-              <span>Write a Peace Message</span>
-            </button>
+            <>
+              <button className="add-your-name action-button" onClick={showAddNameDialog}>
+                <span>Write a Peace Message</span>
+              </button>
+              <button className="write-a-message action-button" onClick={showMessageDialog}>
+                <span>Send a Peace Letter</span>
+              </button>
+            </>
           )}
           {profile?.has_signed && (
             <>

@@ -143,7 +143,7 @@ Whoever you are--your race, nationality, gender, politics or religion—I invite
         {numberNames} people from {numberCountries} countries have gathered here. Join Us.
         <br />
         <br />
-         Add a message, a prayer, a hope, or just your name to Gather Peace.
+         Add a peace message, send a peace letter, share a prayer or hope, or just add your name to Gather Peace.
       </p>
 
     </div>
@@ -156,4 +156,3 @@ Whoever you are--your race, nationality, gender, politics or religion—I invite
 
   );
 }
-

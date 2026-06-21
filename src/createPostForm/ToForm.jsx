@@ -27,7 +27,7 @@ export default function ToForm({
   // };
 
   return (
-    <FormWrapper title="Who is this message for?">
+    <FormWrapper title="Who is this peace letter for?">
       <div>
         <label>To </label>
         <input

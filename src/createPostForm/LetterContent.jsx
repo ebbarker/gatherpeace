@@ -11,7 +11,7 @@ export default function LetterContent({
   return (
     <FormWrapper title="Letter">
       <div>
-        <label>Your Message Here</label>
+        <label>Your Letter Here</label>
         <textarea
         required
         autoFocus
