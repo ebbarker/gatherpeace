@@ -257,7 +257,13 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { supaClient } from "./supa-client.ts";
+import { supaClient } from "./supa-client";
+
+export interface SupashipUserInfo {
+  session: any;
+  profile: any;
+  updateProfile: (updatedProfile: any) => void;
+}
 
 export function useSession() {
   const [session, setSession] = useState(null);
@@ -299,10 +305,7 @@ export function useSession() {
     });
 
     return () => {
-      if (authListener?.unsubscribe) {
-        authListener?.unsubscribe();
-      }
-
+      authListener?.subscription?.unsubscribe();
     };
   }, [fetchSession]);
 

@@ -127,7 +127,6 @@ export const UserContext = createContext<SupashipUserInfo>({
   session: null,
   profile: null,
   updateProfile: () => {},
-  setUser: ()=> {}
 });
 
 function Layout() {

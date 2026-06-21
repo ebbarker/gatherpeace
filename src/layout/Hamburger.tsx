@@ -24,8 +24,8 @@ export default function Hamburger() {
 
   const [isOpen, setIsOpen] = useState(false);
 
-  const toggleMenu = () => {
-    preventDefault();
+  const toggleMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
     setIsOpen(!isOpen);
   };
 

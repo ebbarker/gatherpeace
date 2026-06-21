@@ -101,7 +101,7 @@ export default function LoginText() {
               view={authMode}
             />
 
-              <button className="cancel-button" onClick={() => setShowLoginModal(false)}>Close</button>
+              <button className="cancel-button" onClick={() => setShowModal(false)}>Close</button>
             
           </>
         }
