@@ -19,7 +19,6 @@
     "browser-image-compression": "^2.0.2",
     "deno": "^0.1.1",
     "mdb-react-ui-kit": "^6.1.0",
-    "node-sass": "^7.0.3",
     "react": "^18.2.0",
     "react-bootstrap": "^2.7.2",
     "react-dom": "^18.2.0",

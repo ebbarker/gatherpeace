@@ -12,13 +12,13 @@ export default function UserMenu() {
 
   return (
     <>
-      <li class="sub-menu">
+      <li className="sub-menu">
         <a href="#" onClick={toggleDropdown}>
           {profile?.username || "Welcome"}
-          <i class="fa fa-angle-down"></i>
+          <i className="fa fa-angle-down"></i>
         </a>
         {/* {dropdownVisible && ( */}{(
-          <ul class="dropdown-menu">
+          <ul className="dropdown-menu">
             <li>
               <a href="#" onClick={() => supaClient.auth.signOut()}>
                 Logout
