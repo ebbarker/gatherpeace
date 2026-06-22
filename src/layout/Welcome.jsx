@@ -80,7 +80,13 @@ export function Welcome() {
     fullName: false,
     location: false
   });
-  const [showLocationErrors, setShowLocationErrors] = useState(false);
+  const [showErrors, setShowErrors] = useState({
+    username: false,
+    fullName: false,
+    location: false,
+  });
+
+  const stepKeys = ['username', 'fullName', 'location'];
 
   function updateFields(fields) {
     setFormData(prev => ({ ...prev, ...fields }));
@@ -90,22 +96,28 @@ export function Welcome() {
     setStepValidation(prev => ({ ...prev, [step]: isValid }));
   }
 
+  function revealCurrentStepErrors() {
+    setShowErrors(prev => ({ ...prev, [stepKeys[currentStepIndex]]: true }));
+  }
+
   const { steps, currentStepIndex, step, next, back, isFirstStep, isLastStep } = useMultiStepform([
     <UsernameForm
       formData={formData}
       updateFields={updateFields}
       onValidationChange={(isValid) => updateStepValidation('username', isValid)}
+      showErrors={showErrors.username}
     />,
     <FullNameForm
       formData={formData}
       updateFields={updateFields}
       onValidationChange={(isValid) => updateStepValidation('fullName', isValid)}
+      showErrors={showErrors.fullName}
     />,
     <LocationForm
       formData={formData}
       updateFields={updateFields}
       onValidationChange={(isValid) => updateStepValidation('location', isValid)}
-      showErrors={showLocationErrors}
+      showErrors={showErrors.location}
     />,
   ]);
 
@@ -218,7 +230,7 @@ export function Welcome() {
                   onClick={(e) => {
                     if (!canProceed()) {
                       e.preventDefault();
-                      setShowLocationErrors(true);
+                      revealCurrentStepErrors();
                       return;
                     }
                   }}
@@ -234,13 +246,11 @@ export function Welcome() {
                       : 'bg-gray-400 cursor-not-allowed'
                   }`}
                   onClick={() => {
-                    if (currentStepIndex === 2 && !canProceed()) {
-                      setShowLocationErrors(true);
+                    if (!canProceed()) {
+                      revealCurrentStepErrors();
                       return;
                     }
-                    if (canProceed()) {
-                      next();
-                    }
+                    next();
                   }}
                 >
                   Next
